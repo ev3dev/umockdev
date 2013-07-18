@@ -1,0 +1,3 @@
+Tests: upstream
+Depends: @, xserver-xorg-video-dummy, xserver-xorg-input-evdev, xserver-xorg-input-synaptics, xinput, gphoto2, usbutils, evtest
+Restrictions: build-needed

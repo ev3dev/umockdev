@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+# work around broken "build-needed" behaviour (Debian #711209)
+RT="$ADTTMP/../../ubtree0-build/real-tree"
+[ -d "$RT" ] && cd "$RT" || true
+
+make check-installed

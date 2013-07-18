@@ -1,0 +1,31 @@
+#!/usr/bin/make -f
+
+DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
+
+%:
+	dh $@ --with gir
+
+override_dh_auto_configure:
+	# building from trunk checkout?
+	[ -x ./autogen.sh ] && ./autogen.sh || true
+	dh_auto_configure -- \
+		--enable-gtk-doc \
+		--enable-introspection
+
+# tests fail in PPA builders and on powerpc, so don't make them fatal there
+override_dh_auto_test:
+	if ! dh_auto_test; then \
+	    head -n1 debian/changelog | grep -q '~' || \
+	    [ "$(DEB_HOST_ARCH)" = powerpc ] || exit 1; \
+	fi
+
+override_dh_install:
+	dh_install -X.a -X.la --fail-missing
+
+# strict symbol checking for normal builds, but not for daily autobuilds
+override_dh_makeshlibs:
+	if head -n1 debian/changelog | grep -q '~'; then \
+		dh_makeshlibs; \
+	else \
+		dh_makeshlibs -- -c4; \
+	fi

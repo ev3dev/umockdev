@@ -1,0 +1,113 @@
+Source: umockdev
+Section: devel
+Priority: optional
+Maintainer: Martin Pitt <mpitt@debian.org>
+Build-Depends: debhelper (>= 9),
+ pkg-config,
+ valac (>= 0.16.1),
+ libglib2.0-dev (>= 2.24.0),
+ libudev-dev,
+ libgudev-1.0-dev,
+ python3-gi,
+ gobject-introspection,
+ libgirepository1.0-dev,
+ gir1.2-glib-2.0,
+ gir1.2-gudev-1.0,
+ udev,
+ xserver-xorg-video-dummy,
+ xserver-xorg-input-evdev,
+ xserver-xorg-input-synaptics,
+ xinput,
+ usbutils,
+ gtk-doc-tools
+Standards-Version: 3.9.4
+XS-Testsuite: autopkgtest
+
+Package: umockdev
+Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
+Description: record/mock hardware devices for bug reports and regression tests
+ umockdev mocks hardware devices for creating unit tests for libraries and
+ programs that handle Linux hardware devices.
+ .
+ This package provides tools to record the properties and behaviour of
+ particular devices, and to run a program or test suite under a test bed with
+ the previously recorded devices loaded.
+ .
+ Right now this covers sysfs, uevents, basic support for /dev devices, and
+ recording/mocking usbdevfs ioctls (for PtP/MTP devices).
+ .
+ With this you can simulate particular hardware in virtual environments up to
+ some degree, without needing any particular privileges or disturbing the whole
+ system.
+
+Package: libumockdev0
+Architecture: any
+Multi-Arch: same
+Section: libs
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${shlibs:Depends},
+  ${misc:Depends}
+Description: hardware mocking testbed for bug reports and regression tests
+ umockdev mocks hardware devices for creating unit tests for libraries and
+ programs that handle Linux hardware devices.
+ .
+ This library provides an UMockdevTestbed class for running a program or test
+ suite under a test bed with the previously recorded devices loaded.
+ .
+ Right now this covers sysfs, uevents, basic support for /dev devices, and
+ recording/mocking usbdevfs ioctls (for PtP/MTP devices).
+ .
+ With this you can simulate particular hardware in virtual environments up to
+ some degree, without needing any particular privileges or disturbing the whole
+ system.
+ .
+ The library supports gobject-introspection and builds a VAPI, so that you can
+ also use it with Python, JavaScript, and other languages which support GI, and
+ Vala.
+
+Package: libumockdev-dev
+Architecture: any
+Section: libdevel
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${shlibs:Depends},
+ ${misc:Depends},
+ libumockdev0 (= ${binary:Version}),
+ libglib2.0-dev,
+ gir1.2-umockdev-1.0
+Description: development files and documentation for libumockdev
+ umockdev mocks hardware devices for creating unit tests for libraries and
+ programs that handle Linux hardware devices.
+ .
+ This library provides an UMockdevTestbed class for running a program or test
+ suite under a test bed with the previously recorded devices loaded.
+ .
+ Right now this covers sysfs, uevents, basic support for /dev devices, and
+ recording/mocking usbdevfs ioctls (for PtP/MTP devices).
+ .
+ With this you can simulate particular hardware in virtual environments up to
+ some degree, without needing any particular privileges or disturbing the whole
+ system.
+ .
+ The library supports gobject-introspection and builds a VAPI, so that you can
+ also use it with Python, JavaScript, and other languages which support GI, and
+ Vala.
+ .
+ This package contains the header, development, and documentation files which
+ are needed for building umockdev applications.
+
+Package: gir1.2-umockdev-1.0
+Architecture: any
+Section: introspection
+Pre-Depends: ${misc:Pre-Depends}
+Depends: libumockdev0 (>= ${binary:Version}),
+ ${shlibs:Depends},
+ ${gir:Depends},
+ ${misc:Depends}
+Description: introspection data for umockdev library
+ umockdev mocks hardware devices for creating unit tests for libraries and
+ programs that handle Linux hardware devices.
+ .
+ This package contains the introspection data for the libumockdev library.

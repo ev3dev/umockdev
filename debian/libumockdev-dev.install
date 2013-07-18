@@ -1,0 +1,7 @@
+usr/lib/*/libumockdev.so
+usr/lib/*/pkgconfig
+usr/share/vala/vapi
+usr/share/gir-1.0
+usr/share/doc/umockdev/examples /usr/share/doc/libumockdev-dev/
+usr/include
+usr/share/gtk-doc/html /usr/share/doc/libumockdev-dev/
