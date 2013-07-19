@@ -1,5 +1,7 @@
 umockdev (0.3.2-1) UNRELEASED; urgency=low
 
   * Initial Debian packaging, based on Ubuntu package. (Closes: #715191)
+  * Do not make test failures fatal for the first upload, let's see how well
+    it holds up on all our architectures.
 
  -- Martin Pitt <mpitt@debian.org>  Thu, 18 Jul 2013 18:57:22 +0200
