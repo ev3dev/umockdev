@@ -1,0 +1,194 @@
+0.3.2 (2013-07-18)
+------------------
+- script replay: Fix endless loop on end of script file.
+- Fix /umockdev-run/integration/input-evtest for 32 bit architectures. Add a
+  script recorded on 32 bit and select the right one in the test.
+- Fix race condition in /umockdev-record/script-log-simple test which sometimes
+  caused this to fail on slow machines.
+
+0.3.1 (2013-07-18)
+------------------
+- Fix /umockdev-run/integration/input-touchpad test case to not leave behind an
+  Xorg process on failure.
+- Skip /umockdev-run/integration/input-touchpad test case on big-endian
+  machines, as we do not have ioctl data from big endian machines at the moment.
+- Flush the output file after each script recording event, to avoid losing data
+  when recording programs that get terminated with a signal.
+- Intercept SIGINT during ioctl recording, so that the record gets written even
+  if the recorded program gets terminated with Control-C.
+- Fix /umockdev-testbed-usb/lsusb test case to work with libusbx 1.0.16.
+- Create PTY devices (for usage with get_dev_fd()) instead of plain files for
+  other device types than tty as well, except for SUBSYSTEM=="usb". With that
+  you can use record&replay for e. g. input or DRI control devices.
+  (main part of issue #5)
+- Reading scripts during device playback does not wrap around at EOF any more.
+  This more closely reproduces how real devices behave. If we actually get an
+  use case for wrapping around, we can do this by adding a new operation type
+  to script files.
+
+0.3 (2013-07-12)
+----------------
+Command line argument changes (not backwards compatible):
+- Change umockdev-record's --ioctl option: The argument is now
+  "devicefile=outputfile" like with umockdev-run, instead of specifying the
+  device as the first positional argument. This was inconsistant, and is
+  necessary to support other kinds of recording in the future.
+- Rename umockdev-run's -l/--load option to -d/--device. Other kinds of files
+  (ioctl dumps, and read/write scripts) also get "loaded" into the testbed, so
+  the previous name does not make sense any more.
+
+New features/API:
+- Emulate SUBSYSTEM=tty mocked device nodes as PTYs instead of plain files, so
+  that they behave tty-like and respond to the relevant ioctls.
+  (first part of issue #9)
+- Add new method umockdev_testbed_get_dev_fd() to get the master end file
+  descriptor for simulated tty devices (and possibly other kinds of devices in
+  the future), so that a test suite can communicate with clients that connect
+  to the simulated tty device node. (second part of issue #9)
+- Add recording of read()s and write()s to a device into files, called
+  "device scripts". Add umockdev-record option -s/--script for this.
+- Add new method umockdev_testbed_load_script() to replay read()s and
+  write()s of a device from a script. (issue #18)
+- Add new option -s/--script to umockdev-run to load a script into the testbed.
+  (issue #18)
+- Add new method umockdev_testbed_set_attribute_link() to set attributes which
+  are symlinks; most importantly this allows testbeds to set the "driver"
+  attribute. (first part of issue #22)
+- Record the "driver" attribute in umockdev-record, and restore it in
+  umockdev_testbed_add_from_string(). (second part of issue #22)
+- Add new method umockdev_testbed_remove_device() to remove a sysfs device and
+  all its associated links, device node, etc. (issue #17)
+
+Bug fixes:
+- umockdev-run: Give proper error message if --ioctl argument is invalid.
+- preload: Only look up original libc functions once. (issue #21)
+- preload: Wrap fclose(). (issue #20)
+- Work around gtk-doc non-POSIX recursive variable expansion with automake >=
+  1.13 and gtk-doc >= 1.19, which previously failed autogen.sh.
+- Do not export internal symbols in libumockdev library.
+
+0.2.11 (2013-07-03)
+-------------------
+- Do not overwrite an existing $LD_PRELOAD in umockdev-run and umockdev-record.
+- Add "make check-valgrind" target to debug memory leaks.
+- Add recently added API to reference documentation.
+- Fix various memory leaks.
+
+0.2.10 (2013-07-01)
+-------------------
+- Make stat()ing of emulated /dev/ nodes appear as actual block/char device
+  nodes with proper major/minor number, instead of regular files. (issue #16)
+- Add umockdev_testbed_add_from_file() convenience wrapper around
+  add_from_string(). (issue #15)
+- Handle USBDEVFS_REAPURB ioctls without a previous SUBMITURB like the real USB
+  stack (return EAGAIN instead of crashing with an assertion). This makes
+  umockdev work with gvfs' mtp backend.
+
+0.2.9 (2013-06-20)
+------------------
+- preload: Do not change errno when calculating wrapped paths.
+- Add umockdev_testbed_disable() and umockdev_testbed_enable() methods for
+  temporarily disabling the emulated /sys and /dev. This can be used for
+  temporarily switching back to the real /sys and /dev without having to
+  destroy or change $UMOCKDEV_DIR and the UMockdevTestbed instance (which is
+  difficult when these get exported to subprocesses like local D-BUS
+  instances).
+
+0.2.8 (2013-06-17)
+------------------
+- Link the typelib to the SONAMEd library, not the version-less development
+  symlink.
+
+0.2.7 (2013-06-17)
+------------------
+- Slightly relax errno test in /umockdev-testbed-vala/usbfs_ioctl_static, the
+  real call might fail not just with ENOTTY but also with EINVAL.
+- Fix tests to work on big-endian machines (tested on powerpc32).
+
+0.2.6 (2013-06-13)
+------------------
+- Do not use automake 1.13's parallel test runner. It not buy much for this
+  project, and makes it a lot harder to analyse test failures from build logs.
+- Add umockdev_testbed_clear() method to remove all added devices (both sysfs
+  and /dev). This is useful for cleaning up between tests in situations where
+  the UMockdevTestbed object itself needs to be kept.
+- test-umockdev-run: Write X.org log into a file, point to it on X.org startup
+  failure, and also point out that this needs X.org's dummy driver installed.
+  (issue #12)
+- Fix ioctl file reading on platforms which have unsigned "char" by default,
+  such as ARM. (issue #11)
+- Do not read sysfs attributes of any Tegra device (on ARM systems), as these
+  often trigger kernel crashes (see https://launchpad.net/bugs/1190225).
+  (issue #11)
+- Allow uncommon characters in sysfs attribute names.
+- devices/input/synaptics-touchpad.ioctl: Add ioctl for 32 bit systems.
+  (issue #13)
+
+0.2.5 (2013-06-10)
+------------------
+- Fix test-umockdev lsusb check to work in environments without any
+  /dev/bus/usb.
+- preload: Do not destroy errno on wrapping open() under umockdev-record.
+- Add --version option to umockdev-run and umockdev-record.
+- Fix building with Vala 0.20.
+
+0.2.4 (2013-06-05)
+------------------
+- Fix "make check" for current automake 1.13.
+- Add "make check-installed" target to run tests against the installed umockdev
+  instead of against the build tree.
+
+0.2.3 (2013-05-25)
+------------------
+- preload: Wrap fopen64() call; fixes operation on 32 bit architectures.
+  (issue #10)
+
+0.2.2 (2013-05-24)
+------------------
+- umockdev-run: Fix segfault if no program is specified. (issue #6)
+- preload: Print proper error message instead of assertion when trying to load
+  an empty or invalid ioctl record. (issue #8)
+- umockdev-run: Fix --help output to not mention the child program twice.
+- Fix DEVNAME property with older libudev versions.
+- Handle "L:" (link priority) lines from udevadm for newer udev versions.
+- Fix segfault with gcc 4.8 (due to changed behaviour of sizeof).
+- Drop our posix_extra backport of execvp(), this was added to Vala 0.16.1.
+  Bump vala dependency accordingly.
+
+0.2.1 (2013-02-21)
+------------------
+- umockdev-wrapper: Use exec to avoid keeping the shell process around and make
+  killing the subprogram from outside work properly.
+- Fix building with automake 1.12, thanks Peter Hutterer.
+- Support opening several netlink sockets (i. e. udev monitors) at the same
+  time.
+- Fix building with older kernels which don't have the EVIOCGMTSLOTS ioctl yet.
+
+0.2 (2013-02-20)
+----------------
+Compatibility break: This does not work any more with recorded ioctl files from
+version 0.1.
+
+- umockdev-run: Fix running of child program to keep stdin.
+- preload: Fix resolution of "/dev" and "/sys"
+- ioctl_tree: Fix endless loop when the first encountered ioctl was unknown
+- preload: Support opening a /dev node multiple times for ioctl emulation
+  (issue #3)
+- Fix parallel build (issue #2)
+- Support xz compressed ioctl files in umockdev_testbed_load_ioctl().
+- Add example umockdev and ioctl files for a gphoto camera and an MTP capable
+  mobile phone.
+- Fix building with automake 1.11.3 and Vala 0.16.
+- Generalize ioctl recording and emulation for ioctls with simple structs, i.
+  e. no pointer fields. This makes it much easier to add more ioctls in the
+  future. 
+- Store return values of ioctls in records, as they are not always 0
+  (like EVIOCGBIT)
+- Add support for ioctl ranges (like EVIOCGABS) and ioctls with variable length
+  (like EVIOCGBIT).
+- Add all reading evdev ioctls, for recording and mocking input devices like
+  touch pads, touch screens, or keyboards. (issue #1)
+
+0.1 (2013-02-12)
+----------------
+Initial release.
