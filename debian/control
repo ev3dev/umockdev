@@ -20,6 +20,7 @@ Build-Depends: debhelper (>= 9),
  xinput,
  usbutils,
  gtk-doc-tools
+Homepage: https://github.com/martinpitt/umockdev/
 Vcs-Git: git://git.debian.org/git/collab-maint/umockdev.git
 Vcs-Browser: http://git.debian.org/?p=collab-maint/umockdev.git
 Standards-Version: 3.9.4
