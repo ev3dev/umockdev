@@ -13,6 +13,7 @@
 #include "config.h"
 #include <umockdev.h>
 #include <glib/gstdio.h>
+#include <sys/socket.h>
 #include <sys/wait.h>
 
 #define _g_option_context_free0(var) ((var == NULL) ? NULL : (var = (g_option_context_free (var), NULL)))
@@ -28,6 +29,8 @@ extern gchar** opt_ioctl;
 gchar** opt_ioctl = NULL;
 extern gchar** opt_script;
 gchar** opt_script = NULL;
+extern gchar** opt_unix_stream;
+gchar** opt_unix_stream = NULL;
 extern gchar** opt_program;
 gchar** opt_program = NULL;
 extern gboolean opt_version;
@@ -42,10 +45,11 @@ static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNoti
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static gint _vala_array_length (gpointer array);
 
-const GOptionEntry options[6] = {{"device", 'd', 0, G_OPTION_ARG_FILENAME_ARRAY, &opt_device, "Load an umockdev-record device description into the testbed. Can be sp" \
+const GOptionEntry options[7] = {{"device", 'd', 0, G_OPTION_ARG_FILENAME_ARRAY, &opt_device, "Load an umockdev-record device description into the testbed. Can be sp" \
 "ecified multiple times.", "filename"}, {"ioctl", 'i', 0, G_OPTION_ARG_FILENAME_ARRAY, &opt_ioctl, "Load an umockdev-record ioctl dump into the testbed. Can be specified " \
 "multiple times.", "devname=ioctlfilename"}, {"script", 's', 0, G_OPTION_ARG_FILENAME_ARRAY, &opt_script, "Load an umockdev-record script into the testbed. Can be specified mult" \
-"iple times.", "devname=scriptfilename"}, {"", (gchar) 0, 0, G_OPTION_ARG_STRING_ARRAY, &opt_program, "", ""}, {"version", (gchar) 0, 0, G_OPTION_ARG_NONE, &opt_version, "Output version information and exit"}, {NULL}};
+"iple times.", "devname=scriptfilename"}, {"unix-stream", 'u', 0, G_OPTION_ARG_FILENAME_ARRAY, &opt_unix_stream, "Load an umockdev-record script for a mocked Unix stream socket. Can be" \
+" specified multiple times.", "socket_path=scriptfilename"}, {"", (gchar) 0, 0, G_OPTION_ARG_STRING_ARRAY, &opt_program, "", ""}, {"version", (gchar) 0, 0, G_OPTION_ARG_NONE, &opt_version, "Output version information and exit"}, {NULL}};
 
 void child_sig_handler (gint sig) {
 	gint _tmp0_;
@@ -53,7 +57,7 @@ void child_sig_handler (gint sig) {
 	gint _tmp2_;
 	gint _tmp3_ = 0;
 	_tmp0_ = sig;
-	g_debug ("umockdev-run.vala:51: umockdev-run: caught signal %i, propagating to c" \
+	g_debug ("umockdev-run.vala:56: umockdev-run: caught signal %i, propagating to c" \
 "hild\n", _tmp0_);
 	_tmp1_ = child_pid;
 	_tmp2_ = sig;
@@ -103,28 +107,30 @@ gint _vala_main (gchar** args, int args_length1) {
 	gint _tmp54__length1;
 	gchar** _tmp73_;
 	gint _tmp73__length1;
+	gchar** _tmp92_;
+	gint _tmp92__length1;
 	gint status = 0;
-	struct sigaction _tmp81_ = {0};
+	struct sigaction _tmp100_ = {0};
 	struct sigaction act;
-	struct sigaction _tmp82_;
-	sigset_t _tmp83_;
-	struct sigaction _tmp84_;
-	gint _tmp85_ = 0;
-	struct sigaction _tmp86_;
-	gint _tmp87_ = 0;
-	struct sigaction _tmp88_;
-	gint _tmp89_ = 0;
-	struct sigaction _tmp90_;
-	gint _tmp91_ = 0;
-	struct sigaction _tmp92_;
-	gint _tmp93_ = 0;
-	GPid _tmp94_;
-	gint _tmp95_ = 0;
-	GPid _tmp96_;
-	gint _tmp97_;
-	gboolean _tmp98_ = FALSE;
-	gint _tmp101_;
-	gboolean _tmp102_ = FALSE;
+	struct sigaction _tmp101_;
+	sigset_t _tmp102_;
+	struct sigaction _tmp103_;
+	gint _tmp104_ = 0;
+	struct sigaction _tmp105_;
+	gint _tmp106_ = 0;
+	struct sigaction _tmp107_;
+	gint _tmp108_ = 0;
+	struct sigaction _tmp109_;
+	gint _tmp110_ = 0;
+	struct sigaction _tmp111_;
+	gint _tmp112_ = 0;
+	GPid _tmp113_;
+	gint _tmp114_ = 0;
+	GPid _tmp115_;
+	gint _tmp116_;
+	gboolean _tmp117_ = FALSE;
+	gint _tmp120_;
+	gboolean _tmp121_ = FALSE;
 	GError * _inner_error_ = NULL;
 	_tmp0_ = g_option_context_new ("-- program [args..]");
 	oc = _tmp0_;
@@ -576,12 +582,134 @@ gint _vala_main (gchar** args, int args_length1) {
 			}
 		}
 	}
-	_tmp73_ = opt_program;
-	_tmp73__length1 = _vala_array_length (opt_program);
-	if (_tmp73__length1 == 0) {
-		FILE* _tmp74_;
-		_tmp74_ = stderr;
-		fprintf (_tmp74_, "No program specified. See --help for how to use umockdev-run\n");
+	_tmp73_ = opt_unix_stream;
+	_tmp73__length1 = _vala_array_length (opt_unix_stream);
+	{
+		gchar** i_collection = NULL;
+		gint i_collection_length1 = 0;
+		gint _i_collection_size_ = 0;
+		gint i_it = 0;
+		i_collection = _tmp73_;
+		i_collection_length1 = _tmp73__length1;
+		for (i_it = 0; i_it < _tmp73__length1; i_it = i_it + 1) {
+			gchar* _tmp74_;
+			gchar* i = NULL;
+			_tmp74_ = g_strdup (i_collection[i_it]);
+			i = _tmp74_;
+			{
+				const gchar* _tmp75_;
+				gchar** _tmp76_;
+				gchar** _tmp77_ = NULL;
+				gchar** parts;
+				gint parts_length1;
+				gint _parts_size_;
+				gchar** _tmp78_;
+				gint _tmp78__length1;
+				_tmp75_ = i;
+				_tmp77_ = _tmp76_ = g_strsplit (_tmp75_, "=", 2);
+				parts = _tmp77_;
+				parts_length1 = _vala_array_length (_tmp76_);
+				_parts_size_ = parts_length1;
+				_tmp78_ = parts;
+				_tmp78__length1 = parts_length1;
+				if (_tmp78__length1 != 2) {
+					FILE* _tmp79_;
+					_tmp79_ = stderr;
+					fprintf (_tmp79_, "Error: --unix-stream argument must be socket_path=filename\n");
+					result = 1;
+					parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
+					_g_free0 (i);
+					_g_object_unref0 (testbed);
+					_g_free0 (preload);
+					_g_option_context_free0 (oc);
+					return result;
+				}
+				{
+					UMockdevTestbed* _tmp80_;
+					gchar** _tmp81_;
+					gint _tmp81__length1;
+					const gchar* _tmp82_;
+					gchar** _tmp83_;
+					gint _tmp83__length1;
+					const gchar* _tmp84_;
+					_tmp80_ = testbed;
+					_tmp81_ = parts;
+					_tmp81__length1 = parts_length1;
+					_tmp82_ = _tmp81_[0];
+					_tmp83_ = parts;
+					_tmp83__length1 = parts_length1;
+					_tmp84_ = _tmp83_[1];
+					umockdev_testbed_load_socket_script (_tmp80_, _tmp82_, SOCK_STREAM, _tmp84_, &_inner_error_);
+					if (_inner_error_ != NULL) {
+						if (_inner_error_->domain == G_FILE_ERROR) {
+							goto __catch5_g_file_error;
+						}
+						parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
+						_g_free0 (i);
+						_g_object_unref0 (testbed);
+						_g_free0 (preload);
+						_g_option_context_free0 (oc);
+						g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+						g_clear_error (&_inner_error_);
+						return 0;
+					}
+				}
+				goto __finally5;
+				__catch5_g_file_error:
+				{
+					GError* e = NULL;
+					FILE* _tmp85_;
+					gchar** _tmp86_;
+					gint _tmp86__length1;
+					const gchar* _tmp87_;
+					gchar** _tmp88_;
+					gint _tmp88__length1;
+					const gchar* _tmp89_;
+					GError* _tmp90_;
+					const gchar* _tmp91_;
+					e = _inner_error_;
+					_inner_error_ = NULL;
+					_tmp85_ = stderr;
+					_tmp86_ = parts;
+					_tmp86__length1 = parts_length1;
+					_tmp87_ = _tmp86_[1];
+					_tmp88_ = parts;
+					_tmp88__length1 = parts_length1;
+					_tmp89_ = _tmp88_[0];
+					_tmp90_ = e;
+					_tmp91_ = _tmp90_->message;
+					fprintf (_tmp85_, "Error: Cannot install %s for stream socket %s: %s\n", _tmp87_, _tmp89_, _tmp91_);
+					result = 1;
+					_g_error_free0 (e);
+					parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
+					_g_free0 (i);
+					_g_object_unref0 (testbed);
+					_g_free0 (preload);
+					_g_option_context_free0 (oc);
+					return result;
+				}
+				__finally5:
+				if (_inner_error_ != NULL) {
+					parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
+					_g_free0 (i);
+					_g_object_unref0 (testbed);
+					_g_free0 (preload);
+					_g_option_context_free0 (oc);
+					g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+					g_clear_error (&_inner_error_);
+					return 0;
+				}
+				parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
+				_g_free0 (i);
+			}
+		}
+	}
+	_tmp92_ = opt_program;
+	_tmp92__length1 = _vala_array_length (opt_program);
+	if (_tmp92__length1 == 0) {
+		FILE* _tmp93_;
+		_tmp93_ = stderr;
+		fprintf (_tmp93_, "No program specified. See --help for how to use umockdev-run\n");
 		result = 1;
 		_g_object_unref0 (testbed);
 		_g_free0 (preload);
@@ -589,16 +717,16 @@ gint _vala_main (gchar** args, int args_length1) {
 		return result;
 	}
 	{
-		gchar** _tmp75_;
-		gint _tmp75__length1;
-		GPid _tmp76_ = 0;
-		_tmp75_ = opt_program;
-		_tmp75__length1 = _vala_array_length (opt_program);
-		g_spawn_async (NULL, _tmp75_, NULL, (G_SPAWN_SEARCH_PATH | G_SPAWN_CHILD_INHERITS_STDIN) | G_SPAWN_DO_NOT_REAP_CHILD, NULL, NULL, &_tmp76_, &_inner_error_);
-		child_pid = _tmp76_;
+		gchar** _tmp94_;
+		gint _tmp94__length1;
+		GPid _tmp95_ = 0;
+		_tmp94_ = opt_program;
+		_tmp94__length1 = _vala_array_length (opt_program);
+		g_spawn_async (NULL, _tmp94_, NULL, (G_SPAWN_SEARCH_PATH | G_SPAWN_CHILD_INHERITS_STDIN) | G_SPAWN_DO_NOT_REAP_CHILD, NULL, NULL, &_tmp95_, &_inner_error_);
+		child_pid = _tmp95_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_SPAWN_ERROR) {
-				goto __catch5_g_spawn_error;
+				goto __catch6_g_spawn_error;
 			}
 			_g_object_unref0 (testbed);
 			_g_free0 (preload);
@@ -608,27 +736,27 @@ gint _vala_main (gchar** args, int args_length1) {
 			return 0;
 		}
 	}
-	goto __finally5;
-	__catch5_g_spawn_error:
+	goto __finally6;
+	__catch6_g_spawn_error:
 	{
 		GError* e = NULL;
-		FILE* _tmp77_;
-		gchar** _tmp78_;
-		gint _tmp78__length1;
-		const gchar* _tmp79_;
-		const gchar* _tmp80_;
+		FILE* _tmp96_;
+		gchar** _tmp97_;
+		gint _tmp97__length1;
+		const gchar* _tmp98_;
+		const gchar* _tmp99_;
 		e = _inner_error_;
 		_inner_error_ = NULL;
-		_tmp77_ = stderr;
-		_tmp78_ = opt_program;
-		_tmp78__length1 = _vala_array_length (opt_program);
-		_tmp79_ = _tmp78_[0];
-		_tmp80_ = e->message;
-		fprintf (_tmp77_, "Cannot run %s: %s\n", _tmp79_, _tmp80_);
+		_tmp96_ = stderr;
+		_tmp97_ = opt_program;
+		_tmp97__length1 = _vala_array_length (opt_program);
+		_tmp98_ = _tmp97_[0];
+		_tmp99_ = e->message;
+		fprintf (_tmp96_, "Cannot run %s: %s\n", _tmp98_, _tmp99_);
 		exit (1);
 		_g_error_free0 (e);
 	}
-	__finally5:
+	__finally6:
 	if (_inner_error_ != NULL) {
 		_g_object_unref0 (testbed);
 		_g_free0 (preload);
@@ -637,56 +765,56 @@ gint _vala_main (gchar** args, int args_length1) {
 		g_clear_error (&_inner_error_);
 		return 0;
 	}
-	memset (&_tmp81_, 0, sizeof (struct sigaction));
-	_tmp81_.sa_handler = _child_sig_handler_sighandler_t;
-	_tmp81_.sa_flags = SA_RESETHAND;
-	act = _tmp81_;
-	_tmp82_ = act;
-	_tmp83_ = _tmp82_.sa_mask;
-	sigemptyset (&_tmp83_);
-	_tmp84_ = act;
-	_tmp85_ = sigaction (SIGTERM, &_tmp84_, NULL);
-	_vala_assert (_tmp85_ == 0, "Posix.sigaction (Posix.SIGTERM, act, null) == 0");
-	_tmp86_ = act;
-	_tmp87_ = sigaction (SIGHUP, &_tmp86_, NULL);
-	_vala_assert (_tmp87_ == 0, "Posix.sigaction (Posix.SIGHUP, act, null) == 0");
-	_tmp88_ = act;
-	_tmp89_ = sigaction (SIGINT, &_tmp88_, NULL);
-	_vala_assert (_tmp89_ == 0, "Posix.sigaction (Posix.SIGINT, act, null) == 0");
-	_tmp90_ = act;
-	_tmp91_ = sigaction (SIGQUIT, &_tmp90_, NULL);
-	_vala_assert (_tmp91_ == 0, "Posix.sigaction (Posix.SIGQUIT, act, null) == 0");
-	_tmp92_ = act;
-	_tmp93_ = sigaction (SIGABRT, &_tmp92_, NULL);
-	_vala_assert (_tmp93_ == 0, "Posix.sigaction (Posix.SIGABRT, act, null) == 0");
-	_tmp94_ = child_pid;
-	waitpid ((pid_t) _tmp94_, &_tmp95_, 0);
-	status = _tmp95_;
-	_tmp96_ = child_pid;
-	g_spawn_close_pid (_tmp96_);
+	memset (&_tmp100_, 0, sizeof (struct sigaction));
+	_tmp100_.sa_handler = _child_sig_handler_sighandler_t;
+	_tmp100_.sa_flags = SA_RESETHAND;
+	act = _tmp100_;
+	_tmp101_ = act;
+	_tmp102_ = _tmp101_.sa_mask;
+	sigemptyset (&_tmp102_);
+	_tmp103_ = act;
+	_tmp104_ = sigaction (SIGTERM, &_tmp103_, NULL);
+	_vala_assert (_tmp104_ == 0, "Posix.sigaction (Posix.SIGTERM, act, null) == 0");
+	_tmp105_ = act;
+	_tmp106_ = sigaction (SIGHUP, &_tmp105_, NULL);
+	_vala_assert (_tmp106_ == 0, "Posix.sigaction (Posix.SIGHUP, act, null) == 0");
+	_tmp107_ = act;
+	_tmp108_ = sigaction (SIGINT, &_tmp107_, NULL);
+	_vala_assert (_tmp108_ == 0, "Posix.sigaction (Posix.SIGINT, act, null) == 0");
+	_tmp109_ = act;
+	_tmp110_ = sigaction (SIGQUIT, &_tmp109_, NULL);
+	_vala_assert (_tmp110_ == 0, "Posix.sigaction (Posix.SIGQUIT, act, null) == 0");
+	_tmp111_ = act;
+	_tmp112_ = sigaction (SIGABRT, &_tmp111_, NULL);
+	_vala_assert (_tmp112_ == 0, "Posix.sigaction (Posix.SIGABRT, act, null) == 0");
+	_tmp113_ = child_pid;
+	waitpid ((pid_t) _tmp113_, &_tmp114_, 0);
+	status = _tmp114_;
+	_tmp115_ = child_pid;
+	g_spawn_close_pid (_tmp115_);
 	_g_object_unref0 (testbed);
 	testbed = NULL;
-	_tmp97_ = status;
-	_tmp98_ = WIFEXITED (_tmp97_);
-	if (_tmp98_) {
-		gint _tmp99_;
-		gint _tmp100_ = 0;
-		_tmp99_ = status;
-		_tmp100_ = WEXITSTATUS (_tmp99_);
-		result = _tmp100_;
+	_tmp116_ = status;
+	_tmp117_ = WIFEXITED (_tmp116_);
+	if (_tmp117_) {
+		gint _tmp118_;
+		gint _tmp119_ = 0;
+		_tmp118_ = status;
+		_tmp119_ = WEXITSTATUS (_tmp118_);
+		result = _tmp119_;
 		_g_object_unref0 (testbed);
 		_g_free0 (preload);
 		_g_option_context_free0 (oc);
 		return result;
 	}
-	_tmp101_ = status;
-	_tmp102_ = WIFSIGNALED (_tmp101_);
-	if (_tmp102_) {
-		gint _tmp103_;
-		int _tmp104_ = 0;
-		_tmp103_ = status;
-		_tmp104_ = WTERMSIG (_tmp103_);
-		raise (_tmp104_);
+	_tmp120_ = status;
+	_tmp121_ = WIFSIGNALED (_tmp120_);
+	if (_tmp121_) {
+		gint _tmp122_;
+		int _tmp123_ = 0;
+		_tmp122_ = status;
+		_tmp123_ = WTERMSIG (_tmp122_);
+		raise (_tmp123_);
 	}
 	result = status;
 	_g_object_unref0 (testbed);

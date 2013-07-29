@@ -1,3 +1,20 @@
+0.4 (2013-07-29)
+----------------
+New features:
+- Add recording of Unix stream sockets. (part of issue #24)
+- Add new method umockdev_testbed_load_socket_script() to replay recorded
+  read()s/recv()s and write()s/send()s to a Unix socket. (part of issue #24)
+- Add new umockdev-run option -u/--unix-stream to load a script for a mocked
+  Unix socket into the testbed. (part of issue #24)
+- Add new script file operation "f" to set a fuzz level when comparing expected
+  incoming strings. (issue #26)
+- Add docs/script-format.txt: document the umockdev script format.
+- README.rst: Add unix socket record/replay example.
+
+Bug fixes:
+- Quote send/received data in script replay debug output, to get along with
+  embedded null bytes and control characters. (issue #25)
+
 0.3.2 (2013-07-18)
 ------------------
 - script replay: Fix endless loop on end of script file.

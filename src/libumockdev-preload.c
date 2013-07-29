@@ -59,6 +59,8 @@
  *
  ********************************/
 
+#define UNHANDLED -100
+
 static void *
 get_libc_func(const char *f)
 {
@@ -99,6 +101,114 @@ dev_of_fd(int fd)
     if (S_ISCHR(st.st_mode) || S_ISBLK(st.st_mode))
 	return st.st_rdev;
     return 0;
+}
+
+static inline int
+path_exists(const char *path)
+{
+    int orig_errno, res;
+
+    orig_errno = errno;
+    res = access(path, F_OK);
+    errno = orig_errno;
+    return res;
+}
+
+static const char *
+trap_path(const char *path)
+{
+    static char buf[PATH_MAX * 2];
+    const char *prefix;
+    size_t path_len, prefix_len;
+    int check_exist = 0;
+
+    /* do we need to trap this path? */
+    if (path == NULL)
+	return path;
+
+    prefix = getenv("UMOCKDEV_DIR");
+    if (prefix == NULL)
+	return path;
+
+    if (strncmp(path, "/dev/", 5) == 0 || strcmp(path, "/dev") == 0)
+	check_exist = 1;
+    else if (strncmp(path, "/sys/", 5) != 0 && strcmp(path, "/sys") != 0)
+	return path;
+
+    path_len = strlen(path);
+    prefix_len = strlen(prefix);
+    if (path_len + prefix_len >= sizeof(buf)) {
+	errno = ENAMETOOLONG;
+	return NULL;
+    }
+
+    /* test bed disabled? */
+    strcpy(buf, prefix);
+    strcpy(buf + prefix_len, "/disabled");
+    if (path_exists(buf) == 0)
+	return path;
+
+    strcpy(buf + prefix_len, path);
+
+    if (check_exist && path_exists(buf) < 0)
+	return path;
+
+    return buf;
+}
+
+static dev_t
+get_rdev(const char *nodename)
+{
+    static char buf[PATH_MAX];
+    static char link[PATH_MAX];
+    int name_offset;
+    int i, major, minor, orig_errno;
+
+    name_offset = snprintf(buf, sizeof(buf), "%s/dev/.node/", getenv("UMOCKDEV_DIR"));
+    buf[sizeof(buf) - 1] = 0;
+
+    /* append nodename and replace / with _ */
+    strncpy(buf + name_offset, nodename, sizeof(buf) - name_offset - 1);
+    for (i = name_offset; i < sizeof(buf); ++i)
+	if (buf[i] == '/')
+	    buf[i] = '_';
+
+    /* read major:minor */
+    orig_errno = errno;
+    if (readlink(buf, link, sizeof(link)) < 0) {
+	DBG("get_rdev %s: cannot read link %s: %m\n", nodename, buf);
+	errno = orig_errno;
+	return (dev_t) 0;
+    }
+    errno = orig_errno;
+    if (sscanf(link, "%i:%i", &major, &minor) != 2) {
+	DBG("get_rdev %s: cannot decode major/minor from '%s'\n", nodename, link);
+	return (dev_t) 0;
+    }
+    DBG("get_rdev %s: got major/minor %i:%i\n", nodename, major, minor);
+    return makedev(major, minor);
+}
+
+static int
+is_emulated_device(const char *path, const mode_t st_mode)
+{
+    int orig_errno, res;
+    char dest[10];		/* big enough, we are only interested in the prefix */
+
+    /* we use symlinks to the real /dev/pty/ for mocking tty devices, those
+     * should appear as char device, not as symlink; but other symlinks should
+     * stay symlinks */
+    if (S_ISLNK(st_mode)) {
+	orig_errno = errno;
+	res = readlink(path, dest, sizeof(dest));
+	errno = orig_errno;
+	assert(res > 0);
+
+	return (strncmp(dest, "/dev/", 5) == 0);
+    }
+
+    /* other file types count as emulated for now */
+    return !S_ISDIR(st_mode);
 }
 
 /********************************
@@ -171,41 +281,42 @@ fd_map_get(fd_map * map, int fd, const void **data_out)
 
 /* keep track of the last socket fds wrapped by socket(), so that we can
  * identify them in the other functions */
-static fd_map wrapped_sockets;
+static fd_map wrapped_netlink_sockets;
 
 static void
-wrapped_sockets_close(int fd)
+netlink_close(int fd)
 {
-    if (fd_map_get(&wrapped_sockets, fd, NULL)) {
-	DBG("wrapped_sockets_close(): closing netlink socket fd %i\n", fd);
-	fd_map_remove(&wrapped_sockets, fd);
+    if (fd_map_get(&wrapped_netlink_sockets, fd, NULL)) {
+	DBG("netlink_close(): closing netlink socket fd %i\n", fd);
+	fd_map_remove(&wrapped_netlink_sockets, fd);
     }
 }
 
-int
-socket(int domain, int type, int protocol)
+static int
+netlink_socket(int domain, int type, int protocol)
 {
     libc_func(socket, int, int, int, int);
     int fd;
 
     if (domain == AF_NETLINK && protocol == NETLINK_KOBJECT_UEVENT) {
 	fd = _socket(AF_UNIX, type, 0);
-	fd_map_add(&wrapped_sockets, fd, NULL);
+	fd_map_add(&wrapped_netlink_sockets, fd, NULL);
 	DBG("testbed wrapped socket: intercepting netlink, fd %i\n", fd);
 	return fd;
     }
 
-    return _socket(domain, type, protocol);
+    return UNHANDLED;
 }
 
-int
-bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
+static int
+netlink_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
 {
     libc_func(bind, int, int, const struct sockaddr *, socklen_t);
+
     struct sockaddr_un sa;
     const char *path = getenv("UMOCKDEV_DIR");
 
-    if (fd_map_get(&wrapped_sockets, sockfd, NULL) && path != NULL) {
+    if (fd_map_get(&wrapped_netlink_sockets, sockfd, NULL) && path != NULL) {
 	DBG("testbed wrapped bind: intercepting netlink socket fd %i\n", sockfd);
 
 	/* we create one socket per fd, and send emulated uevents to all of
@@ -218,20 +329,16 @@ bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
 	return _bind(sockfd, (struct sockaddr *)&sa, sizeof(sa));
     }
 
-    return _bind(sockfd, addr, addrlen);
+    return UNHANDLED;
 }
 
-ssize_t
-recvmsg(int sockfd, struct msghdr * msg, int flags)
+static void
+netlink_recvmsg(int sockfd, struct msghdr * msg, int flags, int ret)
 {
-    libc_func(recvmsg, int, int, struct msghdr *, int);
-    ssize_t ret;
     struct cmsghdr *cmsg;
     struct sockaddr_nl *sender;
 
-    ret = _recvmsg(sockfd, msg, flags);
-
-    if (fd_map_get(&wrapped_sockets, sockfd, NULL) && ret > 0) {
+    if (fd_map_get(&wrapped_netlink_sockets, sockfd, NULL) && ret > 0) {
 	DBG("testbed wrapped recvmsg: netlink socket fd %i, got %zi bytes\n", sockfd, ret);
 
 	/* fake sender to be netlink */
@@ -248,8 +355,8 @@ recvmsg(int sockfd, struct msghdr * msg, int flags)
 	    cred->uid = 0;
 	}
     }
-    return ret;
 }
+
 
 /********************************
  *
@@ -453,42 +560,18 @@ ioctl_emulate(int fd, unsigned long request, void *arg)
     return ioctl_result;
 }
 
-/* note, the actual definition of ioctl is a varargs function; one cannot
- * reliably forward arbitrary varargs (http://c-faq.com/varargs/handoff.html),
- * but we know that ioctl gets at most one extra argument, and almost all of
- * them are pointers or ints, both of which fit into a void*.
- */
-int ioctl(int d, unsigned long request, void *arg);
-int
-ioctl(int d, unsigned long request, void *arg)
-{
-    libc_func(ioctl, int, int, unsigned long, void *);
-    int result;
-
-    result = ioctl_emulate(d, request, arg);
-    if (result != -2) {
-	DBG("ioctl fd %i request %lX: emulated, result %i\n", d, request, result);
-	return result;
-    }
-
-    /* call original ioctl */
-    result = _ioctl(d, request, arg);
-    DBG("ioctl fd %i request %lX: original, result %i\n", d, request, result);
-
-    if (result != -1 && ioctl_record_fd == d)
-	record_ioctl(request, arg, result);
-
-    return result;
-}
-
 /********************************
  *
- * device script (read/write) recording
+ * device/socket script recording
  *
  ********************************/
 
+#define MAX_SCRIPT_SOCKET_LOGFILE 50
+
 static fd_map script_dev_logfile_map;	/* maps a st_rdev to a log file name */
 static int script_dev_logfile_map_inited = 0;
+const char* script_socket_logfile[2*MAX_SCRIPT_SOCKET_LOGFILE]; /* list of socket name, log file name */
+size_t script_socket_logfile_len = 0;
 static fd_map script_recorded_fds;
 
 struct script_record_info {
@@ -505,45 +588,48 @@ init_script_dev_logfile_map(void)
     int i, dev;
     char varname[100];
     const char *devname, *logname;
+    char *endptr;
 
     script_dev_logfile_map_inited = 1;
 
     for (i = 0; 1; ++i) {
-	snprintf(varname, sizeof(varname), "UMOCKDEV_SCRIPT_RECORD_DEV_%i", i);
-	devname = getenv(varname);
-	if (devname == NULL)
-	    break;
-	dev = atoi(devname);
 	snprintf(varname, sizeof(varname), "UMOCKDEV_SCRIPT_RECORD_FILE_%i", i);
 	logname = getenv(varname);
-	if (logname == NULL) {
+	if (logname == NULL)
+	    break;
+	snprintf(varname, sizeof(varname), "UMOCKDEV_SCRIPT_RECORD_DEV_%i", i);
+	devname = getenv(varname);
+	if (devname == NULL) {
 	    fprintf(stderr, "umockdev: $%s not set\n", varname);
 	    exit(1);
 	}
-
-	DBG("init_script_dev_logfile_map: will record script of device %i:%i into %s\n", major(dev), minor(dev),
+	dev = strtol(devname, &endptr, 10);
+	if (dev != 0 && *endptr == '\0') {
+	    /* if it's a number, then it is an rdev of a device */
+	    DBG("init_script_dev_logfile_map: will record script of device %i:%i into %s\n", major(dev), minor(dev),
 	    logname);
-	fd_map_add(&script_dev_logfile_map, dev, logname);
+	    fd_map_add(&script_dev_logfile_map, dev, logname);
+	} else {
+	    /* if it's a path, then we record a socket */
+	    if (script_socket_logfile_len < MAX_SCRIPT_SOCKET_LOGFILE) {
+		DBG("init_script_dev_logfile_map: will record script of socket %s into %s\n", devname, logname);
+		script_socket_logfile[2*script_socket_logfile_len] = devname;
+		script_socket_logfile[2*script_socket_logfile_len+1] = logname;
+		script_socket_logfile_len++;
+	    } else {
+		fprintf(stderr, "too many script sockets to record\n");
+		abort();
+	    }
+	}
     }
 }
 
 static void
-script_record_open(int fd)
+script_start_record(int fd, const char *logname)
 {
-    dev_t fd_dev;
-    const char *logname;
     FILE *log;
     struct script_record_info *srinfo;
 
-    if (!script_dev_logfile_map_inited)
-	init_script_dev_logfile_map();
-
-    /* check if the opened device is one we want to record */
-    fd_dev = dev_of_fd(fd);
-    if (!fd_map_get(&script_dev_logfile_map, fd_dev, (const void **)&logname)) {
-	DBG("script_record_open: fd %i on device %i:%i is not recorded\n", fd, major(fd_dev), minor(fd_dev));
-	return;
-    }
     if (fd_map_get(&script_recorded_fds, fd, NULL)) {
 	fprintf(stderr, "script_record_open: internal error: fd %i is already being recorded\n", fd);
 	abort();
@@ -555,18 +641,59 @@ script_record_open(int fd)
 	exit(1);
     }
 
-    // if we have a previous record, make sure that we start a new line
+    /* if we have a previous record, make sure that we start a new line */
     if (ftell(log) > 0)
 	putc('\n', log);
 
-    DBG("script_record_open: start recording fd %i on device %i:%i into %s\n",
-	fd, major(fd_dev), minor(fd_dev), logname);
     srinfo = malloc(sizeof(struct script_record_info));
     srinfo->log = log;
     assert(clock_gettime(CLOCK_MONOTONIC, &srinfo->time) == 0);
     srinfo->op = 0;
     fd_map_add(&script_recorded_fds, fd, srinfo);
 }
+
+static void
+script_record_open(int fd)
+{
+    dev_t fd_dev;
+    const char *logname;
+
+    if (!script_dev_logfile_map_inited)
+	init_script_dev_logfile_map();
+
+    /* check if the opened device is one we want to record */
+    fd_dev = dev_of_fd(fd);
+    if (!fd_map_get(&script_dev_logfile_map, fd_dev, (const void **)&logname)) {
+	DBG("script_record_open: fd %i on device %i:%i is not recorded\n", fd, major(fd_dev), minor(fd_dev));
+	return;
+    }
+
+    DBG("script_record_open: start recording fd %i on device %i:%i into %s\n",
+	fd, major(fd_dev), minor(fd_dev), logname);
+    script_start_record(fd, logname);
+}
+
+static void
+script_record_connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen, int res)
+{
+    const char *path = getenv("UMOCKDEV_DIR");
+    size_t i;
+
+    if (addr->sa_family == AF_UNIX && res == 0 && path == NULL) {
+	const char *sock_path = ((struct sockaddr_un *) addr)->sun_path;
+
+	/* find out where we log it to */
+	if (!script_dev_logfile_map_inited)
+	    init_script_dev_logfile_map();
+	for (i = 0; i < script_socket_logfile_len; ++i) {
+	    if (strcmp(script_socket_logfile[2*i], sock_path) == 0) {
+		DBG("script_record_connect: starting recording of unix socket %s on fd %i\n", sock_path, sockfd);
+		script_start_record(sockfd, script_socket_logfile[2*i+1]);
+	    }
+	}
+    }
+}
+
 
 static void
 script_record_close(int fd)
@@ -644,127 +771,13 @@ script_record_op(char op, int fd, const void *buf, ssize_t size)
     srinfo->op = op;
 }
 
-/*
- * override glib read/write functions for capturing data
- */
-
-ssize_t
-read(int fd, void *buf, size_t count)
-{
-    libc_func(read, ssize_t, int, void *, size_t);
-    ssize_t res;
-
-    res = _read(fd, buf, count);
-    script_record_op('r', fd, buf, res);
-    return res;
-}
-
-ssize_t
-write(int fd, const void *buf, size_t count)
-{
-    libc_func(write, ssize_t, int, const void *, size_t);
-    ssize_t res;
-
-    res = _write(fd, buf, count);
-    script_record_op('w', fd, buf, res);
-    return res;
-}
-
-size_t
-fread(void *ptr, size_t size, size_t nmemb, FILE * stream)
-{
-    libc_func(fread, size_t, void *, size_t, size_t, FILE *);
-    size_t res;
-
-    res = _fread(ptr, size, nmemb, stream);
-    script_record_op('r', fileno(stream), ptr, (res == 0 && ferror(stream)) ? -1 : res * size);
-    return res;
-}
-
-size_t
-fwrite(const void *ptr, size_t size, size_t nmemb, FILE * stream)
-{
-    libc_func(fwrite, size_t, const void *, size_t, size_t, FILE *);
-    size_t res;
-
-    res = _fwrite(ptr, size, nmemb, stream);
-    script_record_op('w', fileno(stream), ptr, (res == 0 && ferror(stream)) ? -1 : res * size);
-    return res;
-}
-
-char *
-fgets(char *s, int size, FILE * stream)
-{
-    libc_func(fgets, char *, char *, int, FILE *);
-    char *res;
-    int len;
-
-    res = _fgets(s, size, stream);
-    if (res != NULL) {
-	len = strlen(res);
-	script_record_op('r', fileno(stream), s, len);
-    }
-    return res;
-}
 
 /********************************
  *
- * Wrappers for accessing /dev and /sys files in the testbed
+ * Overridden libc wrappers for pretending that the $UMOCKDEV_DIR test bed is
+ * the actual system.
  *
  ********************************/
-
-static inline int
-path_exists(const char *path)
-{
-    int orig_errno, res;
-
-    orig_errno = errno;
-    res = access(path, F_OK);
-    errno = orig_errno;
-    return res;
-}
-
-static const char *
-trap_path(const char *path)
-{
-    static char buf[PATH_MAX * 2];
-    const char *prefix;
-    size_t path_len, prefix_len;
-    int check_exist = 0;
-
-    /* do we need to trap this path? */
-    if (path == NULL)
-	return path;
-
-    prefix = getenv("UMOCKDEV_DIR");
-    if (prefix == NULL)
-	return path;
-
-    if (strncmp(path, "/dev/", 5) == 0 || strcmp(path, "/dev") == 0)
-	check_exist = 1;
-    else if (strncmp(path, "/sys/", 5) != 0 && strcmp(path, "/sys") != 0)
-	return path;
-
-    path_len = strlen(path);
-    prefix_len = strlen(prefix);
-    if (path_len + prefix_len >= sizeof(buf)) {
-	errno = ENAMETOOLONG;
-	return NULL;
-    }
-
-    /* test bed disabled? */
-    strcpy(buf, prefix);
-    strcpy(buf + prefix_len, "/disabled");
-    if (path_exists(buf) == 0)
-	return path;
-
-    strcpy(buf + prefix_len, path);
-
-    if (check_exist && path_exists(buf) < 0)
-	return path;
-
-    return buf;
-}
 
 /* wrapper template for a function with one "const char* path" argument */
 #define WRAP_1ARG(rettype, failret, name)   \
@@ -802,61 +815,6 @@ rettype name(const char *path, arg2t arg2, arg3t arg3) \
     return (*_ ## name)(p, arg2, arg3);				    \
 }
 
-static dev_t
-get_rdev(const char *nodename)
-{
-    static char buf[PATH_MAX];
-    static char link[PATH_MAX];
-    int name_offset;
-    int i, major, minor, orig_errno;
-
-    name_offset = snprintf(buf, sizeof(buf), "%s/dev/.node/", getenv("UMOCKDEV_DIR"));
-    buf[sizeof(buf) - 1] = 0;
-
-    /* append nodename and replace / with _ */
-    strncpy(buf + name_offset, nodename, sizeof(buf) - name_offset - 1);
-    for (i = name_offset; i < sizeof(buf); ++i)
-	if (buf[i] == '/')
-	    buf[i] = '_';
-
-    /* read major:minor */
-    orig_errno = errno;
-    if (readlink(buf, link, sizeof(link)) < 0) {
-	DBG("get_rdev %s: cannot read link %s: %m\n", nodename, buf);
-	errno = orig_errno;
-	return (dev_t) 0;
-    }
-    errno = orig_errno;
-    if (sscanf(link, "%i:%i", &major, &minor) != 2) {
-	DBG("get_rdev %s: cannot decode major/minor from '%s'\n", nodename, link);
-	return (dev_t) 0;
-    }
-    DBG("get_rdev %s: got major/minor %i:%i\n", nodename, major, minor);
-    return makedev(major, minor);
-}
-
-static int
-is_emulated_device(const char *path, const mode_t st_mode)
-{
-    int orig_errno, res;
-    char dest[10];		/* big enough, we are only interested in the prefix */
-
-    /* we use symlinks to the real /dev/pty/ for mocking tty devices, those
-     * should appear as char device, not as symlink; but other symlinks should
-     * stay symlinks */
-    if (S_ISLNK(st_mode)) {
-	orig_errno = errno;
-	res = readlink(path, dest, sizeof(dest));
-	errno = orig_errno;
-	assert(res > 0);
-
-	return (strncmp(dest, "/dev/", 5) == 0);
-    }
-
-    /* other file types count as emulated for now */
-    return !S_ISDIR(st_mode);
-}
-
 /* wrapper template for __xstat family; note that we abuse the sticky bit in
  * the emulated /dev to indicate a block device (the sticky bit has no
  * real functionality for device nodes) */
@@ -870,7 +828,7 @@ int prefix ## stat ## suffix (int ver, const char *path, struct stat ## suffix *
     if (p == NULL)								\
 	return -1;								\
     DBG("testbed wrapped " #prefix "stat" #suffix "(%s) -> %s\n", path, p);	\
-    ret = _ ## prefix ## stat ## suffix(ver, p, st);							\
+    ret = _ ## prefix ## stat ## suffix(ver, p, st);				\
     if (ret == 0 && p != path && strncmp(path, "/dev/", 5) == 0			\
 	&& is_emulated_device(p, st->st_mode)) {				\
 	st->st_mode &= ~S_IFREG;						\
@@ -936,12 +894,156 @@ WRAP_VERSTAT(__lx, 64);
 WRAP_OPEN(,);
 WRAP_OPEN(, 64);
 
+ssize_t
+read(int fd, void *buf, size_t count)
+{
+    libc_func(read, ssize_t, int, void *, size_t);
+    ssize_t res;
+
+    res = _read(fd, buf, count);
+    script_record_op('r', fd, buf, res);
+    return res;
+}
+
+ssize_t
+write(int fd, const void *buf, size_t count)
+{
+    libc_func(write, ssize_t, int, const void *, size_t);
+    ssize_t res;
+
+    res = _write(fd, buf, count);
+    script_record_op('w', fd, buf, res);
+    return res;
+}
+
+size_t
+fread(void *ptr, size_t size, size_t nmemb, FILE * stream)
+{
+    libc_func(fread, size_t, void *, size_t, size_t, FILE *);
+    size_t res;
+
+    res = _fread(ptr, size, nmemb, stream);
+    script_record_op('r', fileno(stream), ptr, (res == 0 && ferror(stream)) ? -1 : res * size);
+    return res;
+}
+
+size_t
+fwrite(const void *ptr, size_t size, size_t nmemb, FILE * stream)
+{
+    libc_func(fwrite, size_t, const void *, size_t, size_t, FILE *);
+    size_t res;
+
+    res = _fwrite(ptr, size, nmemb, stream);
+    script_record_op('w', fileno(stream), ptr, (res == 0 && ferror(stream)) ? -1 : res * size);
+    return res;
+}
+
+char *
+fgets(char *s, int size, FILE * stream)
+{
+    libc_func(fgets, char *, char *, int, FILE *);
+    char *res;
+    int len;
+
+    res = _fgets(s, size, stream);
+    if (res != NULL) {
+	len = strlen(res);
+	script_record_op('r', fileno(stream), s, len);
+    }
+    return res;
+}
+
+ssize_t
+send(int fd, const void *buf, size_t count, int flags)
+{
+    libc_func(send, ssize_t, int, const void *, size_t, int);
+    ssize_t res;
+
+    res = _send(fd, buf, count, flags);
+    script_record_op('w', fd, buf, res);
+    return res;
+}
+
+ssize_t
+recv(int fd, void *buf, size_t count, int flags)
+{
+    libc_func(recv, ssize_t, int, void *, size_t, int);
+    ssize_t res;
+
+    res = _recv(fd, buf, count, flags);
+    script_record_op('r', fd, buf, res);
+    return res;
+}
+
+ssize_t
+recvmsg(int sockfd, struct msghdr * msg, int flags)
+{
+    libc_func(recvmsg, int, int, struct msghdr *, int);
+    ssize_t ret = _recvmsg(sockfd, msg, flags);
+
+    netlink_recvmsg(sockfd, msg, flags, ret);
+
+    return ret;
+}
+
+int
+socket(int domain, int type, int protocol)
+{
+    libc_func(socket, int, int, int, int);
+    int fd;
+
+    fd = netlink_socket(domain, type, protocol);
+    if (fd != UNHANDLED)
+	return fd;
+
+    return _socket(domain, type, protocol);
+}
+
+int
+bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
+{
+    libc_func(bind, int, int, const struct sockaddr *, socklen_t);
+    int res;
+
+    res = netlink_bind(sockfd, addr, addrlen);
+    if (res != UNHANDLED)
+	return res;
+
+    return _bind(sockfd, addr, addrlen);
+}
+
+int
+connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
+{
+    libc_func(connect, int, int, const struct sockaddr *, socklen_t);
+    int res;
+
+    /* playback */
+    if (addr->sa_family == AF_UNIX) {
+	const char *sock_path = ((struct sockaddr_un *) addr)->sun_path;
+	const char *p = trap_path(sock_path);
+	struct sockaddr_un trapped_addr;
+
+	if (p != sock_path) {
+	    DBG("testbed wrapped connect: redirecting Unix socket %s to %s\n", sock_path, p);
+	    trapped_addr.sun_family = AF_UNIX;
+	    strncpy(trapped_addr.sun_path, p, sizeof(trapped_addr.sun_path));
+	    addr = (struct sockaddr*) &trapped_addr;
+	}
+    }
+
+    res = _connect(sockfd, addr, addrlen);
+    script_record_connect(sockfd, addr, addrlen, res);
+
+    return res;
+}
+
 int
 close(int fd)
 {
     libc_func(close, int, int);
 
-    wrapped_sockets_close(fd);
+    netlink_close(fd);
     ioctl_emulate_close(fd);
     ioctl_record_close(fd);
     script_record_close(fd);
@@ -955,13 +1057,41 @@ fclose(FILE * stream)
     libc_func(fclose, int, FILE *);
     int fd = fileno(stream);
     if (fd >= 0) {
-	wrapped_sockets_close(fd);
+	netlink_close(fd);
 	ioctl_emulate_close(fd);
 	ioctl_record_close(fd);
 	script_record_close(fd);
     }
 
     return _fclose(stream);
+}
+
+/* note, the actual definition of ioctl is a varargs function; one cannot
+ * reliably forward arbitrary varargs (http://c-faq.com/varargs/handoff.html),
+ * but we know that ioctl gets at most one extra argument, and almost all of
+ * them are pointers or ints, both of which fit into a void*.
+ */
+int ioctl(int d, unsigned long request, void *arg);
+int
+ioctl(int d, unsigned long request, void *arg)
+{
+    libc_func(ioctl, int, int, unsigned long, void *);
+    int result;
+
+    result = ioctl_emulate(d, request, arg);
+    if (result != -2) {
+	DBG("ioctl fd %i request %lX: emulated, result %i\n", d, request, result);
+	return result;
+    }
+
+    /* call original ioctl */
+    result = _ioctl(d, request, arg);
+    DBG("ioctl fd %i request %lX: original, result %i\n", d, request, result);
+
+    if (result != -1 && ioctl_record_fd == d)
+	record_ioctl(request, arg, result);
+
+    return result;
 }
 
 /* vim: set sw=4 noet: */
