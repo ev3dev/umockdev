@@ -1,4 +1,4 @@
-umockdev (0.4-1) UNRELEASED; urgency=low
+umockdev (0.4.1-1) UNRELEASED; urgency=low
 
   * New upstream release.
   * debian/umockdev.install: Install documentation files.
