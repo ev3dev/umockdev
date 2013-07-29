@@ -2,6 +2,7 @@ umockdev (0.4-1) UNRELEASED; urgency=low
 
   * New upstream release.
   * debian/umockdev.install: Install documentation files.
+  * Bump glib build dependency to >= 2.32, as per configure.ac.
 
  -- Martin Pitt <mpitt@debian.org>  Mon, 29 Jul 2013 12:51:27 +0200
 

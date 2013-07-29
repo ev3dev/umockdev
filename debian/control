@@ -5,7 +5,7 @@ Maintainer: Martin Pitt <mpitt@debian.org>
 Build-Depends: debhelper (>= 9),
  pkg-config,
  valac (>= 0.16.1),
- libglib2.0-dev (>= 2.24.0),
+ libglib2.0-dev (>= 2.32.0),
  libudev-dev,
  libgudev-1.0-dev,
  python3-gi,
