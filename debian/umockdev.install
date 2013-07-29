@@ -1,3 +1,4 @@
 usr/bin
 usr/lib/*/libumockdev-preload*
 usr/share/doc/umockdev/README*
+usr/share/doc/umockdev/*.txt

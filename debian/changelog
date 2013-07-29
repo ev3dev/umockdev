@@ -1,6 +1,7 @@
 umockdev (0.4-1) UNRELEASED; urgency=low
 
   * New upstream release.
+  * debian/umockdev.install: Install documentation files.
 
  -- Martin Pitt <mpitt@debian.org>  Mon, 29 Jul 2013 12:51:27 +0200
 
