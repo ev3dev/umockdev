@@ -14,6 +14,7 @@ libumockdev.so.0 libumockdev0 #MINVER#
  umockdev_testbed_get_type@Base 0.0.0
  umockdev_testbed_load_ioctl@Base 0.0.0
  umockdev_testbed_load_script@Base 0.3
+ umockdev_testbed_load_socket_script@Base 0.4
  umockdev_testbed_new@Base 0.0.0
  umockdev_testbed_remove_device@Base 0.3
  umockdev_testbed_set_attribute@Base 0.0.0
