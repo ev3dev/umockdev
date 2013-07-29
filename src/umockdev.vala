@@ -64,8 +64,7 @@ public class Testbed: GLib.Object {
         try {
             this.root_dir = DirUtils.make_tmp("umockdev.XXXXXX");
         } catch (FileError e) {
-            stderr.printf("Cannot create temporary directory: %s\n", e.message);
-            Process.abort();
+            error("Cannot create temporary directory: %s", e.message);
         }
         this.sys_dir = Path.build_filename(this.root_dir, "sys");
         DirUtils.create(this.sys_dir, 0755);
@@ -87,6 +86,12 @@ public class Testbed: GLib.Object {
         foreach (int fd in this.dev_fd.get_values()) {
             debug ("closing master pty fd %i for emulated device", fd);
             Posix.close (fd);
+        }
+
+        if (this.socket_server != null) {
+            debug ("shutting down socket server thread");
+            this.socket_server.stop ();
+            this.socket_server = null;
         }
 
         debug ("Removing test bed %s", this.root_dir);
@@ -149,8 +154,7 @@ public class Testbed: GLib.Object {
         try {
             FileUtils.set_data(Path.build_filename(this.root_dir, devpath, name), value);
         } catch (FileError e) {
-            stderr.printf("Cannot write attribute file: %s\n", e.message);
-            Process.abort();
+            error("Cannot write attribute file: %s", e.message);
         }
     }
 
@@ -198,8 +202,7 @@ public class Testbed: GLib.Object {
     {
         var path = Path.build_filename(this.root_dir, devpath, name);
         if (FileUtils.symlink(value, path) < 0) {
-            stderr.printf("Cannot create symlink %s: %s\n", path, strerror(errno));
-            Process.abort();
+            error("Cannot create symlink %s: %s", path, strerror(errno));
         }
     }
 
@@ -250,8 +253,7 @@ public class Testbed: GLib.Object {
             /* write it back */
             FileUtils.set_data(uevent_path, props.data);
         } catch (GLib.Error e) {
-            stderr.printf("Cannot update uevent file: %s\n", e.message);
-            Process.abort();
+            error("Cannot update uevent file: %s", e.message);
         }
     }
 
@@ -398,8 +400,12 @@ public class Testbed: GLib.Object {
                     (dev_path.contains("/block/") ? "block" : "char"));
                 if (DirUtils.create_with_parents(sysdev_dir, 0755) != 0)
                     error("cannot create dir '%s': %s", sysdev_dir, strerror(errno));
-                assert(FileUtils.symlink("../../" + dev_path.substring(5),
-                                         Path.build_filename(sysdev_dir, attributes[i+1])) == 0);
+                string dest = Path.build_filename(sysdev_dir, attributes[i+1]);
+                if (!FileUtils.test(dest, FileTest.EXISTS)) {
+                    if (FileUtils.symlink("../../" + dev_path.substring(5), dest) < 0)
+                        error("add_device %s: failed to symlink %s to %s: %s\n", name, dest,
+                              dev_path.substring(5), strerror(errno));
+                }
             }
         }
         if (attributes.length % 2 != 0)
@@ -575,8 +581,7 @@ public class Testbed: GLib.Object {
             if (this.re_record_optval == null)
                 this.re_record_optval = new Regex("^([N]): ([^=\n]+)(?>=([0-9A-F]+))?(?>\n|$)");
         } catch (RegexError e) {
-            stderr.printf("Internal error, cannot create regex: %s\n", e.message);
-            Process.abort();
+            error("Internal error, cannot create regex: %s", e.message);
         }
 
         string cur_data = data;
@@ -694,7 +699,40 @@ public class Testbed: GLib.Object {
         return true;
     }
 
-    private string add_dev_from_string(string data) throws UMockdev.Error
+    /**
+     * umockdev_testbed_load_socket_script:
+     * @self: A #UMockdevTestbed.
+     * @path: Unix socket path
+     * @type: Unix socket type (#SOCK_STREAM, #SOCK_DGRAM)
+     * @recordfile: Path of the script record file.
+     * @error: return location for a GError, or %NULL
+     *
+     * Add an Unix socket to the testbed that is backed by a recorded script.
+     * Clients can connect to the socket using @path (i. e. without the testbed
+     * prefix).
+     *
+     * Returns: %TRUE on success, %FALSE if the @path or @type are
+     *          invalid and an error occurred.
+     */
+    public bool load_socket_script (string path, int type, string recordfile) throws FileError
+    {
+        int fd = Posix.socket (Posix.AF_UNIX, type, 0);
+        if (fd < 0)
+            throw new FileError.INVAL ("Cannot create socket type %i: %s".printf(
+                                       type, strerror(errno)));
+
+        string real_path = Path.build_filename (this.root_dir, path);
+        assert(DirUtils.create_with_parents(Path.get_dirname(real_path), 0755) == 0);
+
+        // start thread to accept client connections at first socket creation
+        if (this.socket_server == null)
+            this.socket_server = new SocketServer ();
+
+        this.socket_server.add (real_path, fd, recordfile);
+        return true;
+    }
+
+    private string add_dev_from_string (string data) throws UMockdev.Error
     {
         char type;
         string? key;
@@ -814,8 +852,7 @@ public class Testbed: GLib.Object {
                 if (subsystem == "block")
                     FileUtils.chmod(node_path, 01644);
             } catch (FileError e) {
-                stderr.printf("Cannot create dev node file: %s\n", e.message);
-                Process.abort();
+                error("Cannot create dev node file: %s", e.message);
             }
 
             return;
@@ -969,6 +1006,8 @@ public class Testbed: GLib.Object {
     private UeventSender.sender? ev_sender = null;
     private HashTable<string,int> dev_fd;
     private HashTable<string,ScriptRunner> dev_script_runner;
+    private SocketServer socket_server = null;
+
 }
 
 
@@ -1083,7 +1122,7 @@ private class ScriptRunner {
 
     ~ScriptRunner ()
     {
-        this.stop();
+        this.stop ();
     }
 
     public void stop ()
@@ -1112,17 +1151,28 @@ private class ScriptRunner {
                     debug ("ScriptRunner[%s]: read op; sleeping %" + uint32.FORMAT + " ms",
                            this.device, delta);
                     Thread.usleep (delta * 1000);
-                    debug ("ScriptRunner[%s]: read op after sleep; writing data '%s'", this.device, (string) data);
-                    assert (Posix.write (this.fd, data, data.length - 1) == data.length - 1);
+                    debug ("ScriptRunner[%s]: read op after sleep; writing data '%s'", this.device, encode(data));
+                    ssize_t l = Posix.write (this.fd, data, data.length);
+                    if (l < 0)
+                        error ("ScriptRunner[%s]: write failed: %s", this.device, strerror (errno));
+                    assert (l == data.length);
                     break;
 
                 case 'w':
-                    debug ("ScriptRunner[%s]: write op, data '%s'", this.device, (string) data);
+                    debug ("ScriptRunner[%s]: write op, data '%s'", this.device, encode(data));
                     this.op_write (data, delta);
                     break;
 
                 case 'Q':
                     this.running = false;
+                    break;
+
+                case 'f':
+                    if (delta > 100)
+                        error ("ScriptRunner[%s]: fuzz value %u is invalid (must be between 0 and 100)",
+                               this.device, delta);
+                    this.fuzz = delta;
+                    debug ("ScriptRunner[%s]: setting fuzz level to %u%%", this.device, this.fuzz);
                     break;
 
                 default:
@@ -1153,88 +1203,128 @@ private class ScriptRunner {
         }
 
         var cur_pos = this.script.tell ();
-        if (this.script.getc () != ' ') {
-            stderr.printf ("Missing space after operation code in %s at position %li\n", this.script_file, cur_pos);
-            Posix.abort ();
-        }
+        if (this.script.getc () != ' ')
+            error ("Missing space after operation code in %s at position %li", this.script_file, cur_pos);
 
         // read time delta
         cur_pos = this.script.tell ();
-        if (this.script.scanf ("%" + uint32.FORMAT + " ", out delta) != 1) {
-            stderr.printf ("Cannot parse time in %s at position %li\n", this.script_file, cur_pos);
-            Posix.abort ();
-        }
+        if (this.script.scanf ("%" + uint32.FORMAT + " ", out delta) != 1)
+            error ("Cannot parse time in %s at position %li", this.script_file, cur_pos);
 
         // remainder of the line is the data
         string? line = this.script.read_line ();
         assert (line != null);
 
-        // unquote
-        uint8[] data = {};
-        for (int i = 0; i < line.length; ++i) {
-            if (line.data[i] == '^') {
-                assert (i + 1 < line.length);
-                data += (line.data[i+1] == '`') ? '^' : (line.data[i+1] - 64);
-                ++i;
-            } else
-                data += line.data[i];
-        }
-
-        // null terminator for string conversion (only for debug() messages)
-        data += 0;
-
-        return data;
+        return decode (line);
     }
 
     private void op_write (uint8[] data, uint32 delta)
     {
         Posix.fd_set fds;
         Posix.timeval timeout = {0, 200000};
-        size_t blksize = data.length - 1;  /* skip null terminator */
         size_t offset = 0;
-        uint8[] buf = new uint8 [blksize];
+        uint8[] buf = new uint8 [data.length];
 
         // a recorded block might be actually written in multiple smaller
         // chunks
-        while (this.running && offset < blksize) {
+        while (this.running && offset < data.length) {
             Posix.FD_ZERO (out fds);
             Posix.FD_SET (this.fd, ref fds);
             int res = Posix.select (this.fd + 1, &fds, null, null, timeout);
             if (res < 0) {
                 if (errno == Posix.EINTR)
                     continue;
-                stderr.printf ("ScriptRunner op_write[%s]: select() failed: %s\n",
-                               this.device, strerror (errno));
-                Posix.abort ();
+                error ("ScriptRunner op_write[%s]: select() failed: %s",
+                       this.device, strerror (errno));
             }
 
             if (res == 0) {
                 debug ("ScriptRunner[%s]: timed out on read operation on expected block '%s', trying again",
-                       this.device, (string) data[offset:blksize]);
+                       this.device, encode(data[offset:data.length]));
                 continue;
             }
 
-            ssize_t len = Posix.read (this.fd, buf, blksize - offset);
+            ssize_t len = Posix.read (this.fd, buf, data.length - offset);
             // if the client closes the fd, we'll get EIO
             if (len <= 0) {
                 debug ("ScriptRunner[%s]: got failure or EOF on read operation on expected block '%s', resetting",
-                       this.device, (string) data[offset:blksize]);
+                       this.device, encode(data[offset:data.length]));
                 this.script.seek (0, FileSeek.SET);
                 return;
             }
 
-            if (Posix.memcmp (buf, data[offset:blksize], len) != 0) {
-                stderr.printf ("ScriptRunner op_write[%s]: data mismatch; got block '%s', expected block '%s' (%" +
-                               ssize_t.FORMAT +" bytes)\n",
-                               this.device, (string) buf, (string) data[offset:blksize]);
-                Posix.abort ();
+            if (this.fuzz == 0) {
+                if (Posix.memcmp (buf, data[offset:data.length], len) != 0)
+                    error ("ScriptRunner op_write[%s]: data mismatch; got block '%s' (%" + ssize_t.FORMAT +
+                           " bytes), expected block '%s'",
+                           this.device, encode(buf), len, encode(data[offset:offset+len]));
+            } else {
+                uint d = hamming (buf, data[offset:offset+len]);
+                if (d * 100 > this.fuzz * len) {
+                    error ("ScriptRunner op_write[%s]: data mismatch; got block '%s' (%" + ssize_t.FORMAT +
+                           " bytes), expected block '%s', difference %u%% > fuzz level %u%%",
+                           this.device, encode(buf), len, encode(data[offset:offset+len]),
+                           (d * 1000 / len + 5) / 10, this.fuzz);
+                } /* else {
+                    debug ("ScriptRunner op_write[%s]: data matches: got block '%s' (%" + ssize_t.FORMAT +
+                                   " bytes), expected block '%s', difference %u%% <= fuzz level %u%%\n",
+                                   this.device, encode(buf), len, encode(data[offset:offset+len]),
+                                   (d * 1000 / len + 5) / 10, this.fuzz);
+                } */
             }
 
             offset += len;
             debug ("ScriptRunner[%s]: op_write, got %" + ssize_t.FORMAT + " bytes; offset: %" +
                    size_t.FORMAT + ", full block size %" + size_t.FORMAT,
-                   this.device, len, offset, blksize);
+                   this.device, len, offset, data.length);
         }
+    }
+
+    private static uint8[] decode (string quoted)
+    {
+        uint8[] data = {};
+        for (int i = 0; i < quoted.length; ++i) {
+            if (quoted.data[i] == '^') {
+                assert (i + 1 < quoted.length);
+                data += (quoted.data[i+1] == '`') ? '^' : (quoted.data[i+1] - 64);
+                ++i;
+            } else
+                data += quoted.data[i];
+        }
+        return data;
+    }
+
+    private static string encode (uint8[] data)
+    {
+        uint8[] quoted = {};
+        for (int i = 0; i < data.length; ++i) {
+            if (data[i] < 32) {
+                quoted += '^';
+                quoted += data[i] + 64;
+            } else if (data[i] == '^') {
+                /* we cannot encode ^ as ^^, as we need that for 0x1E already; so
+                 * take the next free code which is 0x60 */
+                quoted += '^';
+                quoted += '`';
+            } else
+                quoted += data[i];
+        }
+
+        // null terminator
+        quoted += 0;
+        return (string) quoted;
+    }
+
+    private static uint hamming (uint8[] d1, uint8[] d2)
+    {
+        assert (d1.length == d2.length);
+        uint d = 0;
+        uint i;
+
+        // use xor instead of "if !=" to avoid branching
+        for (i = 0; i < d1.length; ++i)
+            d += (uint) ((d1[i] ^ d2[i]) > 0);
+        return d;
     }
 
     public string device { get; private set; }
@@ -1243,6 +1333,142 @@ private class ScriptRunner {
     private FileStream script;
     private int fd;
     private bool running;
+    private uint fuzz = 0;
+}
+
+
+private class SocketServer {
+
+    public SocketServer ()
+    {
+        this.running = true;
+        this.socket_scriptfile = new HashTable<string, string> (str_hash, str_equal);
+        this.script_runners = new HashTable<string, ScriptRunner> (str_hash, str_equal);
+        this.thread = new Thread<void*> ("SocketServer", this.run);
+
+        // we use a control pipe which we trigger when adding or stopping, to
+        // interrupt the select()
+        var fds = new int[2];
+        assert (Posix.pipe (fds) == 0);
+        this.ctrl_r = fds[0];
+        this.ctrl_w = fds[1];
+    }
+
+    ~SocketServer ()
+    {
+        this.stop ();
+    }
+
+    public void stop ()
+    {
+        if (!this.running)
+            return;
+
+        this.running = false;
+
+        // wake up the select() in our thread
+        debug ("Stopping SocketServer: signalling thread");
+        char b = '1';
+        assert (Posix.write (this.ctrl_w, &b, 1) == 1);
+
+        // merely calling remove_all() does not invoke ScriptRunner dtor, so stop manually
+        foreach (unowned ScriptRunner r in this.script_runners.get_values())
+            r.stop ();
+        this.script_runners.remove_all();
+
+        debug ("Stopping SocketServer: joining thread");
+        this.thread.join ();
+    }
+
+    public void add (string sock_path, int fd, string record_file)
+    {
+        try {
+            var s = new Socket.from_fd (fd);
+            assert (s != null);
+            assert (s.bind (new UnixSocketAddress (sock_path), true));
+            assert (s.listen ());
+            this.listen_sockets += s;
+        } catch (GLib.Error e) {
+            error ("load_socket_script(): cannot create Socket: %s", e.message);
+        }
+
+        debug ("SocketServer.add: Created socket path %s, fd %i", sock_path, fd);
+
+        this.socket_scriptfile.insert (sock_path, record_file);
+
+        // wake up the select() in our thread
+        char b = '1';
+        assert (Posix.write (this.ctrl_w, &b, 1) == 1);
+    }
+
+    private void* run ()
+    {
+        debug ("starting SocketServer thread");
+        while (this.running) {
+            // wait for incoming connects
+            Posix.fd_set fds;
+            Posix.FD_ZERO (out fds);
+            Posix.FD_SET (this.ctrl_r, ref fds);
+            int max = this.ctrl_r;
+            foreach (unowned Socket s in this.listen_sockets) {
+                Posix.FD_SET (s.fd, ref fds);
+                if (s.fd > max)
+                    max = s.fd;
+            }
+            /* ideally we'd use an infinite timeout here; but Vala
+             * currently doesn't allow that, and also it's a good defense
+             * against infinite hangs */
+            int res = Posix.select (max + 1, &fds, null, null, {0, 5000000});
+            if (res < 0) {
+                if (errno == Posix.EINTR)
+                    continue;
+                error ("socket server thread: select() failed: %s", strerror (errno));
+            }
+            if (res == 0)
+                continue;  // timeout
+
+            // if we got triggered by our control fd, consume the data
+            if (Posix.FD_ISSET (this.ctrl_r, fds) > 0) {
+                debug ("socket server thread: woken up by control fd");
+                char buf;
+                assert (Posix.read (this.ctrl_r, &buf, 1) == 1);
+                continue;
+            }
+
+            debug ("socket server thread: select() got requests");
+
+            // accept the incoming connections and create ScriptRunners for them
+            foreach (unowned Socket s in this.listen_sockets) {
+                if (Posix.FD_ISSET (s.fd, fds) > 0) {
+                    int fd = Posix.accept (s.fd, null, null);
+                    if (fd < 0)
+                        error ("socket server thread: accept() failed: %s", strerror (errno));
+                    string sock_path = null;
+                    try {
+                        sock_path = ((UnixSocketAddress) s.get_local_address()).path;
+                        string script = this.socket_scriptfile.get (sock_path);
+                        debug ("socket server thread: accepted request on server socket fd %i, path %s, script %s",
+                               s.fd, sock_path, script);
+                        string key = "%s%i".printf (sock_path, fd);
+                        this.script_runners.insert (key, new ScriptRunner (key, script, fd));
+                    } catch (GLib.Error e) {
+                        error ("socket server thread: cannot launch ScriptRunner: %s", e.message);
+                    }
+                }
+            }
+        }
+
+        debug ("socket server thread: end");
+        return null;
+    }
+
+    private Socket[] listen_sockets = {};
+    private HashTable<string,string> socket_scriptfile;
+    private HashTable<string,ScriptRunner> script_runners;
+    private Thread<void*> thread;
+    private bool running;
+    private int ctrl_r;
+    private int ctrl_w;
 }
 
 /**

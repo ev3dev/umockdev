@@ -260,6 +260,22 @@
 				</parameter>
 			</parameters>
 		</method>
+		<method name="load_socket_script" c:identifier="umockdev_testbed_load_socket_script" throws="1">
+			<return-value transfer-ownership="full">
+				<type name="gboolean" c:type="gboolean"/>
+			</return-value>
+			<parameters>
+				<parameter name="path" transfer-ownership="none">
+					<type name="utf8" c:type="const gchar*"/>
+				</parameter>
+				<parameter name="type" transfer-ownership="none">
+					<type name="gint" c:type="gint"/>
+				</parameter>
+				<parameter name="recordfile" transfer-ownership="none">
+					<type name="utf8" c:type="const gchar*"/>
+				</parameter>
+			</parameters>
+		</method>
 		<method name="disable" c:identifier="umockdev_testbed_disable">
 			<return-value transfer-ownership="full">
 				<type name="none"/>

@@ -60,6 +60,7 @@ gboolean umockdev_testbed_add_from_file (UMockdevTestbed* self, const gchar* pat
 void umockdev_testbed_uevent (UMockdevTestbed* self, const gchar* devpath, const gchar* action);
 gboolean umockdev_testbed_load_ioctl (UMockdevTestbed* self, const gchar* dev, const gchar* recordfile, GError** error);
 gboolean umockdev_testbed_load_script (UMockdevTestbed* self, const gchar* dev, const gchar* recordfile, GError** error);
+gboolean umockdev_testbed_load_socket_script (UMockdevTestbed* self, const gchar* path, gint type, const gchar* recordfile, GError** error);
 void umockdev_testbed_disable (UMockdevTestbed* self);
 void umockdev_testbed_enable (UMockdevTestbed* self);
 void umockdev_testbed_clear (UMockdevTestbed* self);

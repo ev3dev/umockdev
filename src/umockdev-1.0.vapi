@@ -16,6 +16,7 @@ namespace UMockdev {
 		public string get_sys_dir ();
 		public bool load_ioctl (string dev, string recordfile) throws GLib.FileError;
 		public bool load_script (string dev, string recordfile) throws GLib.FileError;
+		public bool load_socket_script (string path, int type, string recordfile) throws GLib.FileError;
 		public void remove_device (string syspath);
 		public void set_attribute (string devpath, string name, string value);
 		public void set_attribute_binary (string devpath, string name, uint8[] value);

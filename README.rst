@@ -31,8 +31,11 @@ Right now umockdev supports the following features:
    (for everything else) by default. You can manually create other kinds of
    fake devices in your tests, too.
 
- * Recording and replay of read()s and write()s to a (character) device (e. g.
-   for emulating modems)
+ * Recording and replay of read()s/recv()s and write()s/send()s from/to a
+   character device (e. g. for emulating modems) or an Unix socket (e. g. for
+   Android's /dev/socket/rild). Replay can optionally use a configurable fuzz
+   factor in case the expected (previously recorded) data doesn't perfectly
+   match what is actually being sent from the tested application.
 
  * Recording and replay of usbdevfs (for PtP/MTP devices) and evdev (touch pads,
    Wacom tablets, etc.) ioctls
@@ -145,6 +148,47 @@ This example records the behaviour of an USB 3G stick with ModemManager.
 
   | umockdev-run -d huawei.umockdev -s /dev/ttyUSB0=0.script -s /dev/ttyUSB1=1.script \
   |      -s /dev/ttyUSB2=2.script -- modem-manager --debug
+
+
+Record and replay an Unix socket
+--------------------------------
+This example records the behaviour of ofonod when talking to Android's rild
+through ``/dev/socket/rild``.
+
+ - Record the communication:
+
+   | sudo pkill ofonod; sudo umockdev-record -s /dev/socket/rild=phonecall.script -- ofonod -n -d
+   |
+
+   Now make a call, send a SMS, or anything else you want to replay later.
+   Press Control-C when you are done.
+
+ - ofonod's messages that get sent to rild are not 100% predictable, some bytes
+   in some messages are always different. Edit the recorded rild.script to set
+   a fuzz factor of 5, i. e. at most 5% of the bytes in a message are allowed
+   to be different from the recorded ones. Insert a line
+
+      f 5 -
+
+   at the top of the file. See docs/script-format.txt for details.
+
+ - Now you can run ofonod in a testbed with the mocked rild:
+
+   | sudo pkill ofonod; sudo umockdev-run -u /dev/socket/rild=/home/phablet/rild.script -- ofonod -n -d
+   |
+
+   Note that you don't need to record device properties or specify -d/--device
+   for unix sockets, since their path is all that is to be known about them.
+
+   With the API, you would do this with a call like
+
+   |   umockdev_testbed_load_socket_script(testbed, "/dev/socket/rild",
+   |                                       SOCK_STREAM, "rild.script", &error);
+
+   Note that for Unix sockets you cannot ``use umockdev_testbed_get_dev_fd()``,
+   you can only use scripts with them. If you need full control in your test suite,
+   you can of course create the socket in <testbed root>/<socket path> and
+   handle the bind/accept/communication yourself.
 
 
 Development

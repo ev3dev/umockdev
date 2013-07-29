@@ -51,6 +51,7 @@ void t_run_pipes (void);
 void t_run_invalid_args (void);
 void t_run_invalid_ioctl (void);
 void t_run_script_chatter (void);
+void t_run_script_chatter_socket_stream (void);
 void t_gphoto_detect (void);
 void t_gphoto_folderlist (void);
 void t_gphoto_filelist (void);
@@ -62,6 +63,7 @@ static void _t_run_pipes_gtest_func (void);
 static void _t_run_invalid_args_gtest_func (void);
 static void _t_run_invalid_ioctl_gtest_func (void);
 static void _t_run_script_chatter_gtest_func (void);
+static void _t_run_script_chatter_socket_stream_gtest_func (void);
 static void _t_gphoto_detect_gtest_func (void);
 static void _t_gphoto_folderlist_gtest_func (void);
 static void _t_gphoto_filelist_gtest_func (void);
@@ -688,6 +690,87 @@ void t_run_script_chatter (void) {
 }
 
 
+void t_run_script_chatter_socket_stream (void) {
+	gchar* script_file = NULL;
+	const gchar* _tmp6_;
+	gchar* _tmp7_;
+	gchar* _tmp8_;
+	gchar* _tmp9_;
+	gchar* _tmp10_;
+	const gchar* _tmp11_;
+	GError * _inner_error_ = NULL;
+	{
+		gchar* _tmp0_ = NULL;
+		gint _tmp1_ = 0;
+		gint fd;
+		gint _tmp2_;
+		const gchar* _tmp3_;
+		_tmp1_ = g_file_open_tmp ("chatter.XXXXXX.script", &_tmp0_, &_inner_error_);
+		_g_free0 (script_file);
+		script_file = _tmp0_;
+		fd = _tmp1_;
+		if (_inner_error_ != NULL) {
+			if (_inner_error_->domain == G_FILE_ERROR) {
+				goto __catch3_g_file_error;
+			}
+			_g_free0 (script_file);
+			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return;
+		}
+		_tmp2_ = fd;
+		close (_tmp2_);
+		_tmp3_ = script_file;
+		g_file_set_contents (_tmp3_, "w 0 What is your name?^J\n" \
+"r 307 Joe Tester^J\n" \
+"w 0 hello Joe Tester^J\n" \
+"w 20 send()\n" \
+"r 30 somejunk", (gssize) (-1), &_inner_error_);
+		if (_inner_error_ != NULL) {
+			if (_inner_error_->domain == G_FILE_ERROR) {
+				goto __catch3_g_file_error;
+			}
+			_g_free0 (script_file);
+			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return;
+		}
+	}
+	goto __finally3;
+	__catch3_g_file_error:
+	{
+		GError* e = NULL;
+		FILE* _tmp4_;
+		const gchar* _tmp5_;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		_tmp4_ = stderr;
+		_tmp5_ = e->message;
+		fprintf (_tmp4_, "cannot create temporary file: %s\n", _tmp5_);
+		abort ();
+		_g_error_free0 (e);
+	}
+	__finally3:
+	if (_inner_error_ != NULL) {
+		_g_free0 (script_file);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+	_tmp6_ = script_file;
+	_tmp7_ = g_strconcat (" -u /dev/socket/chatter=", _tmp6_, NULL);
+	_tmp8_ = _tmp7_;
+	_tmp9_ = g_strconcat (_tmp8_, " -- tests/chatter-socket-stream /dev/socket/chatter", NULL);
+	_tmp10_ = _tmp9_;
+	check_program_out ("true", _tmp10_, "Got name: Joe Tester\n\nGot recv: somejunk\n");
+	_g_free0 (_tmp10_);
+	_g_free0 (_tmp8_);
+	_tmp11_ = script_file;
+	g_remove (_tmp11_);
+	_g_free0 (script_file);
+}
+
+
 void t_gphoto_detect (void) {
 	const gchar* _tmp0_;
 	gchar* _tmp1_;
@@ -857,7 +940,7 @@ void t_input_touchpad (void) {
 		fd = _tmp4_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_FILE_ERROR) {
-				goto __catch3_g_file_error;
+				goto __catch4_g_file_error;
 			}
 			_g_free0 (logfile);
 			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -867,8 +950,8 @@ void t_input_touchpad (void) {
 		_tmp5_ = fd;
 		close (_tmp5_);
 	}
-	goto __finally3;
-	__catch3_g_file_error:
+	goto __finally4;
+	__catch4_g_file_error:
 	{
 		GError* e = NULL;
 		FILE* _tmp6_;
@@ -881,7 +964,7 @@ void t_input_touchpad (void) {
 		abort ();
 		_g_error_free0 (e);
 	}
-	__finally3:
+	__finally4:
 	if (_inner_error_ != NULL) {
 		_g_free0 (logfile);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -950,7 +1033,7 @@ void t_input_touchpad (void) {
 		_g_free0 (_tmp15_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_SPAWN_ERROR) {
-				goto __catch4_g_spawn_error;
+				goto __catch5_g_spawn_error;
 			}
 			_g_free0 (logfile);
 			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -958,8 +1041,8 @@ void t_input_touchpad (void) {
 			return;
 		}
 	}
-	goto __finally4;
-	__catch4_g_spawn_error:
+	goto __finally5;
+	__catch5_g_spawn_error:
 	{
 		GError* e = NULL;
 		FILE* _tmp29_;
@@ -972,7 +1055,7 @@ void t_input_touchpad (void) {
 		abort ();
 		_g_error_free0 (e);
 	}
-	__finally4:
+	__finally5:
 	if (_inner_error_ != NULL) {
 		_g_free0 (logfile);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1201,7 +1284,7 @@ void t_input_evtest (void) {
 		_g_free0 (_tmp14_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_SPAWN_ERROR) {
-				goto __catch5_g_spawn_error;
+				goto __catch6_g_spawn_error;
 			}
 			_g_free0 (script_arch);
 			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1209,8 +1292,8 @@ void t_input_evtest (void) {
 			return;
 		}
 	}
-	goto __finally5;
-	__catch5_g_spawn_error:
+	goto __finally6;
+	__catch6_g_spawn_error:
 	{
 		GError* e = NULL;
 		FILE* _tmp31_;
@@ -1223,7 +1306,7 @@ void t_input_evtest (void) {
 		abort ();
 		_g_error_free0 (e);
 	}
-	__finally5:
+	__finally6:
 	if (_inner_error_ != NULL) {
 		_g_free0 (script_arch);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1339,6 +1422,11 @@ static void _t_run_script_chatter_gtest_func (void) {
 }
 
 
+static void _t_run_script_chatter_socket_stream_gtest_func (void) {
+	t_run_script_chatter_socket_stream ();
+}
+
+
 static void _t_gphoto_detect_gtest_func (void) {
 	t_gphoto_detect ();
 }
@@ -1394,6 +1482,7 @@ gint _vala_main (gchar** args, int args_length1) {
 	g_test_add_func ("/umockdev-run/invalid-args", _t_run_invalid_args_gtest_func);
 	g_test_add_func ("/umockdev-run/invalid-ioctl", _t_run_invalid_ioctl_gtest_func);
 	g_test_add_func ("/umockdev-run/script-chatter", _t_run_script_chatter_gtest_func);
+	g_test_add_func ("/umockdev-run/script-chatter-socket-stream", _t_run_script_chatter_socket_stream_gtest_func);
 	g_test_add_func ("/umockdev-run/integration/gphoto-detect", _t_gphoto_detect_gtest_func);
 	g_test_add_func ("/umockdev-run/integration/gphoto-folderlist", _t_gphoto_folderlist_gtest_func);
 	g_test_add_func ("/umockdev-run/integration/gphoto-filelist", _t_gphoto_filelist_gtest_func);

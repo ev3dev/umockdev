@@ -33,6 +33,8 @@
 #include <termios.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <gio/gio.h>
+#include <gio/gunixsocketaddress.h>
 
 #define _g_free0(var) (var = (g_free (var), NULL))
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
@@ -57,6 +59,7 @@ void t_system_ioctl_log (void);
 void t_system_script_log_simple (void);
 gchar* read_line_timeout (FILE* stream);
 void t_system_script_log_chatter (void);
+void t_system_script_log_chatter_socket_stream (void);
 gint _vala_main (gchar** args, int args_length1);
 static void _t_testbed_all_empty_gtest_func (void);
 static void _t_testbed_one_gtest_func (void);
@@ -66,6 +69,7 @@ static void _t_system_all_gtest_func (void);
 static void _t_system_ioctl_log_gtest_func (void);
 static void _t_system_script_log_simple_gtest_func (void);
 static void _t_system_script_log_chatter_gtest_func (void);
+static void _t_system_script_log_chatter_socket_stream_gtest_func (void);
 static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static gint _vala_array_length (gpointer array);
@@ -1300,6 +1304,476 @@ void t_system_script_log_chatter (void) {
 }
 
 
+static gpointer _g_error_copy0 (gpointer self) {
+	return self ? g_error_copy (self) : NULL;
+}
+
+
+static guint8* string_get_data (const gchar* self, int* result_length1) {
+	guint8* result;
+	guint8* res;
+	gint res_length1;
+	gint _res_size_;
+	gint _tmp0_;
+	gint _tmp1_;
+	gint _tmp2_;
+	guint8* _tmp3_;
+	gint _tmp3__length1;
+	guint8* _tmp4_;
+	gint _tmp4__length1;
+	g_return_val_if_fail (self != NULL, NULL);
+	res = (guint8*) self;
+	res_length1 = -1;
+	_res_size_ = res_length1;
+	_tmp0_ = strlen (self);
+	_tmp1_ = _tmp0_;
+	res_length1 = (gint) _tmp1_;
+	_tmp2_ = res_length1;
+	_tmp3_ = res;
+	_tmp3__length1 = res_length1;
+	_tmp4_ = _tmp3_;
+	_tmp4__length1 = _tmp3__length1;
+	if (result_length1) {
+		*result_length1 = _tmp4__length1;
+	}
+	result = _tmp4_;
+	return result;
+}
+
+
+void t_system_script_log_chatter_socket_stream (void) {
+	gchar* log = NULL;
+	gchar* _tmp0_;
+	gchar* spath;
+	GPid chatter_pid = 0;
+	const gchar* _tmp83_;
+	gint status = 0;
+	GPid _tmp84_;
+	gint _tmp85_ = 0;
+	pid_t _tmp86_ = 0;
+	GPid _tmp87_;
+	const gchar* _tmp88_;
+	FILE* _tmp89_ = NULL;
+	FILE* log_stream;
+	gint time;
+	gint _tmp90_ = 0;
+	gint _tmp91_ = 0;
+	gint _tmp92_ = 0;
+	gint _tmp93_ = 0;
+	gint _tmp94_ = 0;
+	const gchar* _tmp95_;
+	GError * _inner_error_ = NULL;
+	_tmp0_ = g_strdup ("/tmp/umockdev_test");
+	spath = _tmp0_;
+	{
+		gchar* _tmp1_ = NULL;
+		gint _tmp2_ = 0;
+		gint _tmp3_;
+		GSocket* _tmp4_;
+		GSocket* s;
+		GSocket* _tmp5_;
+		GSocket* _tmp6_;
+		GSocket* _tmp7_;
+		const gchar* _tmp8_;
+		GUnixSocketAddress* _tmp9_;
+		GUnixSocketAddress* _tmp10_;
+		gboolean _tmp11_ = FALSE;
+		gboolean _tmp12_;
+		gboolean _tmp13_;
+		GSocket* _tmp14_;
+		gboolean _tmp15_ = FALSE;
+		gboolean _tmp16_;
+		gint timeout;
+		GSocket* conn;
+		GSocket* _tmp46_;
+		guint8* _tmp47_ = NULL;
+		guint8* buf;
+		gint buf_length1;
+		gint _buf_size_;
+		GSocket* _tmp48_;
+		guint8* _tmp49_;
+		gint _tmp49__length1;
+		gssize _tmp50_ = 0L;
+		gssize len;
+		gssize _tmp51_;
+		guint8* _tmp52_;
+		gint _tmp52__length1;
+		gssize _tmp53_;
+		guint8 _tmp54_;
+		guint8* _tmp55_;
+		gint _tmp55__length1;
+		GSocket* _tmp56_;
+		guint8* _tmp57_;
+		gint _tmp57__length1;
+		guint8* _tmp58_;
+		gint _tmp58__length1;
+		GSocket* _tmp59_;
+		guint8* _tmp60_;
+		gint _tmp60__length1;
+		gssize _tmp61_ = 0L;
+		gssize _tmp62_;
+		gssize _tmp63_;
+		guint8* _tmp64_;
+		gint _tmp64__length1;
+		gssize _tmp65_;
+		guint8 _tmp66_;
+		guint8* _tmp67_;
+		gint _tmp67__length1;
+		GSocket* _tmp68_;
+		guint8* _tmp69_;
+		gint _tmp69__length1;
+		gssize _tmp70_ = 0L;
+		gssize _tmp71_;
+		gssize _tmp72_;
+		guint8* _tmp73_;
+		gint _tmp73__length1;
+		gssize _tmp74_;
+		guint8 _tmp75_;
+		guint8* _tmp76_;
+		gint _tmp76__length1;
+		GSocket* _tmp77_;
+		guint8* _tmp78_;
+		gint _tmp78__length1;
+		guint8* _tmp79_;
+		gint _tmp79__length1;
+		_tmp2_ = g_file_open_tmp ("test_script_log.XXXXXX", &_tmp1_, &_inner_error_);
+		_g_free0 (log);
+		log = _tmp1_;
+		_tmp3_ = _tmp2_;
+		if (_inner_error_ != NULL) {
+			goto __catch7_g_error;
+		}
+		close (_tmp3_);
+		_tmp4_ = g_socket_new (G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_DEFAULT, &_inner_error_);
+		s = _tmp4_;
+		if (_inner_error_ != NULL) {
+			goto __catch7_g_error;
+		}
+		_tmp5_ = s;
+		_vala_assert (_tmp5_ != NULL, "s != null");
+		_tmp6_ = s;
+		g_socket_set_blocking (_tmp6_, FALSE);
+		_tmp7_ = s;
+		_tmp8_ = spath;
+		_tmp9_ = (GUnixSocketAddress*) g_unix_socket_address_new (_tmp8_);
+		_tmp10_ = _tmp9_;
+		_tmp11_ = g_socket_bind (_tmp7_, (GSocketAddress*) _tmp10_, TRUE, &_inner_error_);
+		_tmp12_ = _tmp11_;
+		_g_object_unref0 (_tmp10_);
+		_tmp13_ = _tmp12_;
+		if (_inner_error_ != NULL) {
+			_g_object_unref0 (s);
+			goto __catch7_g_error;
+		}
+		_vala_assert (_tmp13_, "s.bind (new UnixSocketAddress (spath), true)");
+		_tmp14_ = s;
+		_tmp15_ = g_socket_listen (_tmp14_, &_inner_error_);
+		_tmp16_ = _tmp15_;
+		if (_inner_error_ != NULL) {
+			_g_object_unref0 (s);
+			goto __catch7_g_error;
+		}
+		_vala_assert (_tmp16_, "s.listen ()");
+		{
+			const gchar* _tmp17_;
+			gchar* _tmp18_;
+			gchar* _tmp19_;
+			const gchar* _tmp20_;
+			gchar* _tmp21_;
+			gchar* _tmp22_;
+			const gchar* _tmp23_;
+			gchar* _tmp24_;
+			gchar* _tmp25_;
+			const gchar* _tmp26_;
+			gchar* _tmp27_ = NULL;
+			const gchar* _tmp28_;
+			gchar* _tmp29_;
+			gchar** _tmp30_ = NULL;
+			gchar** _tmp31_;
+			gint _tmp31__length1;
+			GPid _tmp32_ = 0;
+			gboolean _tmp33_ = FALSE;
+			gboolean _tmp34_;
+			gboolean _tmp35_;
+			_tmp17_ = umockdev_record_path;
+			_tmp18_ = g_strdup (_tmp17_);
+			_tmp19_ = g_strdup ("--script");
+			_tmp20_ = spath;
+			_tmp21_ = g_strconcat (_tmp20_, "=", NULL);
+			_tmp22_ = _tmp21_;
+			_tmp23_ = log;
+			_tmp24_ = g_strconcat (_tmp22_, _tmp23_, NULL);
+			_tmp25_ = g_strdup ("--");
+			_tmp26_ = rootdir;
+			_tmp27_ = g_build_filename (_tmp26_, "tests", "chatter-socket-stream", NULL);
+			_tmp28_ = spath;
+			_tmp29_ = g_strdup (_tmp28_);
+			_tmp30_ = g_new0 (gchar*, 6 + 1);
+			_tmp30_[0] = _tmp18_;
+			_tmp30_[1] = _tmp19_;
+			_tmp30_[2] = _tmp24_;
+			_tmp30_[3] = _tmp25_;
+			_tmp30_[4] = _tmp27_;
+			_tmp30_[5] = _tmp29_;
+			_tmp31_ = _tmp30_;
+			_tmp31__length1 = 6;
+			_tmp33_ = g_spawn_async_with_pipes (NULL, _tmp31_, NULL, (G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD) | G_SPAWN_STDOUT_TO_DEV_NULL, NULL, NULL, &_tmp32_, NULL, NULL, NULL, &_inner_error_);
+			chatter_pid = _tmp32_;
+			_tmp34_ = _tmp33_;
+			_tmp31_ = (_vala_array_free (_tmp31_, _tmp31__length1, (GDestroyNotify) g_free), NULL);
+			_g_free0 (_tmp22_);
+			_tmp35_ = _tmp34_;
+			if (_inner_error_ != NULL) {
+				if (_inner_error_->domain == G_SPAWN_ERROR) {
+					goto __catch8_g_spawn_error;
+				}
+				_g_object_unref0 (s);
+				_g_free0 (spath);
+				_g_free0 (log);
+				g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+				g_clear_error (&_inner_error_);
+				return;
+			}
+			_vala_assert (_tmp35_, "Process.spawn_async_with_pipes (null,                 {umockdev_record_path, \"--script\", spath + \"=\" + log, \"--\",                  Path.build_filename (rootdir, \"tests\", \"chatter-socket-stream\"), spath},                 null, SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD | SpawnFlags.STDOUT_TO_DEV_NULL,                 null, out chatter_pid, null, null, null)");
+		}
+		goto __finally8;
+		__catch8_g_spawn_error:
+		{
+			GError* e = NULL;
+			FILE* _tmp36_;
+			const gchar* _tmp37_;
+			e = _inner_error_;
+			_inner_error_ = NULL;
+			_tmp36_ = stderr;
+			_tmp37_ = e->message;
+			fprintf (_tmp36_, "Cannot call umockdev-record: %s\n", _tmp37_);
+			abort ();
+			_g_error_free0 (e);
+		}
+		__finally8:
+		if (_inner_error_ != NULL) {
+			_g_object_unref0 (s);
+			goto __catch7_g_error;
+		}
+		timeout = 20;
+		conn = NULL;
+		while (TRUE) {
+			gint _tmp38_;
+			_tmp38_ = timeout;
+			if (!(_tmp38_ > 0)) {
+				break;
+			}
+			{
+				GSocket* _tmp39_;
+				GSocket* _tmp40_ = NULL;
+				GSocket* _tmp41_;
+				_tmp39_ = s;
+				_tmp40_ = g_socket_accept (_tmp39_, NULL, &_inner_error_);
+				_tmp41_ = _tmp40_;
+				if (_inner_error_ != NULL) {
+					if (_inner_error_->domain == G_IO_ERROR) {
+						goto __catch9_g_io_error;
+					}
+					goto __finally9;
+				}
+				_g_object_unref0 (conn);
+				conn = _tmp41_;
+				break;
+			}
+			goto __finally9;
+			__catch9_g_io_error:
+			{
+				GError* e = NULL;
+				GError* _tmp42_;
+				e = _inner_error_;
+				_inner_error_ = NULL;
+				_tmp42_ = e;
+				if (g_error_matches (_tmp42_, G_IO_ERROR, G_IO_ERROR_WOULD_BLOCK)) {
+					gint _tmp43_;
+					_tmp43_ = timeout;
+					timeout = _tmp43_ - 1;
+					g_usleep ((gulong) 10000);
+				} else {
+					GError* _tmp44_;
+					GError* _tmp45_;
+					_tmp44_ = e;
+					_tmp45_ = _g_error_copy0 (_tmp44_);
+					_inner_error_ = _tmp45_;
+					_g_error_free0 (e);
+					goto __finally9;
+				}
+				_g_error_free0 (e);
+			}
+			__finally9:
+			if (_inner_error_ != NULL) {
+				_g_object_unref0 (conn);
+				_g_object_unref0 (s);
+				goto __catch7_g_error;
+			}
+		}
+		_tmp46_ = conn;
+		_vala_assert (_tmp46_ != NULL, "conn != null");
+		_tmp47_ = g_new0 (guint8, 1000);
+		buf = _tmp47_;
+		buf_length1 = 1000;
+		_buf_size_ = buf_length1;
+		_tmp48_ = conn;
+		_tmp49_ = buf;
+		_tmp49__length1 = buf_length1;
+		_tmp50_ = g_socket_receive (_tmp48_, _tmp49_, (gsize) _tmp49__length1, NULL, &_inner_error_);
+		len = _tmp50_;
+		if (_inner_error_ != NULL) {
+			buf = (g_free (buf), NULL);
+			_g_object_unref0 (conn);
+			_g_object_unref0 (s);
+			goto __catch7_g_error;
+		}
+		_tmp51_ = len;
+		_vala_assert (_tmp51_ > ((gssize) 0), "len > 0");
+		_tmp52_ = buf;
+		_tmp52__length1 = buf_length1;
+		_tmp53_ = len;
+		_tmp52_[_tmp53_] = (guint8) 0;
+		_tmp54_ = _tmp52_[_tmp53_];
+		_tmp55_ = buf;
+		_tmp55__length1 = buf_length1;
+		g_assert_cmpstr ((const gchar*) _tmp55_, ==, "What is your name?\n");
+		g_usleep ((gulong) 300000);
+		_tmp56_ = conn;
+		_tmp57_ = string_get_data ("John\n", &_tmp57__length1);
+		_tmp58_ = _tmp57_;
+		_tmp58__length1 = _tmp57__length1;
+		g_socket_send (_tmp56_, _tmp58_, (gsize) _tmp58__length1, NULL, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			buf = (g_free (buf), NULL);
+			_g_object_unref0 (conn);
+			_g_object_unref0 (s);
+			goto __catch7_g_error;
+		}
+		g_usleep ((gulong) 10000);
+		_tmp59_ = conn;
+		_tmp60_ = buf;
+		_tmp60__length1 = buf_length1;
+		_tmp61_ = g_socket_receive (_tmp59_, _tmp60_, (gsize) _tmp60__length1, NULL, &_inner_error_);
+		_tmp62_ = _tmp61_;
+		if (_inner_error_ != NULL) {
+			buf = (g_free (buf), NULL);
+			_g_object_unref0 (conn);
+			_g_object_unref0 (s);
+			goto __catch7_g_error;
+		}
+		len = _tmp62_;
+		_tmp63_ = len;
+		_vala_assert (_tmp63_ > ((gssize) 0), "len > 0");
+		_tmp64_ = buf;
+		_tmp64__length1 = buf_length1;
+		_tmp65_ = len;
+		_tmp64_[_tmp65_] = (guint8) 0;
+		_tmp66_ = _tmp64_[_tmp65_];
+		_tmp67_ = buf;
+		_tmp67__length1 = buf_length1;
+		g_assert_cmpstr ((const gchar*) _tmp67_, ==, "hello John\n");
+		g_usleep ((gulong) 20000);
+		_tmp68_ = conn;
+		_tmp69_ = buf;
+		_tmp69__length1 = buf_length1;
+		_tmp70_ = g_socket_receive (_tmp68_, _tmp69_, (gsize) _tmp69__length1, NULL, &_inner_error_);
+		_tmp71_ = _tmp70_;
+		if (_inner_error_ != NULL) {
+			buf = (g_free (buf), NULL);
+			_g_object_unref0 (conn);
+			_g_object_unref0 (s);
+			goto __catch7_g_error;
+		}
+		len = _tmp71_;
+		_tmp72_ = len;
+		_vala_assert (_tmp72_ > ((gssize) 0), "len > 0");
+		_tmp73_ = buf;
+		_tmp73__length1 = buf_length1;
+		_tmp74_ = len;
+		_tmp73_[_tmp74_] = (guint8) 0;
+		_tmp75_ = _tmp73_[_tmp74_];
+		_tmp76_ = buf;
+		_tmp76__length1 = buf_length1;
+		g_assert_cmpstr ((const gchar*) _tmp76_, ==, "send()");
+		g_usleep ((gulong) 20000);
+		_tmp77_ = conn;
+		_tmp78_ = string_get_data ("recv()", &_tmp78__length1);
+		_tmp79_ = _tmp78_;
+		_tmp79__length1 = _tmp78__length1;
+		g_socket_send (_tmp77_, _tmp79_, (gsize) _tmp79__length1, NULL, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			buf = (g_free (buf), NULL);
+			_g_object_unref0 (conn);
+			_g_object_unref0 (s);
+			goto __catch7_g_error;
+		}
+		buf = (g_free (buf), NULL);
+		_g_object_unref0 (conn);
+		_g_object_unref0 (s);
+	}
+	goto __finally7;
+	__catch7_g_error:
+	{
+		GError* e = NULL;
+		FILE* _tmp80_;
+		const gchar* _tmp81_;
+		const gchar* _tmp82_;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		_tmp80_ = stderr;
+		_tmp81_ = e->message;
+		fprintf (_tmp80_, "Error: %s\n", _tmp81_);
+		_tmp82_ = spath;
+		g_remove (_tmp82_);
+		abort ();
+		_g_error_free0 (e);
+	}
+	__finally7:
+	if (_inner_error_ != NULL) {
+		_g_free0 (spath);
+		_g_free0 (log);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+	_tmp83_ = spath;
+	g_remove (_tmp83_);
+	_tmp84_ = chatter_pid;
+	_tmp86_ = waitpid ((pid_t) _tmp84_, &_tmp85_, 0);
+	status = _tmp85_;
+	_tmp87_ = chatter_pid;
+	g_assert_cmpint ((gint) _tmp86_, ==, (gint) _tmp87_);
+	g_assert_cmpint (status, ==, 0);
+	_tmp88_ = log;
+	_tmp89_ = g_fopen (_tmp88_, "r");
+	log_stream = _tmp89_;
+	time = 0;
+	_tmp90_ = fscanf (log_stream, "w %d What is your name?^J\n", &time);
+	g_assert_cmpint (_tmp90_, ==, 1);
+	g_assert_cmpint (time, <=, 20);
+	_tmp91_ = fscanf (log_stream, "r %d John^J\n", &time);
+	g_assert_cmpint (_tmp91_, ==, 1);
+	g_assert_cmpint (time, >=, 250);
+	g_assert_cmpint (time, <=, 400);
+	_tmp92_ = fscanf (log_stream, "w %d hello John^J\n", &time);
+	g_assert_cmpint (_tmp92_, ==, 1);
+	g_assert_cmpint (time, <=, 20);
+	_tmp93_ = fscanf (log_stream, "w %d send()\n", &time);
+	g_assert_cmpint (_tmp93_, ==, 1);
+	g_assert_cmpint (time, >=, 10);
+	_tmp94_ = fscanf (log_stream, "r %d recv()\n", &time);
+	g_assert_cmpint (_tmp94_, ==, 1);
+	g_assert_cmpint (time, >=, 20);
+	g_assert_cmpint (time, <=, 40);
+	_tmp95_ = log;
+	g_remove (_tmp95_);
+	_fclose0 (log_stream);
+	_g_free0 (spath);
+	_g_free0 (log);
+}
+
+
 static void _t_testbed_all_empty_gtest_func (void) {
 	t_testbed_all_empty ();
 }
@@ -1337,6 +1811,11 @@ static void _t_system_script_log_simple_gtest_func (void) {
 
 static void _t_system_script_log_chatter_gtest_func (void) {
 	t_system_script_log_chatter ();
+}
+
+
+static void _t_system_script_log_chatter_socket_stream_gtest_func (void) {
+	t_system_script_log_chatter_socket_stream ();
 }
 
 
@@ -1400,6 +1879,7 @@ gint _vala_main (gchar** args, int args_length1) {
 	g_test_add_func ("/umockdev-record/ioctl-log", _t_system_ioctl_log_gtest_func);
 	g_test_add_func ("/umockdev-record/script-log-simple", _t_system_script_log_simple_gtest_func);
 	g_test_add_func ("/umockdev-record/script-log-chatter", _t_system_script_log_chatter_gtest_func);
+	g_test_add_func ("/umockdev-record/script-log-socket", _t_system_script_log_chatter_socket_stream_gtest_func);
 	_tmp16_ = g_test_run ();
 	result = _tmp16_;
 	_g_free0 (r);

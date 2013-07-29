@@ -30,7 +30,7 @@ CLEANFILES =
 DISTCLEANFILES =
 CHECKS =
 
-EXTRA_DIST = COPYING README.rst NEWS devices
+EXTRA_DIST = COPYING README.rst NEWS devices docs/script-format.txt
 DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc
 TESTS_ENVIRONMENT = TOP_BUILDDIR=$(top_builddir) \
 		    TOP_SRCDIR=$(top_srcdir) \
@@ -117,6 +117,7 @@ libumockdev_la_SOURCES =	\
 
 libumockdev_la_VALAFLAGS =		\
 	--pkg gio-2.0			\
+	--pkg gio-unix-2.0		\
 	--pkg linux			\
 	-H src/umockdev.h		\
 	--library=UMockdev-1.0		\
@@ -139,7 +140,7 @@ libumockdev_la_LIBADD =		\
 # see http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 libumockdev_la_LDFLAGS =	\
 	$(AM_LDFLAGS)		\
-	-version-info 2:0:2	\
+	-version-info 3:0:3	\
 	-export-dynamic -no-undefined \
 	-export-symbols-regex '^umockdev_(testbed|error).*' \
 	$(NULL)
@@ -221,12 +222,18 @@ DISTCLEANFILES += \
 # -------------------------------------------------------------
 # tests
 
-noinst_PROGRAMS += tests/chatter
+noinst_PROGRAMS += tests/chatter tests/chatter-socket-stream
 
 tests_chatter_SOURCES = tests/chatter.c
 
 tests_chatter_CFLAGS =		\
 	$(AM_CFLAGS)		\
+	$(NULL)
+
+tests_chatter_socket_stream_SOURCES = tests/chatter-socket-stream.c
+
+tests_chatter_socket_stream_CFLAGS =	\
+	$(AM_CFLAGS)			\
 	$(NULL)
 
 noinst_PROGRAMS += tests/test-umockdev tests/test-ioctl-tree
@@ -265,7 +272,7 @@ tests_test_ioctl_tree_LDADD =	\
 
 CHECKS += tests/test-umockdev tests/test-ioctl-tree
 
-EXTRA_DIST += tests/test-umockdev.py tests/xorg-dummy.conf
+EXTRA_DIST += tests/test-umockdev.py tests/xorg-dummy.conf tests/test-static-code
 
 noinst_PROGRAMS += tests/test-umockdev-vala tests/test-umockdev-run tests/test-umockdev-record
 
@@ -313,6 +320,8 @@ tests_test_umockdev_record_VALAFLAGS =	\
 	--vapidir src			\
 	--vapidir tests			\
 	--pkg glib-2.0			\
+	--pkg gio-2.0			\
+	--pkg gio-unix-2.0		\
 	--pkg posix			\
 	--pkg linux			\
 	--pkg umockdev-1.0		\
@@ -349,6 +358,8 @@ if HAVE_PYTHON
 		$(PYTEST_TREE) $(srcdir)/tests/test-umockdev.py; \
 	fi
 endif
+	echo "== Running static code tests against build tree =="
+	$(srcdir)/tests/test-static-code
 endif
 
 check-installed: $(CHECKS)
@@ -377,7 +388,8 @@ SUBDIRS += \
 endif
 
 doc_DATA = \
-	 README.rst	\
+	 README.rst			\
+	 docs/script-format.txt		\
 	 $(NULL)
 
 EXAMPLES = \

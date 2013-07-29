@@ -25,6 +25,8 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 #include <linux/usbdevice_fs.h>
 
 #include <libudev.h>
@@ -1024,8 +1026,8 @@ r 20 Bogus Device\n\
 w 10 split write\n\
 \n\
 r 10 ACK\n\
-w 0 ^^^`^@\n\
-r 0 ^^^`^@\n";
+w 0 ^@^^^`^@a\n\
+r 0 ^@^^^`^@a\n";
 
   umockdev_testbed_add_from_string(fixture->testbed,
           "P: /devices/greeter\nN: greeter\n"
@@ -1098,12 +1100,14 @@ r 0 ^^^`^@\n";
   g_assert(strncmp(buf, "ACK", 3) == 0);
 
   /* corner cases in encoding */
-  g_assert_cmpint(write(fd, "\x1E^\0", 3), ==, 3);
+  g_assert_cmpint(write(fd, "\0\x1E^\0a", 5), ==, 5);
   usleep(10000);
-  g_assert_cmpint(read(fd, buf, 10), ==, 3);
-  g_assert_cmpint(buf[0], ==, '\x1E');
-  g_assert_cmpint(buf[1], ==, '^');
-  g_assert_cmpint(buf[2], ==, 0);
+  g_assert_cmpint(read(fd, buf, 10), ==, 5);
+  g_assert_cmpint(buf[0], ==, 0);
+  g_assert_cmpint(buf[1], ==, '\x1E');
+  g_assert_cmpint(buf[2], ==, '^');
+  g_assert_cmpint(buf[3], ==, 0);
+  g_assert_cmpint(buf[4], ==, 'a');
 
   /* end of script */
   ASSERT_EOF;
@@ -1111,6 +1115,127 @@ r 0 ^^^`^@\n";
   close(fd);
 }
 
+static void
+t_testbed_script_replay_socket_stream(UMockdevTestbedFixture * fixture, gconstpointer data)
+{
+  gboolean success;
+  GError *error = NULL;
+  char *tmppath, *sockpath;
+  int fd;
+  struct sockaddr_un saddr;
+  char buf[1024];
+
+  static const char* test_script = "r 200 ready\n\
+w 0 abc\n\
+w 2 ^@defgh\n\
+r 10 ^@response\n";
+
+  /* write script into temporary file */
+  fd = g_file_open_tmp("test_script_socket.XXXXXX", &tmppath, &error);
+  g_assert_no_error(error);
+  g_assert_cmpint(write(fd, test_script, strlen(test_script)), >, 10);
+  close(fd);
+
+  /* load it */
+  success = umockdev_testbed_load_socket_script(fixture->testbed, "/dev/socket/chatter",
+                                                SOCK_STREAM, tmppath, &error);
+  g_assert_no_error(error);
+  g_assert(success);
+
+  sockpath = g_build_filename(umockdev_testbed_get_root_dir(fixture->testbed), "dev/socket/chatter", NULL);
+  g_assert(g_file_test(sockpath, G_FILE_TEST_EXISTS));
+  g_free(sockpath);
+
+  /* start communication */
+  fd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0);
+  g_assert_cmpint(fd, >=, 0);
+  saddr.sun_family = AF_UNIX;
+  snprintf(saddr.sun_path, sizeof(saddr.sun_path), "/dev/socket/chatter");
+  if (connect(fd, (struct sockaddr *) &saddr, sizeof(saddr)) < 0) {
+      perror("t_testbed_script_replay_socket_stream() connect");
+      abort();
+  }
+
+  /* should get initial greeting after 200 ms */
+  ASSERT_EOF;
+  usleep(220000);
+  g_assert_cmpint(read(fd, buf, 5), ==, 5);
+  g_assert(strncmp(buf, "ready", 5) == 0);
+  g_assert_cmpint(errno, ==, 0);
+
+  /* do the two write blocks in two matching calls; check that nothing is
+   * readable before */
+  ASSERT_EOF;
+  g_assert_cmpint(write(fd, "abc", 3), ==, 3);
+  ASSERT_EOF;
+  g_assert_cmpint(write(fd, "\0defgh", 6), ==, 6);
+
+  /* now we should get the response after 10 ms */
+  ASSERT_EOF;
+  usleep(15000);
+  g_assert_cmpint(read(fd, buf, 50), ==, 9);
+  g_assert_cmpint(buf[0], ==, 0);
+  g_assert(strncmp(buf + 1, "response", 8) == 0);
+  g_assert_cmpint(errno, ==, 0);
+  ASSERT_EOF;
+
+  close(fd);
+  g_unlink (tmppath);
+}
+
+static void
+t_testbed_script_replay_fuzz(UMockdevTestbedFixture * fixture, gconstpointer data)
+{
+  gboolean success;
+  GError *error = NULL;
+  char *tmppath;
+  int fd;
+  char buf[1024];
+
+  static const char* test_script = "f 20 -\n\
+w 0 aaaaaaaaaa\n\
+w 0 bbbbbbbbbb\n\
+r 0 OK\n";
+
+  umockdev_testbed_add_from_string(fixture->testbed,
+          "P: /devices/fuzzy\nN: fuzzy\n"
+          "E: DEVNAME=/dev/fuzzy\nE: SUBSYSTEM=tty\nA: dev=4:64\n", &error);
+  g_assert_no_error(error);
+
+  /* write script into temporary file */
+  fd = g_file_open_tmp("test_script_fuzzy.XXXXXX", &tmppath, &error);
+  g_assert_no_error(error);
+  g_assert_cmpint(write(fd, test_script, strlen(test_script)), >, 10);
+  close(fd);
+
+  /* load it */
+  success = umockdev_testbed_load_script(fixture->testbed, "/dev/fuzzy", tmppath, &error);
+  g_assert_no_error(error);
+  g_assert(success);
+  g_unlink (tmppath);
+
+  /* start communication */
+  fd = g_open("/dev/fuzzy", O_RDWR | O_NONBLOCK, 0);
+  g_assert_cmpint(fd, >=, 0);
+  errno = 0;
+
+  /* one wrong character (10%) */
+  g_assert_cmpint(write(fd, "axaaaaaaaa", 10), ==, 10);
+  /* two wrong characters (20%), in two blocks */
+  g_assert_cmpint(write(fd, "b1b", 3), ==, 3);
+  g_assert_cmpint(write(fd, "bbbbb7b", 7), ==, 7);
+
+  /* wait for final OK to make sure it survived */
+  usleep(10000);
+  g_assert_cmpint(read(fd, buf, 11), ==, 2);
+  g_assert(strncmp(buf, "OK", 2) == 0);
+  g_assert_cmpint(errno, ==, 0);
+
+  /* end of script */
+  ASSERT_EOF;
+
+  close(fd);
+}
 
 
 static void
@@ -1312,6 +1437,10 @@ main(int argc, char **argv)
     /* tests for script replay */
     g_test_add("/umockdev-testbed/script_replay_simple", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
 	       t_testbed_script_replay_simple, t_testbed_fixture_teardown);
+    g_test_add("/umockdev-testbed/script_replay_socket_stream", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
+	       t_testbed_script_replay_socket_stream, t_testbed_fixture_teardown);
+    g_test_add("/umockdev-testbed/script_replay_fuzz", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
+	       t_testbed_script_replay_fuzz, t_testbed_fixture_teardown);
 
     /* misc */
     g_test_add("/umockdev-testbed/clear", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,

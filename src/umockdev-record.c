@@ -1522,102 +1522,117 @@ void split_devfile_arg (const gchar* arg, gchar** devnum, gchar** fname) {
 		_g_free0 (_vala_devnum);
 		_vala_devnum = _tmp30_;
 	} else {
-		gchar* contents = NULL;
-		const gchar* _tmp38_;
-		gchar* _tmp39_ = NULL;
-		gchar* _tmp40_;
-		gchar** _tmp41_;
-		gchar** _tmp42_ = NULL;
-		gchar** _tmp43_;
-		gint _tmp43__length1;
-		gchar** fields;
-		gint fields_length1;
-		gint _fields_size_;
-		gchar** _tmp44_;
-		gint _tmp44__length1;
-		gchar** _tmp45_;
-		gint _tmp45__length1;
-		const gchar* _tmp46_;
-		gint _tmp47_ = 0;
-		gchar** _tmp48_;
-		gint _tmp48__length1;
-		const gchar* _tmp49_;
-		gint _tmp50_ = 0;
-		gchar* _tmp51_ = NULL;
-		{
-			const gchar* _tmp31_;
-			gchar* _tmp32_ = NULL;
-			gchar* _tmp33_;
-			gchar* _tmp34_ = NULL;
-			_tmp31_ = dev;
-			_tmp32_ = g_build_filename (_tmp31_, "dev", NULL);
-			_tmp33_ = _tmp32_;
-			g_file_get_contents (_tmp33_, &_tmp34_, NULL, &_inner_error_);
-			_g_free0 (contents);
-			contents = _tmp34_;
-			_g_free0 (_tmp33_);
-			if (_inner_error_ != NULL) {
-				if (_inner_error_->domain == G_FILE_ERROR) {
-					goto __catch5_g_file_error;
+		struct stat _tmp31_;
+		mode_t _tmp32_;
+		gboolean _tmp33_ = FALSE;
+		_tmp31_ = st;
+		_tmp32_ = _tmp31_.st_mode;
+		_tmp33_ = S_ISSOCK (_tmp32_);
+		if (_tmp33_) {
+			const gchar* _tmp34_;
+			gchar* _tmp35_;
+			_tmp34_ = dev;
+			_tmp35_ = g_strdup (_tmp34_);
+			_g_free0 (_vala_devnum);
+			_vala_devnum = _tmp35_;
+		} else {
+			gchar* contents = NULL;
+			const gchar* _tmp43_;
+			gchar* _tmp44_ = NULL;
+			gchar* _tmp45_;
+			gchar** _tmp46_;
+			gchar** _tmp47_ = NULL;
+			gchar** _tmp48_;
+			gint _tmp48__length1;
+			gchar** fields;
+			gint fields_length1;
+			gint _fields_size_;
+			gchar** _tmp49_;
+			gint _tmp49__length1;
+			gchar** _tmp50_;
+			gint _tmp50__length1;
+			const gchar* _tmp51_;
+			gint _tmp52_ = 0;
+			gchar** _tmp53_;
+			gint _tmp53__length1;
+			const gchar* _tmp54_;
+			gint _tmp55_ = 0;
+			gchar* _tmp56_ = NULL;
+			{
+				const gchar* _tmp36_;
+				gchar* _tmp37_ = NULL;
+				gchar* _tmp38_;
+				gchar* _tmp39_ = NULL;
+				_tmp36_ = dev;
+				_tmp37_ = g_build_filename (_tmp36_, "dev", NULL);
+				_tmp38_ = _tmp37_;
+				g_file_get_contents (_tmp38_, &_tmp39_, NULL, &_inner_error_);
+				_g_free0 (contents);
+				contents = _tmp39_;
+				_g_free0 (_tmp38_);
+				if (_inner_error_ != NULL) {
+					if (_inner_error_->domain == G_FILE_ERROR) {
+						goto __catch5_g_file_error;
+					}
+					_g_free0 (contents);
+					_g_free0 (dev);
+					parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
+					g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+					g_clear_error (&_inner_error_);
+					return;
 				}
+			}
+			goto __finally5;
+			__catch5_g_file_error:
+			{
+				GError* e = NULL;
+				const gchar* _tmp40_;
+				GError* _tmp41_;
+				const gchar* _tmp42_;
+				e = _inner_error_;
+				_inner_error_ = NULL;
+				_tmp40_ = dev;
+				_tmp41_ = e;
+				_tmp42_ = _tmp41_->message;
+				exit_error ("Cannot open %s/dev: %s", _tmp40_, _tmp42_, NULL);
+				_g_error_free0 (e);
+			}
+			__finally5:
+			if (_inner_error_ != NULL) {
 				_g_free0 (contents);
 				_g_free0 (dev);
 				parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
-				g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 				g_clear_error (&_inner_error_);
 				return;
 			}
-		}
-		goto __finally5;
-		__catch5_g_file_error:
-		{
-			GError* e = NULL;
-			const gchar* _tmp35_;
-			GError* _tmp36_;
-			const gchar* _tmp37_;
-			e = _inner_error_;
-			_inner_error_ = NULL;
-			_tmp35_ = dev;
-			_tmp36_ = e;
-			_tmp37_ = _tmp36_->message;
-			exit_error ("Cannot open %s/dev: %s", _tmp35_, _tmp37_, NULL);
-			_g_error_free0 (e);
-		}
-		__finally5:
-		if (_inner_error_ != NULL) {
+			_tmp43_ = contents;
+			_tmp44_ = string_strip (_tmp43_);
+			_tmp45_ = _tmp44_;
+			_tmp47_ = _tmp46_ = g_strsplit (_tmp45_, ":", 0);
+			_tmp48_ = _tmp47_;
+			_tmp48__length1 = _vala_array_length (_tmp46_);
+			_g_free0 (_tmp45_);
+			fields = _tmp48_;
+			fields_length1 = _tmp48__length1;
+			_fields_size_ = fields_length1;
+			_tmp49_ = fields;
+			_tmp49__length1 = fields_length1;
+			_vala_assert (_tmp49__length1 == 2, "fields.length == 2");
+			_tmp50_ = fields;
+			_tmp50__length1 = fields_length1;
+			_tmp51_ = _tmp50_[0];
+			_tmp52_ = atoi (_tmp51_);
+			_tmp53_ = fields;
+			_tmp53__length1 = fields_length1;
+			_tmp54_ = _tmp53_[1];
+			_tmp55_ = atoi (_tmp54_);
+			_tmp56_ = g_strdup_printf ("%i", (_tmp52_ << 8) | _tmp55_);
+			_g_free0 (_vala_devnum);
+			_vala_devnum = _tmp56_;
+			fields = (_vala_array_free (fields, fields_length1, (GDestroyNotify) g_free), NULL);
 			_g_free0 (contents);
-			_g_free0 (dev);
-			parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
-			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return;
 		}
-		_tmp38_ = contents;
-		_tmp39_ = string_strip (_tmp38_);
-		_tmp40_ = _tmp39_;
-		_tmp42_ = _tmp41_ = g_strsplit (_tmp40_, ":", 0);
-		_tmp43_ = _tmp42_;
-		_tmp43__length1 = _vala_array_length (_tmp41_);
-		_g_free0 (_tmp40_);
-		fields = _tmp43_;
-		fields_length1 = _tmp43__length1;
-		_fields_size_ = fields_length1;
-		_tmp44_ = fields;
-		_tmp44__length1 = fields_length1;
-		_vala_assert (_tmp44__length1 == 2, "fields.length == 2");
-		_tmp45_ = fields;
-		_tmp45__length1 = fields_length1;
-		_tmp46_ = _tmp45_[0];
-		_tmp47_ = atoi (_tmp46_);
-		_tmp48_ = fields;
-		_tmp48__length1 = fields_length1;
-		_tmp49_ = _tmp48_[1];
-		_tmp50_ = atoi (_tmp49_);
-		_tmp51_ = g_strdup_printf ("%i", (_tmp47_ << 8) | _tmp50_);
-		_g_free0 (_vala_devnum);
-		_vala_devnum = _tmp51_;
-		fields = (_vala_array_free (fields, fields_length1, (GDestroyNotify) g_free), NULL);
-		_g_free0 (contents);
 	}
 	_g_free0 (dev);
 	parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);

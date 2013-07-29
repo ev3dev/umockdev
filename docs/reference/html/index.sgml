@@ -24,6 +24,7 @@
 <ANCHOR id="umockdev-testbed-add-from-file" href="umockdev/umockdev-UMockdev.html#umockdev-testbed-add-from-file">
 <ANCHOR id="umockdev-testbed-load-ioctl" href="umockdev/umockdev-UMockdev.html#umockdev-testbed-load-ioctl">
 <ANCHOR id="umockdev-testbed-load-script" href="umockdev/umockdev-UMockdev.html#umockdev-testbed-load-script">
+<ANCHOR id="umockdev-testbed-load-socket-script" href="umockdev/umockdev-UMockdev.html#umockdev-testbed-load-socket-script">
 <ANCHOR id="umockdev-testbed-get-dev-fd" href="umockdev/umockdev-UMockdev.html#umockdev-testbed-get-dev-fd">
 <ANCHOR id="umockdev-testbed-clear" href="umockdev/umockdev-UMockdev.html#umockdev-testbed-clear">
 <ANCHOR id="umockdev-testbed-disable" href="umockdev/umockdev-UMockdev.html#umockdev-testbed-disable">

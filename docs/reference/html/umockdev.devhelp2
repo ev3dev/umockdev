@@ -32,6 +32,7 @@
     <keyword type="function" name="umockdev_testbed_add_from_file ()" link="umockdev-UMockdev.html#umockdev-testbed-add-from-file"/>
     <keyword type="function" name="umockdev_testbed_load_ioctl ()" link="umockdev-UMockdev.html#umockdev-testbed-load-ioctl"/>
     <keyword type="function" name="umockdev_testbed_load_script ()" link="umockdev-UMockdev.html#umockdev-testbed-load-script"/>
+    <keyword type="function" name="umockdev_testbed_load_socket_script ()" link="umockdev-UMockdev.html#umockdev-testbed-load-socket-script"/>
     <keyword type="function" name="umockdev_testbed_get_dev_fd ()" link="umockdev-UMockdev.html#umockdev-testbed-get-dev-fd"/>
     <keyword type="function" name="umockdev_testbed_clear ()" link="umockdev-UMockdev.html#umockdev-testbed-clear"/>
     <keyword type="function" name="umockdev_testbed_disable ()" link="umockdev-UMockdev.html#umockdev-testbed-disable"/>

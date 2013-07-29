@@ -99,8 +99,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = src/umockdev-run$(EXEEXT) src/umockdev-record$(EXEEXT)
-noinst_PROGRAMS = tests/chatter$(EXEEXT) tests/test-umockdev$(EXEEXT) \
-	tests/test-ioctl-tree$(EXEEXT) \
+noinst_PROGRAMS = tests/chatter$(EXEEXT) \
+	tests/chatter-socket-stream$(EXEEXT) \
+	tests/test-umockdev$(EXEEXT) tests/test-ioctl-tree$(EXEEXT) \
 	tests/test-umockdev-vala$(EXEEXT) \
 	tests/test-umockdev-run$(EXEEXT) \
 	tests/test-umockdev-record$(EXEEXT)
@@ -227,6 +228,14 @@ tests_chatter_LDADD = $(LDADD)
 tests_chatter_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(tests_chatter_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+am_tests_chatter_socket_stream_OBJECTS = tests/tests_chatter_socket_stream-chatter-socket-stream.$(OBJEXT)
+tests_chatter_socket_stream_OBJECTS =  \
+	$(am_tests_chatter_socket_stream_OBJECTS)
+tests_chatter_socket_stream_LDADD = $(LDADD)
+tests_chatter_socket_stream_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(tests_chatter_socket_stream_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am_tests_test_ioctl_tree_OBJECTS =  \
 	src/tests_test_ioctl_tree-ioctl_tree.$(OBJEXT) \
 	tests/tests_test_ioctl_tree-test-ioctl-tree.$(OBJEXT)
@@ -319,7 +328,9 @@ am__v_VALAC_0 = @echo "  VALAC   " $@;
 am__v_VALAC_1 = 
 SOURCES = $(libumockdev_preload_la_SOURCES) $(libumockdev_la_SOURCES) \
 	$(src_umockdev_record_SOURCES) $(src_umockdev_run_SOURCES) \
-	$(tests_chatter_SOURCES) $(tests_test_ioctl_tree_SOURCES) \
+	$(tests_chatter_SOURCES) \
+	$(tests_chatter_socket_stream_SOURCES) \
+	$(tests_test_ioctl_tree_SOURCES) \
 	$(tests_test_umockdev_SOURCES) \
 	$(tests_test_umockdev_record_SOURCES) \
 	$(tests_test_umockdev_run_SOURCES) \
@@ -327,6 +338,7 @@ SOURCES = $(libumockdev_preload_la_SOURCES) $(libumockdev_la_SOURCES) \
 DIST_SOURCES = $(libumockdev_preload_la_SOURCES) \
 	$(libumockdev_la_SOURCES) $(src_umockdev_record_SOURCES) \
 	$(src_umockdev_run_SOURCES) $(tests_chatter_SOURCES) \
+	$(tests_chatter_socket_stream_SOURCES) \
 	$(tests_test_ioctl_tree_SOURCES) \
 	$(tests_test_umockdev_SOURCES) \
 	$(tests_test_umockdev_record_SOURCES) \
@@ -591,9 +603,10 @@ DISTCLEANFILES = src/umockdev.h src/umockdev.c src/umockdev-1.0.vapi \
 CHECKS = tests/test-umockdev tests/test-ioctl-tree \
 	tests/test-umockdev-vala tests/test-umockdev-run \
 	tests/test-umockdev-record
-EXTRA_DIST = COPYING README.rst NEWS devices src/umockdev-1.0.pc.in \
-	src/umockdev-1.0.vapi UMockdev-1.0.gir src/umockdev-wrapper \
-	tests/test-umockdev.py tests/xorg-dummy.conf $(EXAMPLES)
+EXTRA_DIST = COPYING README.rst NEWS devices docs/script-format.txt \
+	src/umockdev-1.0.pc.in src/umockdev-1.0.vapi UMockdev-1.0.gir \
+	src/umockdev-wrapper tests/test-umockdev.py \
+	tests/xorg-dummy.conf tests/test-static-code $(EXAMPLES)
 DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc
 TESTS_ENVIRONMENT = TOP_BUILDDIR=$(top_builddir) \
 		    TOP_SRCDIR=$(top_srcdir) \
@@ -653,6 +666,7 @@ libumockdev_la_SOURCES = \
 
 libumockdev_la_VALAFLAGS = \
 	--pkg gio-2.0			\
+	--pkg gio-unix-2.0		\
 	--pkg linux			\
 	-H src/umockdev.h		\
 	--library=UMockdev-1.0		\
@@ -676,7 +690,7 @@ libumockdev_la_LIBADD = \
 # see http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 libumockdev_la_LDFLAGS = \
 	$(AM_LDFLAGS)		\
-	-version-info 2:0:2	\
+	-version-info 3:0:3	\
 	-export-dynamic -no-undefined \
 	-export-symbols-regex '^umockdev_(testbed|error).*' \
 	$(NULL)
@@ -725,6 +739,11 @@ src_umockdev_record_VALAFLAGS = \
 tests_chatter_SOURCES = tests/chatter.c
 tests_chatter_CFLAGS = \
 	$(AM_CFLAGS)		\
+	$(NULL)
+
+tests_chatter_socket_stream_SOURCES = tests/chatter-socket-stream.c
+tests_chatter_socket_stream_CFLAGS = \
+	$(AM_CFLAGS)			\
 	$(NULL)
 
 tests_test_umockdev_SOURCES = tests/test-umockdev.c
@@ -802,6 +821,8 @@ tests_test_umockdev_record_VALAFLAGS = \
 	--vapidir src			\
 	--vapidir tests			\
 	--pkg glib-2.0			\
+	--pkg gio-2.0			\
+	--pkg gio-unix-2.0		\
 	--pkg posix			\
 	--pkg linux			\
 	--pkg umockdev-1.0		\
@@ -809,7 +830,8 @@ tests_test_umockdev_record_VALAFLAGS = \
 	$(NULL)
 
 doc_DATA = \
-	 README.rst	\
+	 README.rst			\
+	 docs/script-format.txt		\
 	 $(NULL)
 
 EXAMPLES = \
@@ -1012,6 +1034,12 @@ tests/tests_chatter-chatter.$(OBJEXT): tests/$(am__dirstamp) \
 tests/chatter$(EXEEXT): $(tests_chatter_OBJECTS) $(tests_chatter_DEPENDENCIES) $(EXTRA_tests_chatter_DEPENDENCIES) tests/$(am__dirstamp)
 	@rm -f tests/chatter$(EXEEXT)
 	$(AM_V_CCLD)$(tests_chatter_LINK) $(tests_chatter_OBJECTS) $(tests_chatter_LDADD) $(LIBS)
+tests/tests_chatter_socket_stream-chatter-socket-stream.$(OBJEXT):  \
+	tests/$(am__dirstamp) tests/$(DEPDIR)/$(am__dirstamp)
+
+tests/chatter-socket-stream$(EXEEXT): $(tests_chatter_socket_stream_OBJECTS) $(tests_chatter_socket_stream_DEPENDENCIES) $(EXTRA_tests_chatter_socket_stream_DEPENDENCIES) tests/$(am__dirstamp)
+	@rm -f tests/chatter-socket-stream$(EXEEXT)
+	$(AM_V_CCLD)$(tests_chatter_socket_stream_LINK) $(tests_chatter_socket_stream_OBJECTS) $(tests_chatter_socket_stream_LDADD) $(LIBS)
 src/tests_test_ioctl_tree-ioctl_tree.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 tests/tests_test_ioctl_tree-test-ioctl-tree.$(OBJEXT):  \
@@ -1097,6 +1125,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/src_umockdev_run-umockdev-run.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/tests_test_ioctl_tree-ioctl_tree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/tests_chatter-chatter.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/tests_chatter_socket_stream-chatter-socket-stream.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/tests_test_ioctl_tree-test-ioctl-tree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/tests_test_umockdev-test-umockdev.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/tests_test_umockdev_record-test-umockdev-record.Po@am__quote@
@@ -1196,6 +1225,20 @@ tests/tests_chatter-chatter.obj: tests/chatter.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/chatter.c' object='tests/tests_chatter-chatter.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tests_chatter_CFLAGS) $(CFLAGS) -c -o tests/tests_chatter-chatter.obj `if test -f 'tests/chatter.c'; then $(CYGPATH_W) 'tests/chatter.c'; else $(CYGPATH_W) '$(srcdir)/tests/chatter.c'; fi`
+
+tests/tests_chatter_socket_stream-chatter-socket-stream.o: tests/chatter-socket-stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tests_chatter_socket_stream_CFLAGS) $(CFLAGS) -MT tests/tests_chatter_socket_stream-chatter-socket-stream.o -MD -MP -MF tests/$(DEPDIR)/tests_chatter_socket_stream-chatter-socket-stream.Tpo -c -o tests/tests_chatter_socket_stream-chatter-socket-stream.o `test -f 'tests/chatter-socket-stream.c' || echo '$(srcdir)/'`tests/chatter-socket-stream.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/tests_chatter_socket_stream-chatter-socket-stream.Tpo tests/$(DEPDIR)/tests_chatter_socket_stream-chatter-socket-stream.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/chatter-socket-stream.c' object='tests/tests_chatter_socket_stream-chatter-socket-stream.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tests_chatter_socket_stream_CFLAGS) $(CFLAGS) -c -o tests/tests_chatter_socket_stream-chatter-socket-stream.o `test -f 'tests/chatter-socket-stream.c' || echo '$(srcdir)/'`tests/chatter-socket-stream.c
+
+tests/tests_chatter_socket_stream-chatter-socket-stream.obj: tests/chatter-socket-stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tests_chatter_socket_stream_CFLAGS) $(CFLAGS) -MT tests/tests_chatter_socket_stream-chatter-socket-stream.obj -MD -MP -MF tests/$(DEPDIR)/tests_chatter_socket_stream-chatter-socket-stream.Tpo -c -o tests/tests_chatter_socket_stream-chatter-socket-stream.obj `if test -f 'tests/chatter-socket-stream.c'; then $(CYGPATH_W) 'tests/chatter-socket-stream.c'; else $(CYGPATH_W) '$(srcdir)/tests/chatter-socket-stream.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/tests_chatter_socket_stream-chatter-socket-stream.Tpo tests/$(DEPDIR)/tests_chatter_socket_stream-chatter-socket-stream.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/chatter-socket-stream.c' object='tests/tests_chatter_socket_stream-chatter-socket-stream.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tests_chatter_socket_stream_CFLAGS) $(CFLAGS) -c -o tests/tests_chatter_socket_stream-chatter-socket-stream.obj `if test -f 'tests/chatter-socket-stream.c'; then $(CYGPATH_W) 'tests/chatter-socket-stream.c'; else $(CYGPATH_W) '$(srcdir)/tests/chatter-socket-stream.c'; fi`
 
 src/tests_test_ioctl_tree-ioctl_tree.o: src/ioctl_tree.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tests_test_ioctl_tree_CFLAGS) $(CFLAGS) -MT src/tests_test_ioctl_tree-ioctl_tree.o -MD -MP -MF src/$(DEPDIR)/tests_test_ioctl_tree-ioctl_tree.Tpo -c -o src/tests_test_ioctl_tree-ioctl_tree.o `test -f 'src/ioctl_tree.c' || echo '$(srcdir)/'`src/ioctl_tree.c
@@ -2001,6 +2044,8 @@ check-local: $(CHECKS)
 @HAVE_INTROSPECTION_TRUE@@HAVE_PYTHON_TRUE@		echo "== Running GI test with $(PYTHON) against build tree =="; \
 @HAVE_INTROSPECTION_TRUE@@HAVE_PYTHON_TRUE@		$(PYTEST_TREE) $(srcdir)/tests/test-umockdev.py; \
 @HAVE_INTROSPECTION_TRUE@@HAVE_PYTHON_TRUE@	fi
+@HAVE_INTROSPECTION_TRUE@	echo "== Running static code tests against build tree =="
+@HAVE_INTROSPECTION_TRUE@	$(srcdir)/tests/test-static-code
 
 check-installed: $(CHECKS)
 	@echo "== Running tests against installed system =="
