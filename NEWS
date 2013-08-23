@@ -1,7 +1,23 @@
+0.4.3 (2013-08-23)
+------------------
+- preload: Don't call overridden readlink() in helper function. Fixes building
+  with gcc 4.6 and older. (issue #27)
+- Support USBDEVFS_GET_CAPABILITIES ioctl.
+- preload: Repair recording if device gets opened multiple times (got broken in
+  0.3)
+- ioctl recording: Never consider input URBs equal even if they have exactly
+  the same data, as that might give a mismatch between identical SUBMITs and
+  different REAPs.
+
+0.4.2 (2013-08-01)
+------------------
+- preload: Don't intercept netlink socket() calls during recording.
+- Update devices/cameras/canon-powershot-sx200.ioctl for libgphoto 2.5.
+
 0.4.1 (2013-07-29)
 ------------------
 Bug fixes:
- - preload: Wrap __open_2() and __open64_2().
+- preload: Wrap __open_2() and __open64_2().
 
 0.4 (2013-07-29)
 ----------------

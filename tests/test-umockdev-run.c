@@ -30,6 +30,9 @@
 #include <signal.h>
 #include <glib/gstdio.h>
 #include <unistd.h>
+#include <float.h>
+#include <math.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 
 #define _g_free0(var) (var = (g_free (var), NULL))
@@ -53,8 +56,11 @@ void t_run_invalid_ioctl (void);
 void t_run_script_chatter (void);
 void t_run_script_chatter_socket_stream (void);
 void t_gphoto_detect (void);
+gboolean check_gphoto_version (void);
 void t_gphoto_folderlist (void);
 void t_gphoto_filelist (void);
+void t_gphoto_thumbs (void);
+void t_gphoto_download (void);
 void t_input_touchpad (void);
 void t_input_evtest (void);
 gint _vala_main (gchar** args, int args_length1);
@@ -67,10 +73,13 @@ static void _t_run_script_chatter_socket_stream_gtest_func (void);
 static void _t_gphoto_detect_gtest_func (void);
 static void _t_gphoto_folderlist_gtest_func (void);
 static void _t_gphoto_filelist_gtest_func (void);
+static void _t_gphoto_thumbs_gtest_func (void);
+static void _t_gphoto_download_gtest_func (void);
 static void _t_input_touchpad_gtest_func (void);
 static void _t_input_evtest_gtest_func (void);
 static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
+static gint _vala_array_length (gpointer array);
 
 
 static gboolean string_contains (const gchar* self, const gchar* needle) {
@@ -803,81 +812,329 @@ void t_gphoto_detect (void) {
 }
 
 
-void t_gphoto_folderlist (void) {
+static gdouble double_parse (const gchar* str) {
+	gdouble result = 0.0;
 	const gchar* _tmp0_;
-	gchar* _tmp1_;
+	gdouble _tmp1_ = 0.0;
+	g_return_val_if_fail (str != NULL, 0.0);
+	_tmp0_ = str;
+	_tmp1_ = g_ascii_strtod (_tmp0_, NULL);
+	result = _tmp1_;
+	return result;
+}
+
+
+gboolean check_gphoto_version (void) {
+	gboolean result = FALSE;
+	gchar* sout = NULL;
+	gchar* serr = NULL;
+	gint exit = 0;
+	gchar* _tmp0_ = NULL;
+	gchar* _tmp1_ = NULL;
+	gint _tmp2_ = 0;
+	gboolean _tmp3_ = FALSE;
+	const gchar* _tmp4_;
+	gchar** _tmp5_;
+	gchar** _tmp6_ = NULL;
+	gchar** words;
+	gint words_length1;
+	gint _words_size_;
+	gchar** _tmp7_;
+	gint _tmp7__length1;
+	gchar** _tmp8_;
+	gint _tmp8__length1;
+	const gchar* _tmp9_;
+	gdouble _tmp10_ = 0.0;
+	_tmp3_ = get_program_out ("gphoto2", "gphoto2 --version", &_tmp0_, &_tmp1_, &_tmp2_);
+	_g_free0 (sout);
+	sout = _tmp0_;
+	_g_free0 (serr);
+	serr = _tmp1_;
+	exit = _tmp2_;
+	if (!_tmp3_) {
+		result = FALSE;
+		_g_free0 (serr);
+		_g_free0 (sout);
+		return result;
+	}
+	_tmp4_ = sout;
+	_tmp6_ = _tmp5_ = g_strsplit (_tmp4_, " ", 3);
+	words = _tmp6_;
+	words_length1 = _vala_array_length (_tmp5_);
+	_words_size_ = words_length1;
+	_tmp7_ = words;
+	_tmp7__length1 = words_length1;
+	if (_tmp7__length1 < 2) {
+		result = FALSE;
+		words = (_vala_array_free (words, words_length1, (GDestroyNotify) g_free), NULL);
+		_g_free0 (serr);
+		_g_free0 (sout);
+		return result;
+	}
+	_tmp8_ = words;
+	_tmp8__length1 = words_length1;
+	_tmp9_ = _tmp8_[1];
+	_tmp10_ = double_parse (_tmp9_);
+	if (_tmp10_ < 2.5) {
+		FILE* _tmp11_;
+		_tmp11_ = stderr;
+		fprintf (_tmp11_, "[SKIP: needs gphoto >= 2.5] ");
+		result = FALSE;
+		words = (_vala_array_free (words, words_length1, (GDestroyNotify) g_free), NULL);
+		_g_free0 (serr);
+		_g_free0 (sout);
+		return result;
+	}
+	result = TRUE;
+	words = (_vala_array_free (words, words_length1, (GDestroyNotify) g_free), NULL);
+	_g_free0 (serr);
+	_g_free0 (sout);
+	return result;
+}
+
+
+void t_gphoto_folderlist (void) {
+	gboolean _tmp0_ = FALSE;
+	const gchar* _tmp1_;
 	gchar* _tmp2_;
 	gchar* _tmp3_;
 	gchar* _tmp4_;
-	const gchar* _tmp5_;
-	gchar* _tmp6_;
+	gchar* _tmp5_;
+	const gchar* _tmp6_;
 	gchar* _tmp7_;
 	gchar* _tmp8_;
 	gchar* _tmp9_;
-	_tmp0_ = rootdir;
-	_tmp1_ = g_strconcat ("-d ", _tmp0_, NULL);
-	_tmp2_ = _tmp1_;
-	_tmp3_ = g_strconcat (_tmp2_, "/devices/cameras/canon-powershot-sx200.umockdev -i /dev/bus/usb/001/01" \
+	gchar* _tmp10_;
+	_tmp0_ = check_gphoto_version ();
+	if (!_tmp0_) {
+		return;
+	}
+	_tmp1_ = rootdir;
+	_tmp2_ = g_strconcat ("-d ", _tmp1_, NULL);
+	_tmp3_ = _tmp2_;
+	_tmp4_ = g_strconcat (_tmp3_, "/devices/cameras/canon-powershot-sx200.umockdev -i /dev/bus/usb/001/01" \
 "1=", NULL);
-	_tmp4_ = _tmp3_;
-	_tmp5_ = rootdir;
-	_tmp6_ = g_strconcat (_tmp4_, _tmp5_, NULL);
-	_tmp7_ = _tmp6_;
-	_tmp8_ = g_strconcat (_tmp7_, "/devices/cameras/canon-powershot-sx200.ioctl -- gphoto2 -l", NULL);
-	_tmp9_ = _tmp8_;
-	check_program_out ("gphoto2", _tmp9_, "There is 1 folder in folder '/'.\n" \
+	_tmp5_ = _tmp4_;
+	_tmp6_ = rootdir;
+	_tmp7_ = g_strconcat (_tmp5_, _tmp6_, NULL);
+	_tmp8_ = _tmp7_;
+	_tmp9_ = g_strconcat (_tmp8_, "/devices/cameras/canon-powershot-sx200.ioctl -- gphoto2 -l", NULL);
+	_tmp10_ = _tmp9_;
+	check_program_out ("gphoto2", _tmp10_, "There is 1 folder in folder '/'.\n" \
 " - store_00010001\n" \
 "There is 1 folder in folder '/store_00010001'.\n" \
 " - DCIM\n" \
 "There is 1 folder in folder '/store_00010001/DCIM'.\n" \
 " - 100CANON\n" \
 "There are 0 folders in folder '/store_00010001/DCIM/100CANON'.\n");
-	_g_free0 (_tmp9_);
-	_g_free0 (_tmp7_);
-	_g_free0 (_tmp4_);
-	_g_free0 (_tmp2_);
+	_g_free0 (_tmp10_);
+	_g_free0 (_tmp8_);
+	_g_free0 (_tmp5_);
+	_g_free0 (_tmp3_);
 }
 
 
 void t_gphoto_filelist (void) {
-	const gchar* _tmp0_;
-	gchar* _tmp1_;
+	gboolean _tmp0_ = FALSE;
+	const gchar* _tmp1_;
 	gchar* _tmp2_;
 	gchar* _tmp3_;
 	gchar* _tmp4_;
-	const gchar* _tmp5_;
-	gchar* _tmp6_;
+	gchar* _tmp5_;
+	const gchar* _tmp6_;
 	gchar* _tmp7_;
 	gchar* _tmp8_;
 	gchar* _tmp9_;
-	_tmp0_ = rootdir;
-	_tmp1_ = g_strconcat ("-d ", _tmp0_, NULL);
-	_tmp2_ = _tmp1_;
-	_tmp3_ = g_strconcat (_tmp2_, "/devices/cameras/canon-powershot-sx200.umockdev -i /dev/bus/usb/001/01" \
+	gchar* _tmp10_;
+	_tmp0_ = check_gphoto_version ();
+	if (!_tmp0_) {
+		return;
+	}
+	_tmp1_ = rootdir;
+	_tmp2_ = g_strconcat ("-d ", _tmp1_, NULL);
+	_tmp3_ = _tmp2_;
+	_tmp4_ = g_strconcat (_tmp3_, "/devices/cameras/canon-powershot-sx200.umockdev -i /dev/bus/usb/001/01" \
 "1=", NULL);
-	_tmp4_ = _tmp3_;
-	_tmp5_ = rootdir;
-	_tmp6_ = g_strconcat (_tmp4_, _tmp5_, NULL);
-	_tmp7_ = _tmp6_;
-	_tmp8_ = g_strconcat (_tmp7_, "/devices/cameras/canon-powershot-sx200.ioctl -- gphoto2 -L", NULL);
-	_tmp9_ = _tmp8_;
-	check_program_out ("gphoto2", _tmp9_, "There is no file in folder '/'.\n" \
+	_tmp5_ = _tmp4_;
+	_tmp6_ = rootdir;
+	_tmp7_ = g_strconcat (_tmp5_, _tmp6_, NULL);
+	_tmp8_ = _tmp7_;
+	_tmp9_ = g_strconcat (_tmp8_, "/devices/cameras/canon-powershot-sx200.ioctl -- gphoto2 -L", NULL);
+	_tmp10_ = _tmp9_;
+	check_program_out ("gphoto2", _tmp10_, "There is no file in folder '/'.\n" \
 "There is no file in folder '/store_00010001'.\n" \
 "There is no file in folder '/store_00010001/DCIM'.\n" \
-"There are 9 files in folder '/store_00010001/DCIM/100CANON'.\n" \
-"#1     IMG_0095.JPG               rd  1640 KB 3264x2448 image/jpeg\n" \
-"#2     IMG_0096.JPG               rd  1669 KB 3264x2448 image/jpeg\n" \
-"#3     IMG_0097.JPG               rd  1741 KB 3264x2448 image/jpeg\n" \
-"#4     IMG_0098.JPG               rd  1328 KB 3264x2448 image/jpeg\n" \
-"#5     IMG_0099.JPG               rd  1290 KB 3264x2448 image/jpeg\n" \
-"#6     IMG_0100.JPG               rd  2340 KB 3264x2448 image/jpeg\n" \
-"#7     IMG_0101.JPG               rd  1916 KB 3264x2448 image/jpeg\n" \
-"#8     IMG_0102.JPG               rd  2026 KB 3264x2448 image/jpeg\n" \
-"#9     IMG_0103.JPG               rd  1810 KB 3264x2448 image/jpeg\n");
-	_g_free0 (_tmp9_);
-	_g_free0 (_tmp7_);
-	_g_free0 (_tmp4_);
-	_g_free0 (_tmp2_);
+"There are 2 files in folder '/store_00010001/DCIM/100CANON'.\n" \
+"#1     IMG_0001.JPG               rd    67 KB  640x480  image/jpeg\n" \
+"#2     IMG_0002.JPG               rd    88 KB  640x480  image/jpeg\n");
+	_g_free0 (_tmp10_);
+	_g_free0 (_tmp8_);
+	_g_free0 (_tmp5_);
+	_g_free0 (_tmp3_);
+}
+
+
+void t_gphoto_thumbs (void) {
+	gchar* sout = NULL;
+	gchar* serr = NULL;
+	gint exit = 0;
+	gboolean _tmp0_ = FALSE;
+	const gchar* _tmp1_;
+	gchar* _tmp2_;
+	gchar* _tmp3_;
+	gchar* _tmp4_;
+	gchar* _tmp5_;
+	const gchar* _tmp6_;
+	gchar* _tmp7_;
+	gchar* _tmp8_;
+	gchar* _tmp9_;
+	gchar* _tmp10_;
+	gchar* _tmp11_ = NULL;
+	gchar* _tmp12_ = NULL;
+	gint _tmp13_ = 0;
+	gint _tmp14_;
+	const gchar* _tmp15_;
+	const gchar* _tmp16_;
+	struct stat st = {0};
+	struct stat _tmp17_ = {0};
+	gint _tmp18_ = 0;
+	struct stat _tmp19_;
+	gsize _tmp20_;
+	struct stat _tmp21_ = {0};
+	gint _tmp22_ = 0;
+	struct stat _tmp23_;
+	gsize _tmp24_;
+	_tmp0_ = check_gphoto_version ();
+	if (!_tmp0_) {
+		_g_free0 (serr);
+		_g_free0 (sout);
+		return;
+	}
+	_tmp1_ = rootdir;
+	_tmp2_ = g_strconcat (umockdev_run_command "-d ", _tmp1_, NULL);
+	_tmp3_ = _tmp2_;
+	_tmp4_ = g_strconcat (_tmp3_, "/devices/cameras/canon-powershot-sx200.umockdev -i /dev/bus/usb/001/01" \
+"1=", NULL);
+	_tmp5_ = _tmp4_;
+	_tmp6_ = rootdir;
+	_tmp7_ = g_strconcat (_tmp5_, _tmp6_, NULL);
+	_tmp8_ = _tmp7_;
+	_tmp9_ = g_strconcat (_tmp8_, "/devices/cameras/canon-powershot-sx200.ioctl -- gphoto2 -T", NULL);
+	_tmp10_ = _tmp9_;
+	get_program_out ("gphoto2", _tmp10_, &_tmp11_, &_tmp12_, &_tmp13_);
+	_g_free0 (sout);
+	sout = _tmp11_;
+	_g_free0 (serr);
+	serr = _tmp12_;
+	exit = _tmp13_;
+	_g_free0 (_tmp10_);
+	_g_free0 (_tmp8_);
+	_g_free0 (_tmp5_);
+	_g_free0 (_tmp3_);
+	_tmp14_ = exit;
+	g_assert_cmpint (_tmp14_, ==, 0);
+	_tmp15_ = sout;
+	assert_in ("thumb_IMG_0001.jpg", _tmp15_);
+	_tmp16_ = sout;
+	assert_in ("thumb_IMG_0002.jpg", _tmp16_);
+	_tmp18_ = stat ("thumb_IMG_0001.jpg", &_tmp17_);
+	st = _tmp17_;
+	_vala_assert (_tmp18_ == 0, "Posix.stat(\"thumb_IMG_0001.jpg\", out st) == 0");
+	_tmp19_ = st;
+	_tmp20_ = _tmp19_.st_size;
+	g_assert_cmpuint ((guint) _tmp20_, >, (guint) 500);
+	_tmp22_ = stat ("thumb_IMG_0002.jpg", &_tmp21_);
+	st = _tmp21_;
+	_vala_assert (_tmp22_ == 0, "Posix.stat(\"thumb_IMG_0002.jpg\", out st) == 0");
+	_tmp23_ = st;
+	_tmp24_ = _tmp23_.st_size;
+	g_assert_cmpuint ((guint) _tmp24_, >, (guint) 500);
+	g_remove ("thumb_IMG_0001.jpg");
+	g_remove ("thumb_IMG_0002.jpg");
+	_g_free0 (serr);
+	_g_free0 (sout);
+}
+
+
+void t_gphoto_download (void) {
+	gchar* sout = NULL;
+	gchar* serr = NULL;
+	gint exit = 0;
+	gboolean _tmp0_ = FALSE;
+	const gchar* _tmp1_;
+	gchar* _tmp2_;
+	gchar* _tmp3_;
+	gchar* _tmp4_;
+	gchar* _tmp5_;
+	const gchar* _tmp6_;
+	gchar* _tmp7_;
+	gchar* _tmp8_;
+	gchar* _tmp9_;
+	gchar* _tmp10_;
+	gchar* _tmp11_ = NULL;
+	gchar* _tmp12_ = NULL;
+	gint _tmp13_ = 0;
+	gint _tmp14_;
+	const gchar* _tmp15_;
+	const gchar* _tmp16_;
+	struct stat st = {0};
+	struct stat _tmp17_ = {0};
+	gint _tmp18_ = 0;
+	struct stat _tmp19_;
+	gsize _tmp20_;
+	struct stat _tmp21_ = {0};
+	gint _tmp22_ = 0;
+	struct stat _tmp23_;
+	gsize _tmp24_;
+	_tmp0_ = check_gphoto_version ();
+	if (!_tmp0_) {
+		_g_free0 (serr);
+		_g_free0 (sout);
+		return;
+	}
+	_tmp1_ = rootdir;
+	_tmp2_ = g_strconcat (umockdev_run_command "-d ", _tmp1_, NULL);
+	_tmp3_ = _tmp2_;
+	_tmp4_ = g_strconcat (_tmp3_, "/devices/cameras/canon-powershot-sx200.umockdev -i /dev/bus/usb/001/01" \
+"1=", NULL);
+	_tmp5_ = _tmp4_;
+	_tmp6_ = rootdir;
+	_tmp7_ = g_strconcat (_tmp5_, _tmp6_, NULL);
+	_tmp8_ = _tmp7_;
+	_tmp9_ = g_strconcat (_tmp8_, "/devices/cameras/canon-powershot-sx200.ioctl -- gphoto2 -P", NULL);
+	_tmp10_ = _tmp9_;
+	get_program_out ("gphoto2", _tmp10_, &_tmp11_, &_tmp12_, &_tmp13_);
+	_g_free0 (sout);
+	sout = _tmp11_;
+	_g_free0 (serr);
+	serr = _tmp12_;
+	exit = _tmp13_;
+	_g_free0 (_tmp10_);
+	_g_free0 (_tmp8_);
+	_g_free0 (_tmp5_);
+	_g_free0 (_tmp3_);
+	_tmp14_ = exit;
+	g_assert_cmpint (_tmp14_, ==, 0);
+	_tmp15_ = sout;
+	assert_in ("IMG_0001.JPG", _tmp15_);
+	_tmp16_ = sout;
+	assert_in ("IMG_0002.JPG", _tmp16_);
+	_tmp18_ = stat ("IMG_0001.JPG", &_tmp17_);
+	st = _tmp17_;
+	_vala_assert (_tmp18_ == 0, "Posix.stat(\"IMG_0001.JPG\", out st) == 0");
+	_tmp19_ = st;
+	_tmp20_ = _tmp19_.st_size;
+	g_assert_cmpuint ((guint) _tmp20_, >, (guint) 5000);
+	_tmp22_ = stat ("IMG_0002.JPG", &_tmp21_);
+	st = _tmp21_;
+	_vala_assert (_tmp22_ == 0, "Posix.stat(\"IMG_0002.JPG\", out st) == 0");
+	_tmp23_ = st;
+	_tmp24_ = _tmp23_.st_size;
+	g_assert_cmpuint ((guint) _tmp24_, >, (guint) 5000);
+	g_remove ("IMG_0001.JPG");
+	g_remove ("IMG_0002.JPG");
+	_g_free0 (serr);
+	_g_free0 (sout);
 }
 
 
@@ -1442,6 +1699,16 @@ static void _t_gphoto_filelist_gtest_func (void) {
 }
 
 
+static void _t_gphoto_thumbs_gtest_func (void) {
+	t_gphoto_thumbs ();
+}
+
+
+static void _t_gphoto_download_gtest_func (void) {
+	t_gphoto_download ();
+}
+
+
 static void _t_input_touchpad_gtest_func (void) {
 	t_input_touchpad ();
 }
@@ -1486,6 +1753,8 @@ gint _vala_main (gchar** args, int args_length1) {
 	g_test_add_func ("/umockdev-run/integration/gphoto-detect", _t_gphoto_detect_gtest_func);
 	g_test_add_func ("/umockdev-run/integration/gphoto-folderlist", _t_gphoto_folderlist_gtest_func);
 	g_test_add_func ("/umockdev-run/integration/gphoto-filelist", _t_gphoto_filelist_gtest_func);
+	g_test_add_func ("/umockdev-run/integration/gphoto-thumbs", _t_gphoto_thumbs_gtest_func);
+	g_test_add_func ("/umockdev-run/integration/gphoto-download", _t_gphoto_download_gtest_func);
 	g_test_add_func ("/umockdev-run/integration/input-touchpad", _t_input_touchpad_gtest_func);
 	g_test_add_func ("/umockdev-run/integration/input-evtest", _t_input_evtest_gtest_func);
 	_tmp6_ = g_test_run ();
@@ -1516,6 +1785,18 @@ static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNoti
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func) {
 	_vala_array_destroy (array, array_length, destroy_func);
 	g_free (array);
+}
+
+
+static gint _vala_array_length (gpointer array) {
+	int length;
+	length = 0;
+	if (array) {
+		while (((gpointer*) array)[length]) {
+			length++;
+		}
+	}
+	return length;
 }
 
 
