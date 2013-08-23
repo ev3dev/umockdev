@@ -21,6 +21,7 @@
 using Assertions;
 
 string umockdev_record_path;
+string umockdev_run_path;
 string rootdir;
 
 // wrappers to avoid "unhandled error" warnings
@@ -30,8 +31,7 @@ spawn (string command, out string sout, out string serr, out int exit)
     try {
         assert (Process.spawn_command_line_sync (command, out sout, out serr, out exit));
     } catch (SpawnError e) {
-        stderr.printf ("Cannot call '%s': %s\n", command, e.message);
-        Process.abort ();
+        error ("Cannot call '%s': %s", command, e.message);
     }
 }
 
@@ -42,8 +42,7 @@ file_contents (string filename)
     try {
         assert (FileUtils.get_contents (filename, out contents));
     } catch (FileError e) {
-        stderr.printf ("Cannot get contents of %s: %s\n", filename, e.message);
-        Process.abort ();
+        error ("Cannot get contents of %s: %s", filename, e.message);
     }
     return contents;
 }
@@ -181,8 +180,7 @@ t_system_all ()
     try {
         assert (tb.add_from_string (sout));
     } catch (UMockdev.Error e) {
-        stderr.printf ("Error when adding system dump to testbed: %s\n", e.message);
-        Process.abort ();
+        error ("Error when adding system dump to testbed: %s", e.message);
     }
 }
 
@@ -330,8 +328,7 @@ t_system_script_log_chatter ()
             null, SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD | SpawnFlags.STDOUT_TO_DEV_NULL,
             null, out chatter_pid, null, null, null));
     } catch (SpawnError e) {
-        stderr.printf ("Cannot call umockdev-record: %s\n", e.message);
-        Process.abort ();
+        error ("Cannot call umockdev-record: %s", e.message);
     }
 
     var chatter_stream = FileStream.fdopen (ptym, "r+");
@@ -401,8 +398,7 @@ t_system_script_log_chatter_socket_stream ()
                 null, SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD | SpawnFlags.STDOUT_TO_DEV_NULL,
                 null, out chatter_pid, null, null, null));
         } catch (SpawnError e) {
-            stderr.printf ("Cannot call umockdev-record: %s\n", e.message);
-            Process.abort ();
+            error ("Cannot call umockdev-record: %s", e.message);
         }
 
         // wait until chatter connects
@@ -452,9 +448,8 @@ t_system_script_log_chatter_socket_stream ()
         Thread.usleep (20000);
         conn.send ("recv()".data);
     } catch (Error e) {
-        stderr.printf ("Error: %s\n", e.message);
         FileUtils.remove (spath);
-        Process.abort ();
+        error ("Error: %s", e.message);
     }
     FileUtils.remove (spath);
 
@@ -481,6 +476,68 @@ t_system_script_log_chatter_socket_stream ()
     FileUtils.remove (log);
 }
 
+static void
+t_gphoto2_record ()
+{
+    string sout, sout_record;
+    string serr;
+    int exit;
+
+    // check if we have gphoto2 and a camera
+    spawn ("which gphoto2", out sout, out serr, out exit);
+    if (exit != 0) {
+        stderr.printf ("[SKIP: gphoto2 not installed] ");
+        return;
+    }
+    spawn ("gphoto2 --auto-detect", out sout, out serr, out exit);
+    if (exit != 0) {
+        stderr.printf ("[SKIP: gphoto2 --auto-detect failed: %s] ", sout + serr);
+        return;
+    }
+
+    // find bus and dev number
+    Regex port_re;
+    try {
+        port_re = new Regex ("usb:([0-9]+),([0-9]+)");
+    } catch (RegexError e) {
+        error ("Internal error building regex: %s", e.message);
+    }
+    MatchInfo match;
+    if (!port_re.match (sout, 0, out match)) {
+        stderr.printf ("[SKIP: no gphoto2 compatible camera attached] ");
+        return;
+    }
+    string busnum = match.fetch(1);
+    string devnum = match.fetch(2);
+
+    // record several operations
+    spawn ("sh -c '%s /dev/bus/usb/%s/%s > gphoto-test.umockdev'".printf(
+               umockdev_record_path, busnum, devnum),
+           out sout, out serr, out exit);
+    assert_cmpstr (serr, Op.EQ, "");
+    assert_cmpstr (sout, Op.EQ, "");
+    assert_cmpint (exit, Op.EQ, 0);
+
+    string cmd = "sh -c 'gphoto2 -l; gphoto2 -L'";
+    spawn ("%s -i /dev/bus/usb/%s/%s=gphoto-test.ioctl -- %s".printf(
+               umockdev_record_path, busnum, devnum, cmd),
+           out sout_record, out serr, out exit);
+    assert_cmpstr (serr, Op.EQ, "");
+    assert_cmpint (exit, Op.EQ, 0);
+
+    // now run the same command under umockdev-run and ensure it outputs the
+    // same thing
+    spawn ("%s -d gphoto-test.umockdev -i /dev/bus/usb/%s/%s=gphoto-test.ioctl -- %s".printf(
+               umockdev_run_path, busnum, devnum, cmd),
+           out sout, out serr, out exit);
+    assert_cmpstr (serr, Op.EQ, "");
+    assert_cmpint (exit, Op.EQ, 0);
+    assert_cmpstr (sout, Op.EQ, sout_record);
+
+    FileUtils.remove ("gphoto-test.umockdev");
+    FileUtils.remove ("gphoto-test.ioctl");
+}
+
 int
 main (string[] args)
 {
@@ -494,6 +551,7 @@ main (string[] args)
         rootdir = r;
 
     umockdev_record_path = Path.build_filename (rootdir, "src", "umockdev-record");
+    umockdev_run_path = Path.build_filename (rootdir, "src", "umockdev-run");
 
     Test.add_func ("/umockdev-record/testbed-all-empty", t_testbed_all_empty);
     Test.add_func ("/umockdev-record/testbed-one", t_testbed_one);
@@ -505,6 +563,9 @@ main (string[] args)
     Test.add_func ("/umockdev-record/script-log-simple", t_system_script_log_simple);
     Test.add_func ("/umockdev-record/script-log-chatter", t_system_script_log_chatter);
     Test.add_func ("/umockdev-record/script-log-socket", t_system_script_log_chatter_socket_stream);
+
+    // these tests require particular hardware and get skipped otherwise
+    Test.add_func ("/umockdev-record/gphoto2-record", t_gphoto2_record);
 
     return Test.run();
 }

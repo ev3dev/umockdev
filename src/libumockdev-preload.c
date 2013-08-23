@@ -192,7 +192,9 @@ get_rdev(const char *nodename)
 static int
 is_emulated_device(const char *path, const mode_t st_mode)
 {
-    int orig_errno, res;
+    libc_func(readlink, ssize_t, const char*, char*, size_t);
+    int orig_errno;
+    ssize_t res;
     char dest[10];		/* big enough, we are only interested in the prefix */
 
     /* we use symlinks to the real /dev/pty/ for mocking tty devices, those
@@ -200,7 +202,7 @@ is_emulated_device(const char *path, const mode_t st_mode)
      * stay symlinks */
     if (S_ISLNK(st_mode)) {
 	orig_errno = errno;
-	res = readlink(path, dest, sizeof(dest));
+	res = _readlink(path, dest, sizeof(dest));
 	errno = orig_errno;
 	assert(res > 0);
 
@@ -297,8 +299,9 @@ netlink_socket(int domain, int type, int protocol)
 {
     libc_func(socket, int, int, int, int);
     int fd;
+    const char *path = getenv("UMOCKDEV_DIR");
 
-    if (domain == AF_NETLINK && protocol == NETLINK_KOBJECT_UEVENT) {
+    if (domain == AF_NETLINK && protocol == NETLINK_KOBJECT_UEVENT && path != NULL) {
 	fd = _socket(AF_UNIX, type, 0);
 	fd_map_add(&wrapped_netlink_sockets, fd, NULL);
 	DBG("testbed wrapped socket: intercepting netlink, fd %i\n", fd);
@@ -399,14 +402,15 @@ ioctl_record_open(int fd)
     if (dev_of_fd(fd) != record_rdev)
 	return;
 
-    /* recording is already in progress? e. g. libmtp opens the device
-     * multiple times */
-    /*
-       if (ioctl_record_fd >= 0) {
+    /* recording is already in progress? */
+    if (ioctl_record_fd >= 0) {
+	/* libmtp opens the device multiple times, we can't do that */
+	/*
        fprintf(stderr, "umockdev: recording for this device is already ongoing, stopping recording of previous open()\n");
        ioctl_record_close();
-       }
-     */
+       */
+       fprintf(stderr, "umockdev: WARNING: ioctl recording for this device is already ongoing on fd %i, but application opened it a second time on fd %i without closing\n", ioctl_record_fd, fd);
+    }
 
     ioctl_record_fd = fd;
 
@@ -437,6 +441,10 @@ ioctl_record_open(int fd)
 	assert(sigemptyset(&act_int.sa_mask) == 0);
 	act_int.sa_flags = 0;
 	assert(sigaction(SIGINT, &act_int, &orig_actint) == 0);
+
+	DBG("ioctl_record_open: starting ioctl recording of fd %i into %s\n", fd, path);
+    } else {
+	DBG("ioctl_record_open: ioctl recording is already ongoing, continuing on new fd %i\n", fd);
     }
 }
 
@@ -446,6 +454,7 @@ ioctl_record_close(int fd)
     if (fd < 0 || fd != ioctl_record_fd)
 	return;
 
+    DBG("ioctl_record_close: stopping ioctl recording on fd %i\n", fd);
     ioctl_record_fd = -1;
 
     /* recorded anything? */
@@ -454,8 +463,6 @@ ioctl_record_close(int fd)
 	assert(ftruncate(fileno(ioctl_record_log), 0) == 0);
 	ioctl_tree_write(ioctl_record_log, ioctl_record);
 	fflush(ioctl_record_log);
-	ioctl_tree_free(ioctl_record);
-	ioctl_record = NULL;
     }
 }
 
