@@ -1,4 +1,4 @@
-umockdev (0.4.3-1) UNRELEASED; urgency=low
+umockdev (0.4.3-1) unstable; urgency=low
 
   * New upstream release.
   * debian/umockdev.install: Install documentation files.
@@ -8,7 +8,7 @@ umockdev (0.4.3-1) UNRELEASED; urgency=low
   * Add 00git_skipped_tests_to_stdout.patch: Write SKIP messages to stdout in
     test suite.
 
- -- Martin Pitt <mpitt@debian.org>  Mon, 29 Jul 2013 12:51:27 +0200
+ -- Martin Pitt <mpitt@debian.org>  Sun, 01 Sep 2013 18:20:49 +0200
 
 umockdev (0.3.2-1) experimental; urgency=low
 
