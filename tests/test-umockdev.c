@@ -535,9 +535,9 @@ t_testbed_uevent_gudev(UMockdevTestbedFixture * fixture, gconstpointer data)
     gchar *syspath;
     GMainLoop *mainloop;
     struct event_counter counter = { 0, 0, 0 };
-    const gchar *subsystems[] = { "pci", NULL };
+    const gchar *subsystems[] = { "bluetooth", NULL };
 
-    syspath = umockdev_testbed_add_device(fixture->testbed, "pci", "mydev", NULL,
+    syspath = umockdev_testbed_add_device(fixture->testbed, "bluetooth", "mydev", NULL,
 					  /* attributes */
 					  "idVendor", "0815", NULL,
 					  /* properties */
@@ -578,6 +578,28 @@ t_testbed_uevent_gudev(UMockdevTestbedFixture * fixture, gconstpointer data)
 
     g_object_unref(client);
     g_free(syspath);
+}
+
+static void
+t_testbed_uevent_error(UMockdevTestbedFixture * fixture, gconstpointer data)
+{
+    struct udev *udev;
+    struct udev_monitor *mon;
+
+    /* set up monitor */
+    udev = udev_new();
+    g_assert(udev != NULL);
+    mon = udev_monitor_new_from_netlink(udev, "udev");
+    g_assert(mon != NULL);
+
+    /* unknown device */
+    umockdev_testbed_uevent(fixture->testbed, "/devices/unknown", "add");
+
+    /* should not trigger an actual event */
+    g_assert(udev_monitor_receive_device(mon) == NULL);
+
+    udev_monitor_unref(mon);
+    udev_unref(udev);
 }
 
 static void
@@ -1017,6 +1039,8 @@ t_testbed_script_replay_simple(UMockdevTestbedFixture * fixture, gconstpointer d
 w 0 abc\n\
 w 2 defgh\n\
 r 10 response^I1^J\n\
+\n\
+# pretty unicode\n\
 r 2  hello world ☺\n\
 w 10 A\n\
 w 10 T\n\
@@ -1026,6 +1050,7 @@ r 20 Bogus Device\n\
 w 10 split write\n\
 \n\
 r 10 ACK\n\
+# some corner cases in encoding\n\
 w 0 ^@^^^`^@a\n\
 r 0 ^@^^^`^@a\n";
 
@@ -1419,6 +1444,8 @@ main(int argc, char **argv)
 	       t_testbed_uevent_libudev, t_testbed_fixture_teardown);
     g_test_add("/umockdev-testbed/uevent/gudev", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
 	       t_testbed_uevent_gudev, t_testbed_fixture_teardown);
+    g_test_add("/umockdev-testbed/uevent/error", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
+	       t_testbed_uevent_error, t_testbed_fixture_teardown);
 
     /* tests for mocking USB devices */
     g_test_add("/umockdev-testbed-usb/lsusb", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,

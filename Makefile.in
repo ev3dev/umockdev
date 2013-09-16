@@ -443,6 +443,9 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CODE_COVERAGE_CFLAGS = @CODE_COVERAGE_CFLAGS@
+CODE_COVERAGE_ENABLED = @CODE_COVERAGE_ENABLED@
+CODE_COVERAGE_LDFLAGS = @CODE_COVERAGE_LDFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -457,6 +460,7 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+GENHTML = @GENHTML@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
 GREP = @GREP@
@@ -481,6 +485,7 @@ INTROSPECTION_LIBS = @INTROSPECTION_LIBS@
 INTROSPECTION_MAKEFILE = @INTROSPECTION_MAKEFILE@
 INTROSPECTION_SCANNER = @INTROSPECTION_SCANNER@
 INTROSPECTION_TYPELIBDIR = @INTROSPECTION_TYPELIBDIR@
+LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
@@ -798,6 +803,7 @@ tests_test_umockdev_vala_VALAFLAGS = \
 tests_test_umockdev_run_SOURCES = \
 	tests/test-umockdev-run.vala	\
 	tests/assertions.vapi		\
+	src/config.vapi			\
 	$(NULL)
 
 tests_test_umockdev_run_CFLAGS = $(GLIB_CFLAGS) -w
@@ -841,6 +847,13 @@ EXAMPLES = \
 
 examplesdir = $(docdir)/examples
 examples_DATA = $(EXAMPLES)
+
+# -------------------------------------------------------------
+# code coverage
+
+# umockdev-scan is something internal from gcov/lcov, ignore that
+CODE_COVERAGE_IGNORE_PATTERN = */docs/* */usr/* *umockdev-scan*
+CODE_COVERAGE_LCOV_OPTIONS = --base-directory $(top_builddir)
 all: $(BUILT_SOURCES) config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -1337,9 +1350,9 @@ $(srcdir)/tests/test-umockdev-run.c: $(srcdir)/tests_test_umockdev_run_vala.stam
 	@if test -f $@; then :; else \
 	  $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/tests_test_umockdev_run_vala.stamp; \
 	fi
-$(srcdir)/tests_test_umockdev_run_vala.stamp: tests/test-umockdev-run.vala tests/assertions.vapi
+$(srcdir)/tests_test_umockdev_run_vala.stamp: tests/test-umockdev-run.vala tests/assertions.vapi src/config.vapi
 	$(AM_V_at)rm -f $@ && echo stamp > $@-t
-	$(AM_V_VALAC)$(am__cd) $(srcdir) && $(VALAC) $(tests_test_umockdev_run_VALAFLAGS) $(VALAFLAGS) -C tests/test-umockdev-run.vala tests/assertions.vapi
+	$(AM_V_VALAC)$(am__cd) $(srcdir) && $(VALAC) $(tests_test_umockdev_run_VALAFLAGS) $(VALAFLAGS) -C tests/test-umockdev-run.vala tests/assertions.vapi src/config.vapi
 	$(AM_V_at)mv -f $@-t $@
 $(srcdir)/src/umockdev-record.c: $(srcdir)/src_umockdev_record_vala.stamp
 	@if test -f $@; then :; else rm -f $(srcdir)/src_umockdev_record_vala.stamp; fi
@@ -2060,6 +2073,7 @@ check-installed: $(CHECKS)
 
 check-valgrind:
 	EXEC_NAME="valgrind --leak-check=full --show-possibly-lost=no -q" G_DEBUG=gc-friendly $(MAKE) check
+@GNOME_CODE_COVERAGE_RULES@
 
 # -------------------------------------------------------------
 # developer tools
