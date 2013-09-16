@@ -1,6 +1,7 @@
 umockdev (0.4.1-1) UNRELEASED; urgency=low
 
   * New upstream release.
+  * Drop 00git_skipped_tests_to_stdout.patch, included upstream.
 
  -- Martin Pitt <mpitt@debian.org>  Mon, 16 Sep 2013 16:50:22 -0500
 
