@@ -1,3 +1,13 @@
+0.4.4 (2013-09-16)
+------------------
+- testsuite: Write "skip" messages to stdout instead of stderr.
+- README.rst: Add information about building, testing, running, and
+  contributing.
+- Add code coverage reporting with gcov and lcov, using the gnome-common
+  macros. autogen.sh will enable this automatically if lcov is installed.
+- Support comments in scripts and ioctl records, lines starting with '#' get
+  ignored.
+
 0.4.3 (2013-08-23)
 ------------------
 - preload: Don't call overridden readlink() in helper function. Fixes building

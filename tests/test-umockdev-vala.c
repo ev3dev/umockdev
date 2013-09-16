@@ -506,15 +506,21 @@ void t_usbfs_ioctl_tree (void) {
 	tb_add_from_string (_tmp1_, "P: /devices/mycam\nN: 001\nE: SUBSYSTEM=usb\n");
 	if (G_BYTE_ORDER == G_LITTLE_ENDIAN) {
 		gchar* _tmp2_;
-		_tmp2_ = g_strdup ("USBDEVFS_CONNECTINFO 0 0B00000000000000\n" \
+		_tmp2_ = g_strdup ("# little-endian test ioctls\n" \
+"USBDEVFS_CONNECTINFO 0 0B00000000000000\n" \
 "USBDEVFS_REAPURB 0 1 129 -1 0 4 4 0 9902AAFF\n" \
+"\n" \
+"# another connect info\n" \
 "USBDEVFS_CONNECTINFO 42 0C00000001000000\n");
 		_g_free0 (test_tree);
 		test_tree = _tmp2_;
 	} else {
 		gchar* _tmp3_;
-		_tmp3_ = g_strdup ("USBDEVFS_CONNECTINFO 0 0000000B00000000\n" \
+		_tmp3_ = g_strdup ("# big-endian test ioctls\n" \
+"USBDEVFS_CONNECTINFO 0 0000000B00000000\n" \
 "USBDEVFS_REAPURB 0 1 129 -1 0 4 4 0 9902AAFF\n" \
+"\n" \
+"# another connect info\n" \
 "USBDEVFS_CONNECTINFO 42 0000000C01000000\n");
 		_g_free0 (test_tree);
 		test_tree = _tmp3_;

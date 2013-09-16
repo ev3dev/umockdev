@@ -2817,11 +2817,12 @@ gboolean umockdev_testbed_load_socket_script (UMockdevTestbed* self, const gchar
 	gchar* _tmp14_ = NULL;
 	gchar* _tmp15_;
 	gint _tmp16_ = 0;
-	UMockdevSocketServer* _tmp17_;
-	UMockdevSocketServer* _tmp19_;
-	const gchar* _tmp20_;
-	gint _tmp21_;
-	const gchar* _tmp22_;
+	gboolean _tmp17_;
+	UMockdevSocketServer* _tmp24_;
+	UMockdevSocketServer* _tmp26_;
+	const gchar* _tmp27_;
+	gint _tmp28_;
+	const gchar* _tmp29_;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (path != NULL, FALSE);
@@ -2864,20 +2865,46 @@ gboolean umockdev_testbed_load_socket_script (UMockdevTestbed* self, const gchar
 	_tmp14_ = g_path_get_dirname (_tmp13_);
 	_tmp15_ = _tmp14_;
 	_tmp16_ = g_mkdir_with_parents (_tmp15_, 0755);
-	_vala_assert (_tmp16_ == 0, "DirUtils.create_with_parents(Path.get_dirname(real_path), 0755) == 0");
+	_tmp17_ = _tmp16_ != 0;
 	_g_free0 (_tmp15_);
-	_tmp17_ = self->priv->socket_server;
-	if (_tmp17_ == NULL) {
-		UMockdevSocketServer* _tmp18_;
-		_tmp18_ = umockdev_socket_server_new ();
-		_umockdev_socket_server_unref0 (self->priv->socket_server);
-		self->priv->socket_server = _tmp18_;
+	if (_tmp17_) {
+		gint _tmp18_;
+		const gchar* _tmp19_ = NULL;
+		gchar* _tmp20_ = NULL;
+		gchar* _tmp21_;
+		GError* _tmp22_;
+		GError* _tmp23_;
+		_tmp18_ = errno;
+		_tmp19_ = g_strerror (_tmp18_);
+		_tmp20_ = g_strdup_printf ("Cannot create socket path: %s", _tmp19_);
+		_tmp21_ = _tmp20_;
+		_tmp22_ = g_error_new_literal (G_FILE_ERROR, G_FILE_ERROR_INVAL, _tmp21_);
+		_tmp23_ = _tmp22_;
+		_g_free0 (_tmp21_);
+		_inner_error_ = _tmp23_;
+		if (_inner_error_->domain == G_FILE_ERROR) {
+			g_propagate_error (error, _inner_error_);
+			_g_free0 (real_path);
+			return FALSE;
+		} else {
+			_g_free0 (real_path);
+			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return FALSE;
+		}
 	}
-	_tmp19_ = self->priv->socket_server;
-	_tmp20_ = real_path;
-	_tmp21_ = fd;
-	_tmp22_ = recordfile;
-	umockdev_socket_server_add (_tmp19_, _tmp20_, _tmp21_, _tmp22_);
+	_tmp24_ = self->priv->socket_server;
+	if (_tmp24_ == NULL) {
+		UMockdevSocketServer* _tmp25_;
+		_tmp25_ = umockdev_socket_server_new ();
+		_umockdev_socket_server_unref0 (self->priv->socket_server);
+		self->priv->socket_server = _tmp25_;
+	}
+	_tmp26_ = self->priv->socket_server;
+	_tmp27_ = real_path;
+	_tmp28_ = fd;
+	_tmp29_ = recordfile;
+	umockdev_socket_server_add (_tmp26_, _tmp27_, _tmp28_, _tmp29_);
 	result = TRUE;
 	_g_free0 (real_path);
 	return result;
@@ -3111,7 +3138,7 @@ static gchar* umockdev_testbed_add_dev_from_string (UMockdevTestbed* self, const
 		}
 	}
 	_tmp17_ = devpath;
-	g_debug ("umockdev.vala:752: parsing device description for %s", _tmp17_);
+	g_debug ("umockdev.vala:754: parsing device description for %s", _tmp17_);
 	_tmp18_ = g_new0 (gchar*, 0 + 1);
 	attrs = _tmp18_;
 	attrs_length1 = 0;
@@ -3528,7 +3555,7 @@ static gchar* umockdev_testbed_add_dev_from_string (UMockdevTestbed* self, const
 	}
 	_tmp83_ = devpath;
 	_tmp84_ = subsystem;
-	g_debug ("umockdev.vala:815: creating device %s (subsystem %s)", _tmp83_, _tmp84_);
+	g_debug ("umockdev.vala:817: creating device %s (subsystem %s)", _tmp83_, _tmp84_);
 	_tmp85_ = subsystem;
 	_tmp86_ = devpath;
 	_tmp87_ = string_substring (_tmp86_, (glong) 9, (glong) (-1));
@@ -3863,7 +3890,7 @@ static void umockdev_testbed_create_node_for_device (UMockdevTestbed* self, cons
 			gint _tmp13__length1;
 			const gchar* _tmp14_;
 			_tmp11_ = node_path;
-			g_debug ("umockdev.vala:848: create_node_for_device: creating file device %s", _tmp11_);
+			g_debug ("umockdev.vala:850: create_node_for_device: creating file device %s", _tmp11_);
 			_tmp12_ = node_path;
 			_tmp13_ = node_contents;
 			_tmp13__length1 = node_contents_length1;
@@ -3891,7 +3918,7 @@ static void umockdev_testbed_create_node_for_device (UMockdevTestbed* self, cons
 			e = _inner_error_;
 			_inner_error_ = NULL;
 			_tmp16_ = e->message;
-			g_error ("umockdev.vala:855: Cannot create dev node file: %s", _tmp16_);
+			g_error ("umockdev.vala:857: Cannot create dev node file: %s", _tmp16_);
 			_g_error_free0 (e);
 		}
 		__finally8:
@@ -3923,7 +3950,7 @@ static void umockdev_testbed_create_node_for_device (UMockdevTestbed* self, cons
 	ptyname = _tmp23_;
 	_tmp24_ = node_path;
 	_tmp25_ = ptyname;
-	g_debug ("umockdev.vala:866: create_node_for_device: creating pty device %s: got" \
+	g_debug ("umockdev.vala:868: create_node_for_device: creating pty device %s: got" \
 " pty %s", _tmp24_, _tmp25_);
 	_tmp26_ = ptys;
 	close (_tmp26_);
@@ -4073,7 +4100,7 @@ static gchar* umockdev_testbed_record_parse_line (UMockdevTestbed* self, const g
 			} else {
 				const gchar* _tmp23_;
 				_tmp23_ = data;
-				g_debug ("umockdev.vala:918: record_parse_line: >%s< does not match anything, fa" \
+				g_debug ("umockdev.vala:920: record_parse_line: >%s< does not match anything, fa" \
 "iling", _tmp23_);
 				_vala_type = '\0';
 				_g_free0 (_vala_key);
@@ -4418,7 +4445,7 @@ void umockdev_remove_dir (const gchar* path, gboolean remove_toplevel) {
 			_tmp9_ = path;
 			_tmp10_ = e;
 			_tmp11_ = _tmp10_->message;
-			g_warning ("umockdev.vala:1023: cannot open: %s: %s", _tmp9_, _tmp11_);
+			g_warning ("umockdev.vala:1025: cannot open: %s: %s", _tmp9_, _tmp11_);
 			_g_error_free0 (e);
 			_g_dir_close0 (d);
 			return;
@@ -4471,7 +4498,7 @@ void umockdev_remove_dir (const gchar* path, gboolean remove_toplevel) {
 			_tmp23_ = path;
 			_tmp24_ = errno;
 			_tmp25_ = g_strerror (_tmp24_);
-			g_warning ("umockdev.vala:1034: cannot remove %s: %s", _tmp23_, _tmp25_);
+			g_warning ("umockdev.vala:1036: cannot remove %s: %s", _tmp23_, _tmp25_);
 		}
 	}
 }
@@ -4802,7 +4829,7 @@ gchar* umockdev_find_devnode (const gchar* devpath) {
 		_inner_error_ = NULL;
 		_tmp25_ = e;
 		_tmp26_ = _tmp25_->message;
-		g_warning ("umockdev.vala:1102: Cannot read uevent file: %s\n", _tmp26_);
+		g_warning ("umockdev.vala:1104: Cannot read uevent file: %s\n", _tmp26_);
 		_g_error_free0 (e);
 	}
 	__finally10:
@@ -4902,7 +4929,7 @@ void umockdev_script_runner_stop (UMockdevScriptRunner* self) {
 		return;
 	}
 	_tmp1_ = self->priv->_device;
-	g_debug ("umockdev.vala:1133: Stopping script runner for %s: joining thread", _tmp1_);
+	g_debug ("umockdev.vala:1135: Stopping script runner for %s: joining thread", _tmp1_);
 	self->priv->running = FALSE;
 	_tmp2_ = self->priv->thread;
 	g_thread_join (_tmp2_);
@@ -4920,7 +4947,7 @@ static void* umockdev_script_runner_run (UMockdevScriptRunner* self) {
 	const gchar* _tmp38_;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->_device;
-	g_debug ("umockdev.vala:1144: ScriptRunner[%s]: start", _tmp0_);
+	g_debug ("umockdev.vala:1146: ScriptRunner[%s]: start", _tmp0_);
 	while (TRUE) {
 		gboolean _tmp1_;
 		gchar _tmp2_ = '\0';
@@ -4972,7 +4999,7 @@ static void* umockdev_script_runner_run (UMockdevScriptRunner* self) {
 				_tmp11__length1 = data_length1;
 				_tmp12_ = umockdev_script_runner_encode (_tmp11_, _tmp11__length1);
 				_tmp13_ = _tmp12_;
-				g_debug ("umockdev.vala:1154: ScriptRunner[%s]: read op after sleep; writing dat" \
+				g_debug ("umockdev.vala:1156: ScriptRunner[%s]: read op after sleep; writing dat" \
 "a '%s'", _tmp10_, _tmp13_);
 				_g_free0 (_tmp13_);
 				_tmp14_ = self->priv->fd;
@@ -4990,7 +5017,7 @@ static void* umockdev_script_runner_run (UMockdevScriptRunner* self) {
 					_tmp19_ = self->priv->_device;
 					_tmp20_ = errno;
 					_tmp21_ = g_strerror (_tmp20_);
-					g_error ("umockdev.vala:1157: ScriptRunner[%s]: write failed: %s", _tmp19_, _tmp21_);
+					g_error ("umockdev.vala:1159: ScriptRunner[%s]: write failed: %s", _tmp19_, _tmp21_);
 				}
 				_tmp22_ = l;
 				_tmp23_ = data;
@@ -5013,7 +5040,7 @@ static void* umockdev_script_runner_run (UMockdevScriptRunner* self) {
 				_tmp25__length1 = data_length1;
 				_tmp26_ = umockdev_script_runner_encode (_tmp25_, _tmp25__length1);
 				_tmp27_ = _tmp26_;
-				g_debug ("umockdev.vala:1162: ScriptRunner[%s]: write op, data '%s'", _tmp24_, _tmp27_);
+				g_debug ("umockdev.vala:1164: ScriptRunner[%s]: write op, data '%s'", _tmp24_, _tmp27_);
 				_g_free0 (_tmp27_);
 				_tmp28_ = data;
 				_tmp28__length1 = data_length1;
@@ -5038,14 +5065,14 @@ static void* umockdev_script_runner_run (UMockdevScriptRunner* self) {
 					guint32 _tmp32_;
 					_tmp31_ = self->priv->_device;
 					_tmp32_ = delta;
-					g_error ("umockdev.vala:1172: ScriptRunner[%s]: fuzz value %u is invalid (must b" \
+					g_error ("umockdev.vala:1174: ScriptRunner[%s]: fuzz value %u is invalid (must b" \
 "e between 0 and 100)", _tmp31_, (guint) _tmp32_);
 				}
 				_tmp33_ = delta;
 				self->priv->fuzz = (guint) _tmp33_;
 				_tmp34_ = self->priv->_device;
 				_tmp35_ = self->priv->fuzz;
-				g_debug ("umockdev.vala:1175: ScriptRunner[%s]: setting fuzz level to %u%%", _tmp34_, _tmp35_);
+				g_debug ("umockdev.vala:1177: ScriptRunner[%s]: setting fuzz level to %u%%", _tmp34_, _tmp35_);
 				break;
 			}
 			default:
@@ -5054,13 +5081,13 @@ static void* umockdev_script_runner_run (UMockdevScriptRunner* self) {
 				gchar _tmp37_;
 				_tmp36_ = self->priv->_device;
 				_tmp37_ = op;
-				g_debug ("umockdev.vala:1179: ScriptRunner[%s]: got unknown line op %c, ignoring", _tmp36_, (gint) _tmp37_);
+				g_debug ("umockdev.vala:1181: ScriptRunner[%s]: got unknown line op %c, ignoring", _tmp36_, (gint) _tmp37_);
 				break;
 			}
 		}
 	}
 	_tmp38_ = self->priv->_device;
-	g_debug ("umockdev.vala:1184: ScriptRunner[%s]: not running any more, ending thr" \
+	g_debug ("umockdev.vala:1186: ScriptRunner[%s]: not running any more, ending thr" \
 "ead", _tmp38_);
 	result = NULL;
 	data = (g_free (data), NULL);
@@ -5128,24 +5155,24 @@ static guint8* umockdev_script_runner_next_line (UMockdevScriptRunner* self, gch
 	guint32 _vala_delta = 0U;
 	guint8* result = NULL;
 	gint c = 0;
-	FILE* _tmp11_;
-	glong _tmp12_ = 0L;
+	FILE* _tmp15_;
+	glong _tmp16_ = 0L;
 	glong cur_pos;
-	FILE* _tmp13_;
-	gint _tmp14_ = 0;
 	FILE* _tmp17_;
-	glong _tmp18_ = 0L;
-	FILE* _tmp19_;
-	gint _tmp20_ = 0;
+	gint _tmp18_ = 0;
+	FILE* _tmp21_;
+	glong _tmp22_ = 0L;
 	FILE* _tmp23_;
-	gchar* _tmp24_ = NULL;
+	gint _tmp24_ = 0;
+	FILE* _tmp27_;
+	gchar* _tmp28_ = NULL;
 	gchar* line;
-	const gchar* _tmp25_;
-	const gchar* _tmp26_;
-	gint _tmp27_ = 0;
-	guint8* _tmp28_ = NULL;
-	guint8* _tmp29_;
-	gint _tmp29__length1;
+	const gchar* _tmp29_;
+	const gchar* _tmp30_;
+	gint _tmp31_ = 0;
+	guint8* _tmp32_ = NULL;
+	guint8* _tmp33_;
+	gint _tmp33__length1;
 	g_return_val_if_fail (self != NULL, NULL);
 	{
 		gboolean _tmp0_;
@@ -5171,7 +5198,7 @@ static guint8* umockdev_script_runner_next_line (UMockdevScriptRunner* self, gch
 				gint _tmp8__length1;
 				_tmp5_ = self->priv->_device;
 				_tmp6_ = self->priv->script_file;
-				g_debug ("umockdev.vala:1195: ScriptRunner[%s]: end of script %s, closing", _tmp5_, _tmp6_);
+				g_debug ("umockdev.vala:1197: ScriptRunner[%s]: end of script %s, closing", _tmp5_, _tmp6_);
 				_vala_op = 'Q';
 				_vala_delta = (guint32) 0;
 				_tmp7_ = g_new0 (guint8, 0);
@@ -5191,53 +5218,66 @@ static guint8* umockdev_script_runner_next_line (UMockdevScriptRunner* self, gch
 			} else {
 				gint _tmp9_;
 				_tmp9_ = c;
-				if (_tmp9_ != ((gint) '\n')) {
-					gint _tmp10_;
-					_tmp10_ = c;
-					_vala_op = (gchar) _tmp10_;
-					break;
+				if (_tmp9_ == ((gint) '#')) {
+					FILE* _tmp10_;
+					gchar* _tmp11_ = NULL;
+					gchar* _tmp12_;
+					_tmp10_ = self->priv->script;
+					_tmp11_ = g_file_stream_read_line (_tmp10_);
+					_tmp12_ = _tmp11_;
+					_vala_assert (_tmp12_ != NULL, "this.script.read_line () != null");
+					_g_free0 (_tmp12_);
+				} else {
+					gint _tmp13_;
+					_tmp13_ = c;
+					if (_tmp13_ != ((gint) '\n')) {
+						gint _tmp14_;
+						_tmp14_ = c;
+						_vala_op = (gchar) _tmp14_;
+						break;
+					}
 				}
 			}
 		}
 	}
-	_tmp11_ = self->priv->script;
-	_tmp12_ = ftell (_tmp11_);
-	cur_pos = _tmp12_;
-	_tmp13_ = self->priv->script;
-	_tmp14_ = fgetc (_tmp13_);
-	if (_tmp14_ != ((gint) ' ')) {
-		const gchar* _tmp15_;
-		glong _tmp16_;
-		_tmp15_ = self->priv->script_file;
-		_tmp16_ = cur_pos;
-		g_error ("umockdev.vala:1207: Missing space after operation code in %s at positi" \
-"on %li", _tmp15_, _tmp16_);
-	}
+	_tmp15_ = self->priv->script;
+	_tmp16_ = ftell (_tmp15_);
+	cur_pos = _tmp16_;
 	_tmp17_ = self->priv->script;
-	_tmp18_ = ftell (_tmp17_);
-	cur_pos = _tmp18_;
-	_tmp19_ = self->priv->script;
-	_tmp20_ = fscanf (_tmp19_, "%" G_GUINT32_FORMAT " ", &_vala_delta);
-	if (_tmp20_ != 1) {
-		const gchar* _tmp21_;
-		glong _tmp22_;
-		_tmp21_ = self->priv->script_file;
-		_tmp22_ = cur_pos;
-		g_error ("umockdev.vala:1212: Cannot parse time in %s at position %li", _tmp21_, _tmp22_);
+	_tmp18_ = fgetc (_tmp17_);
+	if (_tmp18_ != ((gint) ' ')) {
+		const gchar* _tmp19_;
+		glong _tmp20_;
+		_tmp19_ = self->priv->script_file;
+		_tmp20_ = cur_pos;
+		g_error ("umockdev.vala:1211: Missing space after operation code in %s at positi" \
+"on %li", _tmp19_, _tmp20_);
 	}
+	_tmp21_ = self->priv->script;
+	_tmp22_ = ftell (_tmp21_);
+	cur_pos = _tmp22_;
 	_tmp23_ = self->priv->script;
-	_tmp24_ = g_file_stream_read_line (_tmp23_);
-	line = _tmp24_;
-	_tmp25_ = line;
-	_vala_assert (_tmp25_ != NULL, "line != null");
-	_tmp26_ = line;
-	_tmp28_ = umockdev_script_runner_decode (_tmp26_, &_tmp27_);
-	_tmp29_ = _tmp28_;
-	_tmp29__length1 = _tmp27_;
-	if (result_length1) {
-		*result_length1 = _tmp29__length1;
+	_tmp24_ = fscanf (_tmp23_, "%" G_GUINT32_FORMAT " ", &_vala_delta);
+	if (_tmp24_ != 1) {
+		const gchar* _tmp25_;
+		glong _tmp26_;
+		_tmp25_ = self->priv->script_file;
+		_tmp26_ = cur_pos;
+		g_error ("umockdev.vala:1216: Cannot parse time in %s at position %li", _tmp25_, _tmp26_);
 	}
-	result = _tmp29_;
+	_tmp27_ = self->priv->script;
+	_tmp28_ = g_file_stream_read_line (_tmp27_);
+	line = _tmp28_;
+	_tmp29_ = line;
+	_vala_assert (_tmp29_ != NULL, "line != null");
+	_tmp30_ = line;
+	_tmp32_ = umockdev_script_runner_decode (_tmp30_, &_tmp31_);
+	_tmp33_ = _tmp32_;
+	_tmp33__length1 = _tmp31_;
+	if (result_length1) {
+		*result_length1 = _tmp33__length1;
+	}
+	result = _tmp33_;
 	_g_free0 (line);
 	if (op) {
 		*op = _vala_op;
@@ -5337,7 +5377,7 @@ static void umockdev_script_runner_op_write (UMockdevScriptRunner* self, guint8*
 			_tmp15_ = self->priv->_device;
 			_tmp16_ = errno;
 			_tmp17_ = g_strerror (_tmp16_);
-			g_error ("umockdev.vala:1237: ScriptRunner op_write[%s]: select() failed: %s", _tmp15_, _tmp17_);
+			g_error ("umockdev.vala:1241: ScriptRunner op_write[%s]: select() failed: %s", _tmp15_, _tmp17_);
 		}
 		_tmp18_ = res;
 		if (_tmp18_ == 0) {
@@ -5357,7 +5397,7 @@ static void umockdev_script_runner_op_write (UMockdevScriptRunner* self, guint8*
 			_tmp22__length1 = data_length1;
 			_tmp23_ = umockdev_script_runner_encode (_tmp20_ + _tmp21_, _tmp22__length1 - _tmp21_);
 			_tmp24_ = _tmp23_;
-			g_debug ("umockdev.vala:1242: ScriptRunner[%s]: timed out on read operation on e" \
+			g_debug ("umockdev.vala:1246: ScriptRunner[%s]: timed out on read operation on e" \
 "xpected block '%s', trying again", _tmp19_, _tmp24_);
 			_g_free0 (_tmp24_);
 			continue;
@@ -5389,7 +5429,7 @@ static void umockdev_script_runner_op_write (UMockdevScriptRunner* self, guint8*
 			_tmp34__length1 = data_length1;
 			_tmp35_ = umockdev_script_runner_encode (_tmp32_ + _tmp33_, _tmp34__length1 - _tmp33_);
 			_tmp36_ = _tmp35_;
-			g_debug ("umockdev.vala:1250: ScriptRunner[%s]: got failure or EOF on read opera" \
+			g_debug ("umockdev.vala:1254: ScriptRunner[%s]: got failure or EOF on read opera" \
 "tion on expected block '%s', resetting", _tmp31_, _tmp36_);
 			_g_free0 (_tmp36_);
 			_tmp37_ = self->priv->script;
@@ -5506,7 +5546,7 @@ static void umockdev_script_runner_op_write (UMockdevScriptRunner* self, guint8*
 				_tmp76_ = d;
 				_tmp77_ = len;
 				_tmp78_ = self->priv->fuzz;
-				g_error ("ScriptRunner op_write[%s]: data mismatch; got block '%s' (%" G_GSSIZE_FORMAT " bytes), expected block '%s', difference %u%% > fuzz level %u%%", _tmp65_, _tmp68_, _tmp69_, _tmp75_, (((_tmp76_ * 1000) / _tmp77_) + 5) / 10, _tmp78_);
+				g_error ("ScriptRunner op_write[%s]: data mismatch; got block '%s' (%" G_GSSIZE_FORMAT " bytes), expected block '%s', difference %u%% > fuzz level %u%%", _tmp65_, _tmp68_, _tmp69_, _tmp75_, ((guint) (((_tmp76_ * 1000) / _tmp77_) + 5)) / 10, _tmp78_);
 				_g_free0 (_tmp75_);
 				_g_free0 (_tmp68_);
 			}
@@ -5519,7 +5559,7 @@ static void umockdev_script_runner_op_write (UMockdevScriptRunner* self, guint8*
 		_tmp83_ = offset;
 		_tmp84_ = data;
 		_tmp84__length1 = data_length1;
-		g_debug ("ScriptRunner[%s]: op_write, got %" G_GSSIZE_FORMAT " bytes; offset: %" G_GSIZE_FORMAT ", full block size %" G_GSIZE_FORMAT, _tmp81_, _tmp82_, _tmp83_, _tmp84__length1);
+		g_debug ("ScriptRunner[%s]: op_write, got %" G_GSSIZE_FORMAT " bytes; offset: %" G_GSIZE_FORMAT ", full block size %i", _tmp81_, _tmp82_, _tmp83_, _tmp84__length1);
 	}
 	buf = (g_free (buf), NULL);
 }
@@ -6175,7 +6215,7 @@ void umockdev_socket_server_stop (UMockdevSocketServer* self) {
 		return;
 	}
 	self->priv->running = FALSE;
-	g_debug ("umockdev.vala:1370: Stopping SocketServer: signalling thread");
+	g_debug ("umockdev.vala:1374: Stopping SocketServer: signalling thread");
 	b = '1';
 	_tmp1_ = self->priv->ctrl_w;
 	_tmp2_ = write (_tmp1_, &b, (gsize) 1);
@@ -6199,7 +6239,7 @@ void umockdev_socket_server_stop (UMockdevSocketServer* self) {
 	}
 	_tmp6_ = self->priv->script_runners;
 	g_hash_table_remove_all (_tmp6_);
-	g_debug ("umockdev.vala:1379: Stopping SocketServer: joining thread");
+	g_debug ("umockdev.vala:1383: Stopping SocketServer: joining thread");
 	_tmp7_ = self->priv->thread;
 	g_thread_join (_tmp7_);
 }
@@ -6298,7 +6338,7 @@ void umockdev_socket_server_add (UMockdevSocketServer* self, const gchar* sock_p
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		_tmp16_ = e->message;
-		g_error ("umockdev.vala:1392: load_socket_script(): cannot create Socket: %s", _tmp16_);
+		g_error ("umockdev.vala:1396: load_socket_script(): cannot create Socket: %s", _tmp16_);
 		_g_error_free0 (e);
 	}
 	__finally11:
@@ -6309,7 +6349,7 @@ void umockdev_socket_server_add (UMockdevSocketServer* self, const gchar* sock_p
 	}
 	_tmp17_ = sock_path;
 	_tmp18_ = fd;
-	g_debug ("umockdev.vala:1395: SocketServer.add: Created socket path %s, fd %i", _tmp17_, _tmp18_);
+	g_debug ("umockdev.vala:1399: SocketServer.add: Created socket path %s, fd %i", _tmp17_, _tmp18_);
 	_tmp19_ = self->priv->socket_scriptfile;
 	_tmp20_ = sock_path;
 	_tmp21_ = g_strdup (_tmp20_);
@@ -6327,7 +6367,7 @@ static void* umockdev_socket_server_run (UMockdevSocketServer* self) {
 	void* result = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
-	g_debug ("umockdev.vala:1406: starting SocketServer thread");
+	g_debug ("umockdev.vala:1410: starting SocketServer thread");
 	while (TRUE) {
 		gboolean _tmp0_;
 		fd_set fds = {0};
@@ -6414,7 +6454,7 @@ static void* umockdev_socket_server_run (UMockdevSocketServer* self) {
 			}
 			_tmp20_ = errno;
 			_tmp21_ = g_strerror (_tmp20_);
-			g_error ("umockdev.vala:1425: socket server thread: select() failed: %s", _tmp21_);
+			g_error ("umockdev.vala:1429: socket server thread: select() failed: %s", _tmp21_);
 		}
 		_tmp22_ = res;
 		if (_tmp22_ == 0) {
@@ -6427,13 +6467,13 @@ static void* umockdev_socket_server_run (UMockdevSocketServer* self) {
 			gchar buf = '\0';
 			gint _tmp26_;
 			gssize _tmp27_ = 0L;
-			g_debug ("umockdev.vala:1432: socket server thread: woken up by control fd");
+			g_debug ("umockdev.vala:1436: socket server thread: woken up by control fd");
 			_tmp26_ = self->priv->ctrl_r;
 			_tmp27_ = read (_tmp26_, &buf, (gsize) 1);
 			_vala_assert (_tmp27_ == ((gssize) 1), "Posix.read (this.ctrl_r, &buf, 1) == 1");
 			continue;
 		}
-		g_debug ("umockdev.vala:1438: socket server thread: select() got requests");
+		g_debug ("umockdev.vala:1442: socket server thread: select() got requests");
 		_tmp28_ = self->priv->listen_sockets;
 		_tmp28__length1 = self->priv->listen_sockets_length1;
 		{
@@ -6476,7 +6516,7 @@ static void* umockdev_socket_server_run (UMockdevSocketServer* self) {
 							const gchar* _tmp40_ = NULL;
 							_tmp39_ = errno;
 							_tmp40_ = g_strerror (_tmp39_);
-							g_error ("umockdev.vala:1445: socket server thread: accept() failed: %s", _tmp40_);
+							g_error ("umockdev.vala:1449: socket server thread: accept() failed: %s", _tmp40_);
 						}
 						sock_path = NULL;
 						{
@@ -6532,7 +6572,7 @@ static void* umockdev_socket_server_run (UMockdevSocketServer* self) {
 							_tmp54_ = _tmp53_;
 							_tmp55_ = sock_path;
 							_tmp56_ = script;
-							g_debug ("umockdev.vala:1450: socket server thread: accepted request on server s" \
+							g_debug ("umockdev.vala:1454: socket server thread: accepted request on server s" \
 "ocket fd %i, path %s, script %s", _tmp54_, _tmp55_, _tmp56_);
 							_tmp57_ = sock_path;
 							_tmp58_ = fd;
@@ -6563,7 +6603,7 @@ static void* umockdev_socket_server_run (UMockdevSocketServer* self) {
 							e = _inner_error_;
 							_inner_error_ = NULL;
 							_tmp68_ = e->message;
-							g_error ("umockdev.vala:1455: socket server thread: cannot launch ScriptRunner: " \
+							g_error ("umockdev.vala:1459: socket server thread: cannot launch ScriptRunner: " \
 "%s", _tmp68_);
 							_g_error_free0 (e);
 						}
@@ -6580,7 +6620,7 @@ static void* umockdev_socket_server_run (UMockdevSocketServer* self) {
 			}
 		}
 	}
-	g_debug ("umockdev.vala:1461: socket server thread: end");
+	g_debug ("umockdev.vala:1465: socket server thread: end");
 	result = NULL;
 	return result;
 }

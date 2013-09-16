@@ -297,6 +297,7 @@ tests_test_umockdev_vala_VALAFLAGS =		\
 tests_test_umockdev_run_SOURCES = 	\
 	tests/test-umockdev-run.vala	\
 	tests/assertions.vapi		\
+	src/config.vapi			\
 	$(NULL)
 
 tests_test_umockdev_run_CFLAGS = $(GLIB_CFLAGS) -w
@@ -400,6 +401,14 @@ EXAMPLES = \
 examplesdir = $(docdir)/examples
 examples_DATA = $(EXAMPLES)
 EXTRA_DIST += $(EXAMPLES)
+
+# -------------------------------------------------------------
+# code coverage
+
+# umockdev-scan is something internal from gcov/lcov, ignore that
+CODE_COVERAGE_IGNORE_PATTERN = */docs/* */usr/* *umockdev-scan*
+CODE_COVERAGE_LCOV_OPTIONS = --base-directory $(top_builddir)
+@GNOME_CODE_COVERAGE_RULES@
 
 # -------------------------------------------------------------
 # developer tools

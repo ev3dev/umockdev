@@ -25,10 +25,10 @@
 #include <glib-object.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <glib/gstdio.h>
 #include <umockdev.h>
 #include <unistd.h>
-#include <stdio.h>
 #include <pty.h>
 #include <termios.h>
 #include <sys/wait.h>
@@ -53,28 +53,35 @@ extern gchar* rootdir;
 gchar* rootdir = NULL;
 
 void spawn (const gchar* command, gchar** sout, gchar** serr, gint* exit);
+void assert_in (const gchar* needle, const gchar* haystack);
 gchar* file_contents (const gchar* filename);
 void t_testbed_all_empty (void);
 void t_testbed_one (void);
 void t_testbed_multiple (void);
 void t_testbed_no_ioctl_record (void);
+void t_system_single (void);
 void t_system_all (void);
+void t_system_invalid (void);
 void t_system_ioctl_log (void);
 void t_system_script_log_simple (void);
 gchar* read_line_timeout (FILE* stream);
 void t_system_script_log_chatter (void);
 void t_system_script_log_chatter_socket_stream (void);
+void t_run_invalid_args (void);
 void t_gphoto2_record (void);
 gint _vala_main (gchar** args, int args_length1);
 static void _t_testbed_all_empty_gtest_func (void);
 static void _t_testbed_one_gtest_func (void);
 static void _t_testbed_multiple_gtest_func (void);
 static void _t_testbed_no_ioctl_record_gtest_func (void);
+static void _t_system_single_gtest_func (void);
 static void _t_system_all_gtest_func (void);
+static void _t_system_invalid_gtest_func (void);
 static void _t_system_ioctl_log_gtest_func (void);
 static void _t_system_script_log_simple_gtest_func (void);
 static void _t_system_script_log_chatter_gtest_func (void);
 static void _t_system_script_log_chatter_socket_stream_gtest_func (void);
+static void _t_run_invalid_args_gtest_func (void);
 static void _t_gphoto2_record_gtest_func (void);
 static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
@@ -147,6 +154,41 @@ void spawn (const gchar* command, gchar** sout, gchar** serr, gint* exit) {
 }
 
 
+static gboolean string_contains (const gchar* self, const gchar* needle) {
+	gboolean result = FALSE;
+	const gchar* _tmp0_;
+	gchar* _tmp1_ = NULL;
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (needle != NULL, FALSE);
+	_tmp0_ = needle;
+	_tmp1_ = strstr ((gchar*) self, (gchar*) _tmp0_);
+	result = _tmp1_ != NULL;
+	return result;
+}
+
+
+void assert_in (const gchar* needle, const gchar* haystack) {
+	const gchar* _tmp0_;
+	const gchar* _tmp1_;
+	gboolean _tmp2_ = FALSE;
+	g_return_if_fail (needle != NULL);
+	g_return_if_fail (haystack != NULL);
+	_tmp0_ = haystack;
+	_tmp1_ = needle;
+	_tmp2_ = string_contains (_tmp0_, _tmp1_);
+	if (!_tmp2_) {
+		FILE* _tmp3_;
+		const gchar* _tmp4_;
+		const gchar* _tmp5_;
+		_tmp3_ = stderr;
+		_tmp4_ = needle;
+		_tmp5_ = haystack;
+		fprintf (_tmp3_, "'%s' not found in '%s'\n", _tmp4_, _tmp5_);
+		abort ();
+	}
+}
+
+
 gchar* file_contents (const gchar* filename) {
 	gchar* result = NULL;
 	gchar* contents = NULL;
@@ -183,7 +225,7 @@ gchar* file_contents (const gchar* filename) {
 		_inner_error_ = NULL;
 		_tmp4_ = filename;
 		_tmp5_ = e->message;
-		g_error ("test-umockdev-record.vala:45: Cannot get contents of %s: %s", _tmp4_, _tmp5_);
+		g_error ("test-umockdev-record.vala:54: Cannot get contents of %s: %s", _tmp4_, _tmp5_);
 		_g_error_free0 (e);
 	}
 	__finally1:
@@ -323,19 +365,6 @@ void t_testbed_one (void) {
 	_g_object_unref0 (tb);
 	_g_free0 (serr);
 	_g_free0 (sout);
-}
-
-
-static gboolean string_contains (const gchar* self, const gchar* needle) {
-	gboolean result = FALSE;
-	const gchar* _tmp0_;
-	gchar* _tmp1_ = NULL;
-	g_return_val_if_fail (self != NULL, FALSE);
-	g_return_val_if_fail (needle != NULL, FALSE);
-	_tmp0_ = needle;
-	_tmp1_ = strstr ((gchar*) self, (gchar*) _tmp0_);
-	result = _tmp1_ != NULL;
-	return result;
 }
 
 
@@ -620,6 +649,36 @@ void t_testbed_no_ioctl_record (void) {
 }
 
 
+void t_system_single (void) {
+	gchar* sout = NULL;
+	gchar* serr = NULL;
+	gint exit = 0;
+	const gchar* _tmp0_;
+	gchar* _tmp1_;
+	gchar* _tmp2_;
+	gchar* _tmp3_ = NULL;
+	gchar* _tmp4_ = NULL;
+	gint _tmp5_ = 0;
+	_tmp0_ = umockdev_record_path;
+	_tmp1_ = g_strconcat (_tmp0_, " /dev/null /dev/loop0", NULL);
+	_tmp2_ = _tmp1_;
+	spawn (_tmp2_, &_tmp3_, &_tmp4_, &_tmp5_);
+	_g_free0 (sout);
+	sout = _tmp3_;
+	_g_free0 (serr);
+	serr = _tmp4_;
+	exit = _tmp5_;
+	_g_free0 (_tmp2_);
+	g_assert_cmpstr (serr, ==, "");
+	g_assert_cmpint (exit, ==, 0);
+	assert_in ("E: DEVNAME=/dev/null", sout);
+	assert_in ("P: /devices/virtual/block/loop0", sout);
+	assert_in ("E: DEVNAME=/dev/loop0", sout);
+	_g_free0 (serr);
+	_g_free0 (sout);
+}
+
+
 void t_system_all (void) {
 	gchar* sout = NULL;
 	gchar* serr = NULL;
@@ -681,7 +740,7 @@ void t_system_all (void) {
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		_tmp12_ = e->message;
-		g_error ("test-umockdev-record.vala:183: Error when adding system dump to testbe" \
+		g_error ("test-umockdev-record.vala:207: Error when adding system dump to testbe" \
 "d: %s", _tmp12_);
 		_g_error_free0 (e);
 	}
@@ -695,6 +754,66 @@ void t_system_all (void) {
 		return;
 	}
 	_g_object_unref0 (tb);
+	_g_free0 (serr);
+	_g_free0 (sout);
+}
+
+
+void t_system_invalid (void) {
+	gchar* sout = NULL;
+	gchar* serr = NULL;
+	gint exit = 0;
+	const gchar* _tmp0_;
+	gchar* _tmp1_;
+	gchar* _tmp2_;
+	gchar* _tmp3_ = NULL;
+	gchar* _tmp4_ = NULL;
+	gint _tmp5_ = 0;
+	const gchar* _tmp6_;
+	const gchar* _tmp7_;
+	gint _tmp8_;
+	const gchar* _tmp9_;
+	gchar* _tmp10_;
+	gchar* _tmp11_;
+	gchar* _tmp12_ = NULL;
+	gchar* _tmp13_ = NULL;
+	gint _tmp14_ = 0;
+	const gchar* _tmp15_;
+	const gchar* _tmp16_;
+	gint _tmp17_;
+	_tmp0_ = umockdev_record_path;
+	_tmp1_ = g_strconcat (_tmp0_, " /sys/class", NULL);
+	_tmp2_ = _tmp1_;
+	spawn (_tmp2_, &_tmp3_, &_tmp4_, &_tmp5_);
+	_g_free0 (sout);
+	sout = _tmp3_;
+	_g_free0 (serr);
+	serr = _tmp4_;
+	exit = _tmp5_;
+	_g_free0 (_tmp2_);
+	_tmp6_ = serr;
+	g_assert_cmpstr (_tmp6_, ==, "Invalid device /sys/class, has no uevent attribute\n");
+	_tmp7_ = sout;
+	g_assert_cmpstr (_tmp7_, ==, "");
+	_tmp8_ = exit;
+	g_assert_cmpint (_tmp8_, !=, 0);
+	_tmp9_ = umockdev_record_path;
+	_tmp10_ = g_strconcat (_tmp9_, " /sys/block/loop0/size", NULL);
+	_tmp11_ = _tmp10_;
+	spawn (_tmp11_, &_tmp12_, &_tmp13_, &_tmp14_);
+	_g_free0 (sout);
+	sout = _tmp12_;
+	_g_free0 (serr);
+	serr = _tmp13_;
+	exit = _tmp14_;
+	_g_free0 (_tmp11_);
+	_tmp15_ = serr;
+	g_assert_cmpstr (_tmp15_, ==, "Invalid device /sys/devices/virtual/block/loop0/size, has no uevent at" \
+"tribute\n");
+	_tmp16_ = sout;
+	g_assert_cmpstr (_tmp16_, ==, "");
+	_tmp17_ = exit;
+	g_assert_cmpint (_tmp17_, !=, 0);
 	_g_free0 (serr);
 	_g_free0 (sout);
 }
@@ -1104,6 +1223,8 @@ void t_system_script_log_chatter (void) {
 	gint _tmp53_ = 0;
 	gint _tmp54_ = 0;
 	gint _tmp55_ = 0;
+	gint _tmp56_ = 0;
+	gint _tmp57_ = 0;
 	GError * _inner_error_ = NULL;
 	{
 		gchar* _tmp0_ = NULL;
@@ -1218,7 +1339,7 @@ void t_system_script_log_chatter (void) {
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		_tmp30_ = e->message;
-		g_error ("test-umockdev-record.vala:331: Cannot call umockdev-record: %s", _tmp30_);
+		g_error ("test-umockdev-record.vala:373: Cannot call umockdev-record: %s", _tmp30_);
 		_g_error_free0 (e);
 	}
 	__finally6:
@@ -1264,7 +1385,7 @@ void t_system_script_log_chatter (void) {
 	}
 	g_usleep ((gulong) 300000);
 	_tmp45_ = chatter_stream;
-	fputs ("foo ☹ bar !\n", _tmp45_);
+	fputs ("foo ☹ bar ^!\n", _tmp45_);
 	_tmp46_ = chatter_stream;
 	_tmp47_ = read_line_timeout (_tmp46_);
 	_tmp48_ = _tmp47_;
@@ -1287,10 +1408,15 @@ void t_system_script_log_chatter (void) {
 	_tmp54_ = fscanf (log_stream, "w %d I ♥ John^Ja^I tab and a^J line break in one write^J\n", &time);
 	g_assert_cmpint (_tmp54_, ==, 1);
 	g_assert_cmpint (time, <=, 20);
-	_tmp55_ = fscanf (log_stream, "r %d foo ☹ bar!^J\n", &time);
+	_tmp55_ = fscanf (log_stream, "r %d foo ☹ bar ^`!^J\n", &time);
 	g_assert_cmpint (_tmp55_, ==, 1);
 	g_assert_cmpint (time, >=, 250);
 	g_assert_cmpint (time, <=, 450);
+	_tmp56_ = fscanf (log_stream, "w %d bye!^J\n", &time);
+	g_assert_cmpint (_tmp56_, ==, 1);
+	g_assert_cmpint (time, <=, 20);
+	_tmp57_ = fscanf (log_stream, "%*c");
+	g_assert_cmpint (_tmp57_, ==, -1);
 	g_remove (log);
 	_fclose0 (log_stream);
 	_fclose0 (chatter_stream);
@@ -1539,7 +1665,7 @@ void t_system_script_log_chatter_socket_stream (void) {
 			e = _inner_error_;
 			_inner_error_ = NULL;
 			_tmp36_ = e->message;
-			g_error ("test-umockdev-record.vala:401: Cannot call umockdev-record: %s", _tmp36_);
+			g_error ("test-umockdev-record.vala:449: Cannot call umockdev-record: %s", _tmp36_);
 			_g_error_free0 (e);
 		}
 		__finally8:
@@ -1715,7 +1841,7 @@ void t_system_script_log_chatter_socket_stream (void) {
 		_tmp79_ = spath;
 		g_remove (_tmp79_);
 		_tmp80_ = e->message;
-		g_error ("test-umockdev-record.vala:452: Error: %s", _tmp80_);
+		g_error ("test-umockdev-record.vala:500: Error: %s", _tmp80_);
 		_g_error_free0 (e);
 	}
 	__finally7:
@@ -1760,6 +1886,34 @@ void t_system_script_log_chatter_socket_stream (void) {
 	_fclose0 (log_stream);
 	_g_free0 (spath);
 	_g_free0 (log);
+}
+
+
+void t_run_invalid_args (void) {
+	gchar* sout = NULL;
+	gchar* serr = NULL;
+	gint exit = 0;
+	const gchar* _tmp0_;
+	gchar* _tmp1_;
+	gchar* _tmp2_;
+	gchar* _tmp3_ = NULL;
+	gchar* _tmp4_ = NULL;
+	gint _tmp5_ = 0;
+	_tmp0_ = umockdev_record_path;
+	_tmp1_ = g_strconcat (_tmp0_, " /dev/no/such/device", NULL);
+	_tmp2_ = _tmp1_;
+	spawn (_tmp2_, &_tmp3_, &_tmp4_, &_tmp5_);
+	_g_free0 (sout);
+	sout = _tmp3_;
+	_g_free0 (serr);
+	serr = _tmp4_;
+	exit = _tmp5_;
+	_g_free0 (_tmp2_);
+	assert_in ("Cannot access device /dev/no/such/device: No such file", serr);
+	g_assert_cmpstr (sout, ==, "");
+	g_assert_cmpint (exit, !=, 0);
+	_g_free0 (serr);
+	_g_free0 (sout);
 }
 
 
@@ -1855,7 +2009,7 @@ void t_gphoto2_record (void) {
 		const gchar* _tmp11_;
 		gchar* _tmp12_;
 		gchar* _tmp13_;
-		_tmp9_ = stderr;
+		_tmp9_ = stdout;
 		_tmp10_ = sout;
 		_tmp11_ = serr;
 		_tmp12_ = g_strconcat (_tmp10_, _tmp11_, NULL);
@@ -1895,7 +2049,7 @@ void t_gphoto2_record (void) {
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		_tmp16_ = e->message;
-		g_error ("test-umockdev-record.vala:503: Internal error building regex: %s", _tmp16_);
+		g_error ("test-umockdev-record.vala:565: Internal error building regex: %s", _tmp16_);
 		_g_error_free0 (e);
 	}
 	__finally10:
@@ -1915,7 +2069,7 @@ void t_gphoto2_record (void) {
 	match = _tmp19_;
 	if (!_tmp20_) {
 		FILE* _tmp21_;
-		_tmp21_ = stderr;
+		_tmp21_ = stdout;
 		fprintf (_tmp21_, "[SKIP: no gphoto2 compatible camera attached] ");
 		_g_match_info_free0 (match);
 		_g_regex_unref0 (port_re);
@@ -2021,8 +2175,18 @@ static void _t_testbed_no_ioctl_record_gtest_func (void) {
 }
 
 
+static void _t_system_single_gtest_func (void) {
+	t_system_single ();
+}
+
+
 static void _t_system_all_gtest_func (void) {
 	t_system_all ();
+}
+
+
+static void _t_system_invalid_gtest_func (void) {
+	t_system_invalid ();
 }
 
 
@@ -2043,6 +2207,11 @@ static void _t_system_script_log_chatter_gtest_func (void) {
 
 static void _t_system_script_log_chatter_socket_stream_gtest_func (void) {
 	t_system_script_log_chatter_socket_stream ();
+}
+
+
+static void _t_run_invalid_args_gtest_func (void) {
+	t_run_invalid_args ();
 }
 
 
@@ -2113,11 +2282,14 @@ gint _vala_main (gchar** args, int args_length1) {
 	g_test_add_func ("/umockdev-record/testbed-one", _t_testbed_one_gtest_func);
 	g_test_add_func ("/umockdev-record/testbed-multiple", _t_testbed_multiple_gtest_func);
 	g_test_add_func ("/umockdev-record/testbed-no-ioctl-record", _t_testbed_no_ioctl_record_gtest_func);
+	g_test_add_func ("/umockdev-record/system-single", _t_system_single_gtest_func);
 	g_test_add_func ("/umockdev-record/system-all", _t_system_all_gtest_func);
+	g_test_add_func ("/umockdev-record/system-invalid", _t_system_invalid_gtest_func);
 	g_test_add_func ("/umockdev-record/ioctl-log", _t_system_ioctl_log_gtest_func);
 	g_test_add_func ("/umockdev-record/script-log-simple", _t_system_script_log_simple_gtest_func);
 	g_test_add_func ("/umockdev-record/script-log-chatter", _t_system_script_log_chatter_gtest_func);
 	g_test_add_func ("/umockdev-record/script-log-socket", _t_system_script_log_chatter_socket_stream_gtest_func);
+	g_test_add_func ("/umockdev-record/invalid-args", _t_run_invalid_args_gtest_func);
 	g_test_add_func ("/umockdev-record/gphoto2-record", _t_gphoto2_record_gtest_func);
 	_tmp18_ = g_test_run ();
 	result = _tmp18_;

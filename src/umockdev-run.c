@@ -16,8 +16,8 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 
-#define _g_option_context_free0(var) ((var == NULL) ? NULL : (var = (g_option_context_free (var), NULL)))
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
+#define _g_option_context_free0(var) ((var == NULL) ? NULL : (var = (g_option_context_free (var), NULL)))
 #define _g_free0(var) (var = (g_free (var), NULL))
 #define _g_object_unref0(var) ((var == NULL) ? NULL : (var = (g_object_unref (var), NULL)))
 #define _vala_assert(expr, msg) if G_LIKELY (expr) ; else g_assertion_message_expr (G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC, msg);
@@ -143,17 +143,11 @@ gint _vala_main (gchar** args, int args_length1) {
 		_tmp3_ = oc;
 		g_option_context_parse (_tmp3_, &args_length1, &args, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			if (_inner_error_->domain == G_OPTION_ERROR) {
-				goto __catch0_g_option_error;
-			}
-			_g_option_context_free0 (oc);
-			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return 0;
+			goto __catch0_g_error;
 		}
 	}
 	goto __finally0;
-	__catch0_g_option_error:
+	__catch0_g_error:
 	{
 		GError* e = NULL;
 		FILE* _tmp4_;
@@ -240,21 +234,11 @@ gint _vala_main (gchar** args, int args_length1) {
 					_g_free0 (record);
 					record = _tmp24_;
 					if (_inner_error_ != NULL) {
-						if (_inner_error_->domain == G_FILE_ERROR) {
-							goto __catch1_g_file_error;
-						}
-						_g_free0 (record);
-						_g_free0 (path);
-						_g_object_unref0 (testbed);
-						_g_free0 (preload);
-						_g_option_context_free0 (oc);
-						g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-						g_clear_error (&_inner_error_);
-						return 0;
+						goto __catch1_g_error;
 					}
 				}
 				goto __finally1;
-				__catch1_g_file_error:
+				__catch1_g_error:
 				{
 					GError* e = NULL;
 					FILE* _tmp25_;
@@ -397,21 +381,11 @@ gint _vala_main (gchar** args, int args_length1) {
 					_tmp46_ = _tmp45_[1];
 					umockdev_testbed_load_ioctl (_tmp42_, _tmp44_, _tmp46_, &_inner_error_);
 					if (_inner_error_ != NULL) {
-						if (_inner_error_->domain == G_FILE_ERROR) {
-							goto __catch3_g_file_error;
-						}
-						parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
-						_g_free0 (i);
-						_g_object_unref0 (testbed);
-						_g_free0 (preload);
-						_g_option_context_free0 (oc);
-						g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-						g_clear_error (&_inner_error_);
-						return 0;
+						goto __catch3_g_error;
 					}
 				}
 				goto __finally3;
-				__catch3_g_file_error:
+				__catch3_g_error:
 				{
 					GError* e = NULL;
 					FILE* _tmp47_;
@@ -519,21 +493,11 @@ gint _vala_main (gchar** args, int args_length1) {
 					_tmp65_ = _tmp64_[1];
 					umockdev_testbed_load_script (_tmp61_, _tmp63_, _tmp65_, &_inner_error_);
 					if (_inner_error_ != NULL) {
-						if (_inner_error_->domain == G_FILE_ERROR) {
-							goto __catch4_g_file_error;
-						}
-						parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
-						_g_free0 (i);
-						_g_object_unref0 (testbed);
-						_g_free0 (preload);
-						_g_option_context_free0 (oc);
-						g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-						g_clear_error (&_inner_error_);
-						return 0;
+						goto __catch4_g_error;
 					}
 				}
 				goto __finally4;
-				__catch4_g_file_error:
+				__catch4_g_error:
 				{
 					GError* e = NULL;
 					FILE* _tmp66_;
@@ -641,21 +605,11 @@ gint _vala_main (gchar** args, int args_length1) {
 					_tmp84_ = _tmp83_[1];
 					umockdev_testbed_load_socket_script (_tmp80_, _tmp82_, SOCK_STREAM, _tmp84_, &_inner_error_);
 					if (_inner_error_ != NULL) {
-						if (_inner_error_->domain == G_FILE_ERROR) {
-							goto __catch5_g_file_error;
-						}
-						parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
-						_g_free0 (i);
-						_g_object_unref0 (testbed);
-						_g_free0 (preload);
-						_g_option_context_free0 (oc);
-						g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-						g_clear_error (&_inner_error_);
-						return 0;
+						goto __catch5_g_error;
 					}
 				}
 				goto __finally5;
-				__catch5_g_file_error:
+				__catch5_g_error:
 				{
 					GError* e = NULL;
 					FILE* _tmp85_;
@@ -725,19 +679,11 @@ gint _vala_main (gchar** args, int args_length1) {
 		g_spawn_async (NULL, _tmp94_, NULL, (G_SPAWN_SEARCH_PATH | G_SPAWN_CHILD_INHERITS_STDIN) | G_SPAWN_DO_NOT_REAP_CHILD, NULL, NULL, &_tmp95_, &_inner_error_);
 		child_pid = _tmp95_;
 		if (_inner_error_ != NULL) {
-			if (_inner_error_->domain == G_SPAWN_ERROR) {
-				goto __catch6_g_spawn_error;
-			}
-			_g_object_unref0 (testbed);
-			_g_free0 (preload);
-			_g_option_context_free0 (oc);
-			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return 0;
+			goto __catch6_g_error;
 		}
 	}
 	goto __finally6;
-	__catch6_g_spawn_error:
+	__catch6_g_error:
 	{
 		GError* e = NULL;
 		FILE* _tmp96_;

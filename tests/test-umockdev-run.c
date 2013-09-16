@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include "config.h"
 #include <glib/gstdio.h>
 #include <unistd.h>
 #include <float.h>
@@ -50,9 +51,13 @@ gboolean get_program_out (const gchar* program, const gchar* command, gchar** so
 void check_program_out (const gchar* program, const gchar* run_command, const gchar* expected_out);
 void check_program_error (const gchar* program, const gchar* run_command, const gchar* expected_err);
 void t_run_exit_code (void);
+void t_run_version (void);
 void t_run_pipes (void);
 void t_run_invalid_args (void);
+void t_run_invalid_device (void);
 void t_run_invalid_ioctl (void);
+void t_run_invalid_script (void);
+void t_run_invalid_program (void);
 void t_run_script_chatter (void);
 void t_run_script_chatter_socket_stream (void);
 void t_gphoto_detect (void);
@@ -65,9 +70,13 @@ void t_input_touchpad (void);
 void t_input_evtest (void);
 gint _vala_main (gchar** args, int args_length1);
 static void _t_run_exit_code_gtest_func (void);
+static void _t_run_version_gtest_func (void);
 static void _t_run_pipes_gtest_func (void);
 static void _t_run_invalid_args_gtest_func (void);
+static void _t_run_invalid_device_gtest_func (void);
 static void _t_run_invalid_ioctl_gtest_func (void);
+static void _t_run_invalid_script_gtest_func (void);
+static void _t_run_invalid_program_gtest_func (void);
 static void _t_run_script_chatter_gtest_func (void);
 static void _t_run_script_chatter_socket_stream_gtest_func (void);
 static void _t_gphoto_detect_gtest_func (void);
@@ -193,7 +202,7 @@ gboolean get_program_out (const gchar* program, const gchar* command, gchar** so
 		const gchar* _tmp3_;
 		gchar* _tmp4_;
 		gchar* _tmp5_;
-		_tmp2_ = stderr;
+		_tmp2_ = stdout;
 		_tmp3_ = program;
 		fprintf (_tmp2_, "[SKIP: %s not installed] ", _tmp3_);
 		_tmp4_ = g_strdup ("");
@@ -443,6 +452,11 @@ void t_run_exit_code (void) {
 }
 
 
+void t_run_version (void) {
+	check_program_out ("true", "--version", VERSION "\n");
+}
+
+
 void t_run_pipes (void) {
 	gchar* sout = NULL;
 	gchar* serr = NULL;
@@ -468,6 +482,90 @@ void t_run_pipes (void) {
 
 void t_run_invalid_args (void) {
 	check_program_error ("true", "", "--help");
+	check_program_error ("true", "--foobarize", "--help");
+}
+
+
+void t_run_invalid_device (void) {
+	GError * _inner_error_ = NULL;
+	check_program_error ("true", "-d non.existing", "Cannot open non.existing:");
+	{
+		gchar* umockdev_file = NULL;
+		gchar* _tmp0_ = NULL;
+		gint _tmp1_ = 0;
+		gint fd;
+		gint _tmp2_;
+		const gchar* _tmp3_;
+		const gchar* _tmp4_;
+		gchar* _tmp5_;
+		gchar* _tmp6_;
+		const gchar* _tmp7_;
+		gchar* _tmp8_;
+		gchar* _tmp9_;
+		gchar* _tmp10_;
+		gchar* _tmp11_;
+		_tmp1_ = g_file_open_tmp ("ttyS0.XXXXXX.umockdev", &_tmp0_, &_inner_error_);
+		_g_free0 (umockdev_file);
+		umockdev_file = _tmp0_;
+		fd = _tmp1_;
+		if (_inner_error_ != NULL) {
+			_g_free0 (umockdev_file);
+			if (_inner_error_->domain == G_FILE_ERROR) {
+				goto __catch2_g_file_error;
+			}
+			_g_free0 (umockdev_file);
+			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return;
+		}
+		_tmp2_ = fd;
+		close (_tmp2_);
+		_tmp3_ = umockdev_file;
+		g_file_set_contents (_tmp3_, "P: /devices/foo\n", (gssize) (-1), &_inner_error_);
+		if (_inner_error_ != NULL) {
+			_g_free0 (umockdev_file);
+			if (_inner_error_->domain == G_FILE_ERROR) {
+				goto __catch2_g_file_error;
+			}
+			_g_free0 (umockdev_file);
+			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return;
+		}
+		_tmp4_ = umockdev_file;
+		_tmp5_ = g_strconcat ("-d ", _tmp4_, NULL);
+		_tmp6_ = _tmp5_;
+		_tmp7_ = umockdev_file;
+		_tmp8_ = g_strconcat ("Invalid record file ", _tmp7_, NULL);
+		_tmp9_ = _tmp8_;
+		_tmp10_ = g_strconcat (_tmp9_, ": missing SUBSYSTEM", NULL);
+		_tmp11_ = _tmp10_;
+		check_program_error ("true", _tmp6_, _tmp11_);
+		_g_free0 (_tmp11_);
+		_g_free0 (_tmp9_);
+		_g_free0 (_tmp6_);
+		_g_free0 (umockdev_file);
+	}
+	goto __finally2;
+	__catch2_g_file_error:
+	{
+		GError* e = NULL;
+		FILE* _tmp12_;
+		const gchar* _tmp13_;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		_tmp12_ = stderr;
+		_tmp13_ = e->message;
+		fprintf (_tmp12_, "cannot create temporary file: %s\n", _tmp13_);
+		abort ();
+		_g_error_free0 (e);
+	}
+	__finally2:
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
 }
 
 
@@ -559,6 +657,71 @@ void t_run_invalid_ioctl (void) {
 }
 
 
+void t_run_invalid_script (void) {
+	const gchar* _tmp0_;
+	gchar* _tmp1_;
+	gchar* _tmp2_;
+	gchar* _tmp3_;
+	gchar* _tmp4_;
+	gchar* _tmp5_;
+	gchar* _tmp6_;
+	const gchar* _tmp7_;
+	gchar* _tmp8_;
+	gchar* _tmp9_;
+	gchar* _tmp10_;
+	gchar* _tmp11_;
+	gchar* _tmp12_;
+	gchar* _tmp13_;
+	const gchar* _tmp14_;
+	gchar* _tmp15_;
+	gchar* _tmp16_;
+	gchar* _tmp17_;
+	gchar* _tmp18_;
+	gchar* _tmp19_;
+	gchar* _tmp20_;
+	_tmp0_ = rootdir;
+	_tmp1_ = g_strconcat ("-d ", _tmp0_, NULL);
+	_tmp2_ = _tmp1_;
+	_tmp3_ = g_strconcat (_tmp2_, "/devices/cameras/canon-powershot-sx200.umockdev -s ", NULL);
+	_tmp4_ = _tmp3_;
+	_tmp5_ = g_strconcat (_tmp4_, "/dev/bus/usb/001/011 -- true", NULL);
+	_tmp6_ = _tmp5_;
+	check_program_error ("true", _tmp6_, "--script argument must be");
+	_g_free0 (_tmp6_);
+	_g_free0 (_tmp4_);
+	_g_free0 (_tmp2_);
+	_tmp7_ = rootdir;
+	_tmp8_ = g_strconcat ("-d ", _tmp7_, NULL);
+	_tmp9_ = _tmp8_;
+	_tmp10_ = g_strconcat (_tmp9_, "/devices/cameras/canon-powershot-sx200.umockdev -s ", NULL);
+	_tmp11_ = _tmp10_;
+	_tmp12_ = g_strconcat (_tmp11_, "/dev/bus/usb/001/011=/etc/passwd -- true", NULL);
+	_tmp13_ = _tmp12_;
+	check_program_error ("true", _tmp13_, "not a device suitable for scripts");
+	_g_free0 (_tmp13_);
+	_g_free0 (_tmp11_);
+	_g_free0 (_tmp9_);
+	_tmp14_ = rootdir;
+	_tmp15_ = g_strconcat ("-d ", _tmp14_, NULL);
+	_tmp16_ = _tmp15_;
+	_tmp17_ = g_strconcat (_tmp16_, "/devices/input/usbkbd.umockdev -s ", NULL);
+	_tmp18_ = _tmp17_;
+	_tmp19_ = g_strconcat (_tmp18_, "/dev/input/event5=/non/existing -- true", NULL);
+	_tmp20_ = _tmp19_;
+	check_program_error ("true", _tmp20_, "Cannot install /non/existing for device /dev/input/event5:");
+	_g_free0 (_tmp20_);
+	_g_free0 (_tmp18_);
+	_g_free0 (_tmp16_);
+	check_program_error ("true", "-u /dev/mysock -- true", "--unix-stream argument must be");
+	check_program_error ("true", "-u ../../../null/mysock=/nosuch.script -- true", "Cannot create socket path: Permission denied");
+}
+
+
+void t_run_invalid_program (void) {
+	check_program_error ("true", "no.such.prog", "Cannot run no.such.prog: Failed to execute");
+}
+
+
 void t_run_script_chatter (void) {
 	gchar* umockdev_file = NULL;
 	gchar* script_file = NULL;
@@ -592,7 +755,7 @@ void t_run_script_chatter (void) {
 		fd = _tmp1_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_FILE_ERROR) {
-				goto __catch2_g_file_error;
+				goto __catch3_g_file_error;
 			}
 			_g_free0 (script_file);
 			_g_free0 (umockdev_file);
@@ -608,7 +771,7 @@ void t_run_script_chatter (void) {
 		_tmp5_ = _tmp4_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_FILE_ERROR) {
-				goto __catch2_g_file_error;
+				goto __catch3_g_file_error;
 			}
 			_g_free0 (script_file);
 			_g_free0 (umockdev_file);
@@ -627,7 +790,7 @@ void t_run_script_chatter (void) {
 "A: dev=4:64", (gssize) (-1), &_inner_error_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_FILE_ERROR) {
-				goto __catch2_g_file_error;
+				goto __catch3_g_file_error;
 			}
 			_g_free0 (script_file);
 			_g_free0 (umockdev_file);
@@ -644,7 +807,7 @@ void t_run_script_chatter (void) {
 "w 0 bye!^J", (gssize) (-1), &_inner_error_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_FILE_ERROR) {
-				goto __catch2_g_file_error;
+				goto __catch3_g_file_error;
 			}
 			_g_free0 (script_file);
 			_g_free0 (umockdev_file);
@@ -653,8 +816,8 @@ void t_run_script_chatter (void) {
 			return;
 		}
 	}
-	goto __finally2;
-	__catch2_g_file_error:
+	goto __finally3;
+	__catch3_g_file_error:
 	{
 		GError* e = NULL;
 		FILE* _tmp9_;
@@ -667,7 +830,7 @@ void t_run_script_chatter (void) {
 		abort ();
 		_g_error_free0 (e);
 	}
-	__finally2:
+	__finally3:
 	if (_inner_error_ != NULL) {
 		_g_free0 (script_file);
 		_g_free0 (umockdev_file);
@@ -720,7 +883,7 @@ void t_run_script_chatter_socket_stream (void) {
 		fd = _tmp1_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_FILE_ERROR) {
-				goto __catch3_g_file_error;
+				goto __catch4_g_file_error;
 			}
 			_g_free0 (script_file);
 			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -737,7 +900,7 @@ void t_run_script_chatter_socket_stream (void) {
 "r 30 somejunk", (gssize) (-1), &_inner_error_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_FILE_ERROR) {
-				goto __catch3_g_file_error;
+				goto __catch4_g_file_error;
 			}
 			_g_free0 (script_file);
 			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -745,8 +908,8 @@ void t_run_script_chatter_socket_stream (void) {
 			return;
 		}
 	}
-	goto __finally3;
-	__catch3_g_file_error:
+	goto __finally4;
+	__catch4_g_file_error:
 	{
 		GError* e = NULL;
 		FILE* _tmp4_;
@@ -759,7 +922,7 @@ void t_run_script_chatter_socket_stream (void) {
 		abort ();
 		_g_error_free0 (e);
 	}
-	__finally3:
+	__finally4:
 	if (_inner_error_ != NULL) {
 		_g_free0 (script_file);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -877,7 +1040,7 @@ gboolean check_gphoto_version (void) {
 	_tmp10_ = double_parse (_tmp9_);
 	if (_tmp10_ < 2.5) {
 		FILE* _tmp11_;
-		_tmp11_ = stderr;
+		_tmp11_ = stdout;
 		fprintf (_tmp11_, "[SKIP: needs gphoto >= 2.5] ");
 		result = FALSE;
 		words = (_vala_array_free (words, words_length1, (GDestroyNotify) g_free), NULL);
@@ -1175,14 +1338,14 @@ void t_input_touchpad (void) {
 	GError * _inner_error_ = NULL;
 	if (G_BYTE_ORDER == G_BIG_ENDIAN) {
 		FILE* _tmp0_;
-		_tmp0_ = stderr;
+		_tmp0_ = stdout;
 		fprintf (_tmp0_, "[SKIP: this test only works on little endian machines] ");
 		return;
 	}
 	_tmp1_ = have_program ("Xorg");
 	if (!_tmp1_) {
 		FILE* _tmp2_;
-		_tmp2_ = stderr;
+		_tmp2_ = stdout;
 		fprintf (_tmp2_, "[SKIP: Xorg not installed] ");
 		return;
 	}
@@ -1197,7 +1360,7 @@ void t_input_touchpad (void) {
 		fd = _tmp4_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_FILE_ERROR) {
-				goto __catch4_g_file_error;
+				goto __catch5_g_file_error;
 			}
 			_g_free0 (logfile);
 			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1207,8 +1370,8 @@ void t_input_touchpad (void) {
 		_tmp5_ = fd;
 		close (_tmp5_);
 	}
-	goto __finally4;
-	__catch4_g_file_error:
+	goto __finally5;
+	__catch5_g_file_error:
 	{
 		GError* e = NULL;
 		FILE* _tmp6_;
@@ -1221,7 +1384,7 @@ void t_input_touchpad (void) {
 		abort ();
 		_g_error_free0 (e);
 	}
-	__finally4:
+	__finally5:
 	if (_inner_error_ != NULL) {
 		_g_free0 (logfile);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1290,7 +1453,7 @@ void t_input_touchpad (void) {
 		_g_free0 (_tmp15_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_SPAWN_ERROR) {
-				goto __catch5_g_spawn_error;
+				goto __catch6_g_spawn_error;
 			}
 			_g_free0 (logfile);
 			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1298,8 +1461,8 @@ void t_input_touchpad (void) {
 			return;
 		}
 	}
-	goto __finally5;
-	__catch5_g_spawn_error:
+	goto __finally6;
+	__catch6_g_spawn_error:
 	{
 		GError* e = NULL;
 		FILE* _tmp29_;
@@ -1312,7 +1475,7 @@ void t_input_touchpad (void) {
 		abort ();
 		_g_error_free0 (e);
 	}
-	__finally5:
+	__finally6:
 	if (_inner_error_ != NULL) {
 		_g_free0 (logfile);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1450,14 +1613,14 @@ void t_input_evtest (void) {
 	GError * _inner_error_ = NULL;
 	if (G_BYTE_ORDER == G_BIG_ENDIAN) {
 		FILE* _tmp0_;
-		_tmp0_ = stderr;
+		_tmp0_ = stdout;
 		fprintf (_tmp0_, "[SKIP: this test only works on little endian machines] ");
 		return;
 	}
 	_tmp1_ = have_program ("evtest");
 	if (!_tmp1_) {
 		FILE* _tmp2_;
-		_tmp2_ = stderr;
+		_tmp2_ = stdout;
 		fprintf (_tmp2_, "[SKIP: evtest not installed] ");
 		return;
 	}
@@ -1541,7 +1704,7 @@ void t_input_evtest (void) {
 		_g_free0 (_tmp14_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_SPAWN_ERROR) {
-				goto __catch6_g_spawn_error;
+				goto __catch7_g_spawn_error;
 			}
 			_g_free0 (script_arch);
 			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1549,8 +1712,8 @@ void t_input_evtest (void) {
 			return;
 		}
 	}
-	goto __finally6;
-	__catch6_g_spawn_error:
+	goto __finally7;
+	__catch7_g_spawn_error:
 	{
 		GError* e = NULL;
 		FILE* _tmp31_;
@@ -1563,7 +1726,7 @@ void t_input_evtest (void) {
 		abort ();
 		_g_error_free0 (e);
 	}
-	__finally6:
+	__finally7:
 	if (_inner_error_ != NULL) {
 		_g_free0 (script_arch);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1659,6 +1822,11 @@ static void _t_run_exit_code_gtest_func (void) {
 }
 
 
+static void _t_run_version_gtest_func (void) {
+	t_run_version ();
+}
+
+
 static void _t_run_pipes_gtest_func (void) {
 	t_run_pipes ();
 }
@@ -1669,8 +1837,23 @@ static void _t_run_invalid_args_gtest_func (void) {
 }
 
 
+static void _t_run_invalid_device_gtest_func (void) {
+	t_run_invalid_device ();
+}
+
+
 static void _t_run_invalid_ioctl_gtest_func (void) {
 	t_run_invalid_ioctl ();
+}
+
+
+static void _t_run_invalid_script_gtest_func (void) {
+	t_run_invalid_script ();
+}
+
+
+static void _t_run_invalid_program_gtest_func (void) {
+	t_run_invalid_program ();
 }
 
 
@@ -1745,9 +1928,13 @@ gint _vala_main (gchar** args, int args_length1) {
 		rootdir = _tmp5_;
 	}
 	g_test_add_func ("/umockdev-run/exit_code", _t_run_exit_code_gtest_func);
+	g_test_add_func ("/umockdev-run/version", _t_run_version_gtest_func);
 	g_test_add_func ("/umockdev-run/pipes", _t_run_pipes_gtest_func);
 	g_test_add_func ("/umockdev-run/invalid-args", _t_run_invalid_args_gtest_func);
+	g_test_add_func ("/umockdev-run/invalid-device", _t_run_invalid_device_gtest_func);
 	g_test_add_func ("/umockdev-run/invalid-ioctl", _t_run_invalid_ioctl_gtest_func);
+	g_test_add_func ("/umockdev-run/invalid-script", _t_run_invalid_script_gtest_func);
+	g_test_add_func ("/umockdev-run/invalid-program", _t_run_invalid_program_gtest_func);
 	g_test_add_func ("/umockdev-run/script-chatter", _t_run_script_chatter_gtest_func);
 	g_test_add_func ("/umockdev-run/script-chatter-socket-stream", _t_run_script_chatter_socket_stream_gtest_func);
 	g_test_add_func ("/umockdev-run/integration/gphoto-detect", _t_gphoto_detect_gtest_func);

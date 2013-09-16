@@ -722,7 +722,9 @@ public class Testbed: GLib.Object {
                                        type, strerror(errno)));
 
         string real_path = Path.build_filename (this.root_dir, path);
-        assert(DirUtils.create_with_parents(Path.get_dirname(real_path), 0755) == 0);
+        if (DirUtils.create_with_parents(Path.get_dirname(real_path), 0755) != 0)
+            throw new FileError.INVAL ("Cannot create socket path: %s".printf(
+                                       strerror(errno)));
 
         // start thread to accept client connections at first socket creation
         if (this.socket_server == null)
@@ -1187,7 +1189,7 @@ private class ScriptRunner {
 
     private uint8[] next_line (out char op, out uint32 delta)
     {
-        // read operation code; skip empty lines
+        // read operation code; skip empty lines and comments
         int c;
         for (;;) {
             c = this.script.getc ();
@@ -1196,6 +1198,8 @@ private class ScriptRunner {
                 op = 'Q';
                 delta = 0;
                 return {};
+            } else if (c == '#') {
+                assert (this.script.read_line () != null);
             } else if (c != '\n') {
                 op = (char) c;
                 break;
@@ -1264,7 +1268,7 @@ private class ScriptRunner {
                     error ("ScriptRunner op_write[%s]: data mismatch; got block '%s' (%" + ssize_t.FORMAT +
                            " bytes), expected block '%s', difference %u%% > fuzz level %u%%",
                            this.device, encode(buf), len, encode(data[offset:offset+len]),
-                           (d * 1000 / len + 5) / 10, this.fuzz);
+                           (uint) (d * 1000 / len + 5) / 10, this.fuzz);
                 } /* else {
                     debug ("ScriptRunner op_write[%s]: data matches: got block '%s' (%" + ssize_t.FORMAT +
                                    " bytes), expected block '%s', difference %u%% <= fuzz level %u%%\n",
@@ -1275,7 +1279,7 @@ private class ScriptRunner {
 
             offset += len;
             debug ("ScriptRunner[%s]: op_write, got %" + ssize_t.FORMAT + " bytes; offset: %" +
-                   size_t.FORMAT + ", full block size %" + size_t.FORMAT,
+                   size_t.FORMAT + ", full block size %i",
                    this.device, len, offset, data.length);
         }
     }

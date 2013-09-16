@@ -911,13 +911,7 @@ void record_device (const gchar* dev) {
 		exitcode = _tmp10_;
 		_tmp8_ = (_vala_array_free (_tmp8_, _tmp8__length1, (GDestroyNotify) g_free), NULL);
 		if (_inner_error_ != NULL) {
-			if (_inner_error_->domain == G_SPAWN_ERROR) {
-				goto __catch1_g_spawn_error;
-			}
-			_g_free0 (u_out);
-			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return;
+			goto __catch1_g_error;
 		}
 		_tmp11_ = exitcode;
 		if (_tmp11_ != 0) {
@@ -933,17 +927,11 @@ void record_device (const gchar* dev) {
 			_tmp16_ = _tmp15_;
 			_g_free0 (_tmp14_);
 			_inner_error_ = _tmp16_;
-			if (_inner_error_->domain == G_SPAWN_ERROR) {
-				goto __catch1_g_spawn_error;
-			}
-			_g_free0 (u_out);
-			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return;
+			goto __catch1_g_error;
 		}
 	}
 	goto __finally1;
-	__catch1_g_spawn_error:
+	__catch1_g_error:
 	{
 		GError* e = NULL;
 		GError* _tmp17_;
@@ -1099,20 +1087,13 @@ void record_device (const gchar* dev) {
 		_tmp62_ = g_dir_open (_tmp61_, (guint) 0, &_inner_error_);
 		_tmp63_ = _tmp62_;
 		if (_inner_error_ != NULL) {
-			if (_inner_error_->domain == G_FILE_ERROR) {
-				goto __catch2_g_file_error;
-			}
-			_g_dir_close0 (d);
-			_g_free0 (u_out);
-			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return;
+			goto __catch2_g_error;
 		}
 		_g_dir_close0 (d);
 		d = _tmp63_;
 	}
 	goto __finally2;
-	__catch2_g_file_error:
+	__catch2_g_error:
 	{
 		GError* e = NULL;
 		const gchar* _tmp64_;
@@ -1219,18 +1200,7 @@ void record_device (const gchar* dev) {
 						_tmp89_ = g_file_read_link (_tmp88_, &_inner_error_);
 						_tmp90_ = _tmp89_;
 						if (_inner_error_ != NULL) {
-							if (_inner_error_->domain == G_FILE_ERROR) {
-								goto __catch3_g_file_error;
-							}
-							_g_free0 (attr_path);
-							_g_free0 (attr);
-							_g_free0 (entry);
-							__g_list_free__g_free0_0 (attributes);
-							_g_dir_close0 (d);
-							_g_free0 (u_out);
-							g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-							g_clear_error (&_inner_error_);
-							return;
+							goto __catch3_g_error;
 						}
 						_tmp91_ = stdout;
 						_tmp92_ = attr;
@@ -1239,7 +1209,7 @@ void record_device (const gchar* dev) {
 						_g_free0 (_tmp93_);
 					}
 					goto __finally3;
-					__catch3_g_file_error:
+					__catch3_g_error:
 					{
 						GError* e = NULL;
 						const gchar* _tmp94_;
@@ -1571,19 +1541,11 @@ void split_devfile_arg (const gchar* arg, gchar** devnum, gchar** fname) {
 				contents = _tmp39_;
 				_g_free0 (_tmp38_);
 				if (_inner_error_ != NULL) {
-					if (_inner_error_->domain == G_FILE_ERROR) {
-						goto __catch5_g_file_error;
-					}
-					_g_free0 (contents);
-					_g_free0 (dev);
-					parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
-					g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-					g_clear_error (&_inner_error_);
-					return;
+					goto __catch5_g_error;
 				}
 			}
 			goto __finally5;
-			__catch5_g_file_error:
+			__catch5_g_error:
 			{
 				GError* e = NULL;
 				const gchar* _tmp40_;
@@ -1763,17 +1725,11 @@ gint _vala_main (gchar** args, int args_length1) {
 		_tmp3_ = oc;
 		g_option_context_parse (_tmp3_, &args_length1, &args, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			if (_inner_error_->domain == G_OPTION_ERROR) {
-				goto __catch6_g_option_error;
-			}
-			_g_option_context_free0 (oc);
-			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return 0;
+			goto __catch6_g_error;
 		}
 	}
 	goto __finally6;
-	__catch6_g_option_error:
+	__catch6_g_error:
 	{
 		GError* e = NULL;
 		GError* _tmp4_;
