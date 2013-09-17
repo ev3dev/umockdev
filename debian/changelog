@@ -1,5 +1,6 @@
-umockdev (0.4.4-2) UNRELEASED; urgency=low
+umockdev (0.4.5-1) UNRELEASED; urgency=low
 
+  * New upstream release.
   * Make failing tests fail the build, they should run on all architectures
     now.
 
