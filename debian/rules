@@ -14,13 +14,9 @@ override_dh_auto_configure:
 
 # tests fail in PPA builders, so don't make them fatal for daily builds
 override_dh_auto_test:
-	#if ! dh_auto_test; then \
-	#    head -n1 debian/changelog | grep -q '~' || exit 1; \
-	#fi
-
-	# for the first Debian upload, let's just see how well they hold up on
-	# all the architectures
-	dh_auto_test || true
+	if ! dh_auto_test; then \
+	    head -n1 debian/changelog | grep -q '~' || exit 1; \
+	fi
 
 override_dh_install:
 	dh_install -X.a -X.la --fail-missing
