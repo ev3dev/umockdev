@@ -1,10 +1,10 @@
-umockdev (0.4.5-1) UNRELEASED; urgency=low
+umockdev (0.4.5-1) unstable; urgency=low
 
   * New upstream release.
   * Make failing tests fail the build, they should run on all architectures
     now.
 
- -- Martin Pitt <mpitt@debian.org>  Mon, 16 Sep 2013 19:39:09 -0500
+ -- Martin Pitt <mpitt@debian.org>  Tue, 17 Sep 2013 18:20:04 -0500
 
 umockdev (0.4.4-1) unstable; urgency=low
 
