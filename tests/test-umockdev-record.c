@@ -1880,7 +1880,7 @@ void t_system_script_log_chatter_socket_stream (void) {
 	_tmp92_ = fscanf (log_stream, "r %d recv()\n", &time);
 	g_assert_cmpint (_tmp92_, ==, 1);
 	g_assert_cmpint (time, >=, 20);
-	g_assert_cmpint (time, <=, 40);
+	g_assert_cmpint (time, <=, 60);
 	_tmp93_ = log;
 	g_remove (_tmp93_);
 	_fclose0 (log_stream);
