@@ -3,6 +3,7 @@ umockdev (0.4.6-1) UNRELEASED; urgency=low
   * New upstream bug fix release:
     - Skip umockdev-record tests which need /sys if there is no real /sys.
       (Closes: #724203)
+  * Disable silent build rules, to enable hardening/build log checks.
 
  -- Martin Pitt <mpitt@debian.org>  Fri, 11 Oct 2013 12:00:49 +0200
 
