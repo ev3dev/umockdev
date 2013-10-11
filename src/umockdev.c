@@ -6440,7 +6440,7 @@ static void* umockdev_socket_server_run (UMockdevSocketServer* self) {
 		}
 		_tmp15_ = max;
 		_tmp16_.tv_sec = (time_t) 0;
-		_tmp16_.tv_usec = (glong) 5000000;
+		_tmp16_.tv_usec = (glong) 500000;
 		_tmp17_ = select (_tmp15_ + 1, &fds, NULL, NULL, &_tmp16_);
 		res = _tmp17_;
 		_tmp18_ = res;

@@ -653,27 +653,47 @@ void t_system_single (void) {
 	gchar* sout = NULL;
 	gchar* serr = NULL;
 	gint exit = 0;
-	const gchar* _tmp0_;
-	gchar* _tmp1_;
-	gchar* _tmp2_;
-	gchar* _tmp3_ = NULL;
-	gchar* _tmp4_ = NULL;
-	gint _tmp5_ = 0;
-	_tmp0_ = umockdev_record_path;
-	_tmp1_ = g_strconcat (_tmp0_, " /dev/null /dev/loop0", NULL);
-	_tmp2_ = _tmp1_;
-	spawn (_tmp2_, &_tmp3_, &_tmp4_, &_tmp5_);
+	gboolean _tmp0_ = FALSE;
+	const gchar* _tmp2_;
+	gchar* _tmp3_;
+	gchar* _tmp4_;
+	gchar* _tmp5_ = NULL;
+	gchar* _tmp6_ = NULL;
+	gint _tmp7_ = 0;
+	const gchar* _tmp8_;
+	gint _tmp9_;
+	const gchar* _tmp10_;
+	const gchar* _tmp11_;
+	const gchar* _tmp12_;
+	_tmp0_ = g_file_test ("/sys/dev/char/1:3", G_FILE_TEST_EXISTS);
+	if (!_tmp0_) {
+		FILE* _tmp1_;
+		_tmp1_ = stderr;
+		fprintf (_tmp1_, "[SKIP: no real /sys on this system] ");
+		_g_free0 (serr);
+		_g_free0 (sout);
+		return;
+	}
+	_tmp2_ = umockdev_record_path;
+	_tmp3_ = g_strconcat (_tmp2_, " /dev/null /dev/loop0", NULL);
+	_tmp4_ = _tmp3_;
+	spawn (_tmp4_, &_tmp5_, &_tmp6_, &_tmp7_);
 	_g_free0 (sout);
-	sout = _tmp3_;
+	sout = _tmp5_;
 	_g_free0 (serr);
-	serr = _tmp4_;
-	exit = _tmp5_;
-	_g_free0 (_tmp2_);
-	g_assert_cmpstr (serr, ==, "");
-	g_assert_cmpint (exit, ==, 0);
-	assert_in ("E: DEVNAME=/dev/null", sout);
-	assert_in ("P: /devices/virtual/block/loop0", sout);
-	assert_in ("E: DEVNAME=/dev/loop0", sout);
+	serr = _tmp6_;
+	exit = _tmp7_;
+	_g_free0 (_tmp4_);
+	_tmp8_ = serr;
+	g_assert_cmpstr (_tmp8_, ==, "");
+	_tmp9_ = exit;
+	g_assert_cmpint (_tmp9_, ==, 0);
+	_tmp10_ = sout;
+	assert_in ("E: DEVNAME=/dev/null", _tmp10_);
+	_tmp11_ = sout;
+	assert_in ("P: /devices/virtual/block/loop0", _tmp11_);
+	_tmp12_ = sout;
+	assert_in ("E: DEVNAME=/dev/loop0", _tmp12_);
 	_g_free0 (serr);
 	_g_free0 (sout);
 }
@@ -683,42 +703,64 @@ void t_system_all (void) {
 	gchar* sout = NULL;
 	gchar* serr = NULL;
 	gint exit = 0;
-	const gchar* _tmp0_;
-	gchar* _tmp1_;
-	gchar* _tmp2_;
-	gchar* _tmp3_ = NULL;
-	gchar* _tmp4_ = NULL;
-	gint _tmp5_ = 0;
-	gboolean _tmp6_ = FALSE;
-	gint _tmp7_;
-	gint _tmp8_;
-	UMockdevTestbed* _tmp9_;
+	gboolean _tmp0_ = FALSE;
+	const gchar* _tmp2_;
+	gchar* _tmp3_;
+	gchar* _tmp4_;
+	gchar* _tmp5_ = NULL;
+	gchar* _tmp6_ = NULL;
+	gint _tmp7_ = 0;
+	const gchar* _tmp8_;
+	gint _tmp9_;
+	const gchar* _tmp10_;
+	gboolean _tmp11_ = FALSE;
+	const gchar* _tmp12_;
+	gint _tmp13_;
+	gint _tmp14_;
+	UMockdevTestbed* _tmp15_;
 	UMockdevTestbed* tb;
 	GError * _inner_error_ = NULL;
-	_tmp0_ = umockdev_record_path;
-	_tmp1_ = g_strconcat (_tmp0_, " --all", NULL);
-	_tmp2_ = _tmp1_;
-	spawn (_tmp2_, &_tmp3_, &_tmp4_, &_tmp5_);
+	_tmp0_ = g_file_test ("/sys/dev/char", G_FILE_TEST_EXISTS);
+	if (!_tmp0_) {
+		FILE* _tmp1_;
+		_tmp1_ = stderr;
+		fprintf (_tmp1_, "[SKIP: no real /sys on this system] ");
+		_g_free0 (serr);
+		_g_free0 (sout);
+		return;
+	}
+	_tmp2_ = umockdev_record_path;
+	_tmp3_ = g_strconcat (_tmp2_, " --all", NULL);
+	_tmp4_ = _tmp3_;
+	spawn (_tmp4_, &_tmp5_, &_tmp6_, &_tmp7_);
 	_g_free0 (sout);
-	sout = _tmp3_;
+	sout = _tmp5_;
 	_g_free0 (serr);
-	serr = _tmp4_;
-	exit = _tmp5_;
-	_g_free0 (_tmp2_);
-	g_assert_cmpstr (serr, ==, "");
-	g_assert_cmpint (exit, ==, 0);
-	_tmp6_ = g_str_has_prefix (sout, "P:");
-	_vala_assert (_tmp6_, "sout.has_prefix (\"P:\")");
-	_tmp7_ = strlen (sout);
-	_tmp8_ = _tmp7_;
-	g_assert_cmpint (_tmp8_, >=, 100);
-	_tmp9_ = umockdev_testbed_new ();
-	tb = _tmp9_;
+	serr = _tmp6_;
+	exit = _tmp7_;
+	_g_free0 (_tmp4_);
+	_tmp8_ = serr;
+	g_assert_cmpstr (_tmp8_, ==, "");
+	_tmp9_ = exit;
+	g_assert_cmpint (_tmp9_, ==, 0);
+	_tmp10_ = sout;
+	_tmp11_ = g_str_has_prefix (_tmp10_, "P:");
+	_vala_assert (_tmp11_, "sout.has_prefix (\"P:\")");
+	_tmp12_ = sout;
+	_tmp13_ = strlen (_tmp12_);
+	_tmp14_ = _tmp13_;
+	g_assert_cmpint (_tmp14_, >=, 100);
+	_tmp15_ = umockdev_testbed_new ();
+	tb = _tmp15_;
 	{
-		gboolean _tmp10_ = FALSE;
-		gboolean _tmp11_;
-		_tmp10_ = umockdev_testbed_add_from_string (tb, sout, &_inner_error_);
-		_tmp11_ = _tmp10_;
+		UMockdevTestbed* _tmp16_;
+		const gchar* _tmp17_;
+		gboolean _tmp18_ = FALSE;
+		gboolean _tmp19_;
+		_tmp16_ = tb;
+		_tmp17_ = sout;
+		_tmp18_ = umockdev_testbed_add_from_string (_tmp16_, _tmp17_, &_inner_error_);
+		_tmp19_ = _tmp18_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == UMOCKDEV_ERROR) {
 				goto __catch2_umockdev_error;
@@ -730,18 +772,18 @@ void t_system_all (void) {
 			g_clear_error (&_inner_error_);
 			return;
 		}
-		_vala_assert (_tmp11_, "tb.add_from_string (sout)");
+		_vala_assert (_tmp19_, "tb.add_from_string (sout)");
 	}
 	goto __finally2;
 	__catch2_umockdev_error:
 	{
 		GError* e = NULL;
-		const gchar* _tmp12_;
+		const gchar* _tmp20_;
 		e = _inner_error_;
 		_inner_error_ = NULL;
-		_tmp12_ = e->message;
-		g_error ("test-umockdev-record.vala:207: Error when adding system dump to testbe" \
-"d: %s", _tmp12_);
+		_tmp20_ = e->message;
+		g_error ("test-umockdev-record.vala:217: Error when adding system dump to testbe" \
+"d: %s", _tmp20_);
 		_g_error_free0 (e);
 	}
 	__finally2:
@@ -763,57 +805,67 @@ void t_system_invalid (void) {
 	gchar* sout = NULL;
 	gchar* serr = NULL;
 	gint exit = 0;
-	const gchar* _tmp0_;
-	gchar* _tmp1_;
-	gchar* _tmp2_;
-	gchar* _tmp3_ = NULL;
-	gchar* _tmp4_ = NULL;
-	gint _tmp5_ = 0;
-	const gchar* _tmp6_;
-	const gchar* _tmp7_;
-	gint _tmp8_;
+	gboolean _tmp0_ = FALSE;
+	const gchar* _tmp2_;
+	gchar* _tmp3_;
+	gchar* _tmp4_;
+	gchar* _tmp5_ = NULL;
+	gchar* _tmp6_ = NULL;
+	gint _tmp7_ = 0;
+	const gchar* _tmp8_;
 	const gchar* _tmp9_;
-	gchar* _tmp10_;
-	gchar* _tmp11_;
-	gchar* _tmp12_ = NULL;
-	gchar* _tmp13_ = NULL;
-	gint _tmp14_ = 0;
-	const gchar* _tmp15_;
-	const gchar* _tmp16_;
-	gint _tmp17_;
-	_tmp0_ = umockdev_record_path;
-	_tmp1_ = g_strconcat (_tmp0_, " /sys/class", NULL);
-	_tmp2_ = _tmp1_;
-	spawn (_tmp2_, &_tmp3_, &_tmp4_, &_tmp5_);
+	gint _tmp10_;
+	const gchar* _tmp11_;
+	gchar* _tmp12_;
+	gchar* _tmp13_;
+	gchar* _tmp14_ = NULL;
+	gchar* _tmp15_ = NULL;
+	gint _tmp16_ = 0;
+	const gchar* _tmp17_;
+	const gchar* _tmp18_;
+	gint _tmp19_;
+	_tmp0_ = g_file_test ("/sys/block/loop0", G_FILE_TEST_EXISTS);
+	if (!_tmp0_) {
+		FILE* _tmp1_;
+		_tmp1_ = stderr;
+		fprintf (_tmp1_, "[SKIP: no real /sys on this system] ");
+		_g_free0 (serr);
+		_g_free0 (sout);
+		return;
+	}
+	_tmp2_ = umockdev_record_path;
+	_tmp3_ = g_strconcat (_tmp2_, " /sys/class", NULL);
+	_tmp4_ = _tmp3_;
+	spawn (_tmp4_, &_tmp5_, &_tmp6_, &_tmp7_);
 	_g_free0 (sout);
-	sout = _tmp3_;
+	sout = _tmp5_;
 	_g_free0 (serr);
-	serr = _tmp4_;
-	exit = _tmp5_;
-	_g_free0 (_tmp2_);
-	_tmp6_ = serr;
-	g_assert_cmpstr (_tmp6_, ==, "Invalid device /sys/class, has no uevent attribute\n");
-	_tmp7_ = sout;
-	g_assert_cmpstr (_tmp7_, ==, "");
-	_tmp8_ = exit;
-	g_assert_cmpint (_tmp8_, !=, 0);
-	_tmp9_ = umockdev_record_path;
-	_tmp10_ = g_strconcat (_tmp9_, " /sys/block/loop0/size", NULL);
-	_tmp11_ = _tmp10_;
-	spawn (_tmp11_, &_tmp12_, &_tmp13_, &_tmp14_);
+	serr = _tmp6_;
+	exit = _tmp7_;
+	_g_free0 (_tmp4_);
+	_tmp8_ = serr;
+	g_assert_cmpstr (_tmp8_, ==, "Invalid device /sys/class, has no uevent attribute\n");
+	_tmp9_ = sout;
+	g_assert_cmpstr (_tmp9_, ==, "");
+	_tmp10_ = exit;
+	g_assert_cmpint (_tmp10_, !=, 0);
+	_tmp11_ = umockdev_record_path;
+	_tmp12_ = g_strconcat (_tmp11_, " /sys/block/loop0/size", NULL);
+	_tmp13_ = _tmp12_;
+	spawn (_tmp13_, &_tmp14_, &_tmp15_, &_tmp16_);
 	_g_free0 (sout);
-	sout = _tmp12_;
+	sout = _tmp14_;
 	_g_free0 (serr);
-	serr = _tmp13_;
-	exit = _tmp14_;
-	_g_free0 (_tmp11_);
-	_tmp15_ = serr;
-	g_assert_cmpstr (_tmp15_, ==, "Invalid device /sys/devices/virtual/block/loop0/size, has no uevent at" \
+	serr = _tmp15_;
+	exit = _tmp16_;
+	_g_free0 (_tmp13_);
+	_tmp17_ = serr;
+	g_assert_cmpstr (_tmp17_, ==, "Invalid device /sys/devices/virtual/block/loop0/size, has no uevent at" \
 "tribute\n");
-	_tmp16_ = sout;
-	g_assert_cmpstr (_tmp16_, ==, "");
-	_tmp17_ = exit;
-	g_assert_cmpint (_tmp17_, !=, 0);
+	_tmp18_ = sout;
+	g_assert_cmpstr (_tmp18_, ==, "");
+	_tmp19_ = exit;
+	g_assert_cmpint (_tmp19_, !=, 0);
 	_g_free0 (serr);
 	_g_free0 (sout);
 }
@@ -1339,7 +1391,7 @@ void t_system_script_log_chatter (void) {
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		_tmp30_ = e->message;
-		g_error ("test-umockdev-record.vala:373: Cannot call umockdev-record: %s", _tmp30_);
+		g_error ("test-umockdev-record.vala:388: Cannot call umockdev-record: %s", _tmp30_);
 		_g_error_free0 (e);
 	}
 	__finally6:
@@ -1665,7 +1717,7 @@ void t_system_script_log_chatter_socket_stream (void) {
 			e = _inner_error_;
 			_inner_error_ = NULL;
 			_tmp36_ = e->message;
-			g_error ("test-umockdev-record.vala:449: Cannot call umockdev-record: %s", _tmp36_);
+			g_error ("test-umockdev-record.vala:464: Cannot call umockdev-record: %s", _tmp36_);
 			_g_error_free0 (e);
 		}
 		__finally8:
@@ -1841,7 +1893,7 @@ void t_system_script_log_chatter_socket_stream (void) {
 		_tmp79_ = spath;
 		g_remove (_tmp79_);
 		_tmp80_ = e->message;
-		g_error ("test-umockdev-record.vala:500: Error: %s", _tmp80_);
+		g_error ("test-umockdev-record.vala:515: Error: %s", _tmp80_);
 		_g_error_free0 (e);
 	}
 	__finally7:
@@ -2049,7 +2101,7 @@ void t_gphoto2_record (void) {
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		_tmp16_ = e->message;
-		g_error ("test-umockdev-record.vala:565: Internal error building regex: %s", _tmp16_);
+		g_error ("test-umockdev-record.vala:580: Internal error building regex: %s", _tmp16_);
 		_g_error_free0 (e);
 	}
 	__finally10:
