@@ -1,3 +1,11 @@
+umockdev (0.4.6-2) UNRELEASED; urgency=low
+
+  * Add 00git_fix_tests_for_missing_loop.patch: Skip umockdev-record loop
+    device test if /sys exists, but there is no loop device. Fixes FTBFS on
+    Debian buildds.
+
+ -- Martin Pitt <mpitt@debian.org>  Fri, 11 Oct 2013 12:59:32 +0200
+
 umockdev (0.4.6-1) unstable; urgency=low
 
   * New upstream bug fix release:
