@@ -713,7 +713,6 @@ void t_run_invalid_script (void) {
 	_g_free0 (_tmp18_);
 	_g_free0 (_tmp16_);
 	check_program_error ("true", "-u /dev/mysock -- true", "--unix-stream argument must be");
-	check_program_error ("true", "-u ../../../../../../../null/mysock=/nosuch.script -- true", "annot create");
 }
 
 
