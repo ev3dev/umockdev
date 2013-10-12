@@ -1,10 +1,10 @@
-umockdev (0.4.6-3) UNRELEASED; urgency=low
+umockdev (0.4.6-3) unstable; urgency=low
 
   * Add 00git_relax_test_timings.patch: Slightly relax timings in
     /umockdev-testbed/script_replay_simple test to avoid failure on slow
     machines. (Observed on sparc buildd)
 
- -- Martin Pitt <mpitt@debian.org>  Sat, 12 Oct 2013 19:21:53 +0200
+ -- Martin Pitt <mpitt@debian.org>  Sat, 12 Oct 2013 19:28:35 +0200
 
 umockdev (0.4.6-2) unstable; urgency=low
 
