@@ -1,3 +1,13 @@
+0.4.7 (2013-11-14)
+------------------
+- Skip umockdev-record loop device test if /sys exists, but there is no loop
+  device.
+- Slightly relax timings in /umockdev-testbed/script_replay_simple test to
+  avoid failure on slow machines.
+- preload: Wrap chmod() and inotify_add_watch().
+- Fix assertion on umockdev_testbed_uevent() if there are no listeners.
+  (issue #29)
+
 0.4.6 (2013-10-11)
 ------------------
 - Fix wrong select() call timeout which caused a failure on arm64.

@@ -581,6 +581,18 @@ t_testbed_uevent_gudev(UMockdevTestbedFixture * fixture, gconstpointer data)
 }
 
 static void
+t_testbed_uevent_no_listener(UMockdevTestbedFixture * fixture, gconstpointer data)
+{
+    gchar *syspath;
+
+    syspath = umockdev_testbed_add_device(fixture->testbed, "pci", "mydev", NULL, NULL, NULL);
+    g_assert(syspath);
+
+    /* generate event */
+    umockdev_testbed_uevent(fixture->testbed, syspath, "add");
+}
+
+static void
 t_testbed_uevent_error(UMockdevTestbedFixture * fixture, gconstpointer data)
 {
     struct udev *udev;
@@ -1102,11 +1114,11 @@ r 0 ^@^^^`^@a\n";
 
   /* now we should get the response after 10 ms */
   ASSERT_EOF;
-  usleep(15000);
+  usleep(20000);
   g_assert_cmpint(read(fd, buf, 11), ==, 11);
   g_assert(strncmp(buf, "response\t1\n", 11) == 0);
   g_assert_cmpint(errno, ==, 0);
-  usleep(2000);
+  usleep(5000);
   g_assert_cmpint(read(fd, buf, 15), ==, 15);
   g_assert(strncmp(buf, "hello world ☺\n", 15) == 0);
   g_assert_cmpint(errno, ==, 0);
@@ -1455,6 +1467,8 @@ main(int argc, char **argv)
 	       t_testbed_uevent_libudev, t_testbed_fixture_teardown);
     g_test_add("/umockdev-testbed/uevent/gudev", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
 	       t_testbed_uevent_gudev, t_testbed_fixture_teardown);
+    g_test_add("/umockdev-testbed/uevent/no_listener", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
+	       t_testbed_uevent_no_listener, t_testbed_fixture_teardown);
     g_test_add("/umockdev-testbed/uevent/error", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
 	       t_testbed_uevent_error, t_testbed_fixture_teardown);
 
