@@ -1,4 +1,4 @@
-umockdev (0.4.7-1) UNRELEASED; urgency=low
+umockdev (0.4.7-1) unstable; urgency=low
 
   * New upstream bug fix release.
   * Drop backported patches.
@@ -6,7 +6,7 @@ umockdev (0.4.7-1) UNRELEASED; urgency=low
   * Override the package-name-doesnt-match-sonames lintian warning for the
     preload library.
 
- -- Martin Pitt <mpitt@debian.org>  Thu, 14 Nov 2013 09:06:28 +0100
+ -- Martin Pitt <mpitt@debian.org>  Thu, 14 Nov 2013 09:12:16 +0100
 
 umockdev (0.4.6-3) unstable; urgency=low
 
