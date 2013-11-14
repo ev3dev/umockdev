@@ -38,6 +38,7 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/inotify.h>
 #include <sys/socket.h>
 #include <linux/un.h>
 #include <linux/netlink.h>
@@ -905,6 +906,7 @@ WRAP_1ARG(DIR *, NULL, opendir);
 WRAP_2ARGS(FILE *, NULL, fopen, const char *);
 WRAP_2ARGS(FILE *, NULL, fopen64, const char *);
 WRAP_2ARGS(int, -1, mkdir, mode_t);
+WRAP_2ARGS(int, -1, chmod, mode_t);
 WRAP_2ARGS(int, -1, access, int);
 WRAP_2ARGS(int, -1, stat, struct stat *);
 WRAP_2ARGS(int, -1, stat64, struct stat64 *);
@@ -925,6 +927,19 @@ WRAP_OPEN(,);
 WRAP_OPEN(, 64);
 WRAP_OPEN2(__,_2);
 WRAP_OPEN2(__,64_2);
+
+int
+inotify_add_watch(int fd, const char *path, uint32_t mask)
+{
+    const char *p;
+    libc_func(inotify_add_watch, int, int, const char*, uint32_t);
+
+    p = trap_path(path);
+    if (p == NULL)
+    return -1;
+
+    return _inotify_add_watch(fd, p, mask);
+}
 
 ssize_t
 read(int fd, void *buf, size_t count)
