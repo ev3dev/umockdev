@@ -1,3 +1,10 @@
+umockdev (0.4.7-2) UNRELEASED; urgency=medium
+
+  * Build using dh-autoreconf instead of ./autogen.sh. Based on patch by
+    Matthias Klose.
+
+ -- Martin Pitt <mpitt@debian.org>  Mon, 23 Dec 2013 08:51:20 +0100
+
 umockdev (0.4.7-1) unstable; urgency=low
 
   * New upstream bug fix release.
