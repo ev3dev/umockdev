@@ -1,5 +1,6 @@
-umockdev (0.4.7-2) UNRELEASED; urgency=medium
+umockdev (0.5-1) UNRELEASED; urgency=medium
 
+  * New upstream release.
   * Build using dh-autoreconf instead of ./autogen.sh. Based on patch by
     Matthias Klose.
 
