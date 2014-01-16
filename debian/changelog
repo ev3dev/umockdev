@@ -1,3 +1,9 @@
+umockdev (0.5.1-1) UNRELEASED; urgency=medium
+
+  * New upstream release to fix tests with libgphoto 2.5.3.
+
+ -- Martin Pitt <mpitt@debian.org>  Thu, 16 Jan 2014 09:18:24 +0100
+
 umockdev (0.5-1) unstable; urgency=medium
 
   * New upstream release.
