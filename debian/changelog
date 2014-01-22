@@ -1,3 +1,10 @@
+umockdev (0.5.1-2) UNRELEASED; urgency=medium
+
+  * Revert building using dh-autoreconf, it breaks daily PPA builds from
+    trunk. These really need ./autogen.sh.
+
+ -- Martin Pitt <mpitt@debian.org>  Wed, 22 Jan 2014 11:25:08 +0100
+
 umockdev (0.5.1-1) unstable; urgency=medium
 
   * New upstream release to fix tests with libgphoto 2.5.3.

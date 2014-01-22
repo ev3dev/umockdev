@@ -3,9 +3,11 @@
 DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 
 %:
-	dh $@ --parallel --with gir,autoreconf
+	dh $@ --parallel --with gir
 
 override_dh_auto_configure:
+	# building from trunk checkout?
+	[ -x ./autogen.sh ] && ./autogen.sh || true
 	dh_auto_configure -- \
 		--disable-silent-rules \
 		--enable-gtk-doc \
