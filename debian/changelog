@@ -1,3 +1,10 @@
+umockdev (0.5.1-3) UNRELEASED; urgency=medium
+
+  * debian/tests/control: Add @builddeps@, as we need make and quite a lot of
+    the other build deps used for testing.
+
+ -- Martin Pitt <mpitt@debian.org>  Thu, 23 Jan 2014 18:28:09 +0100
+
 umockdev (0.5.1-2) unstable; urgency=medium
 
   * Revert building using dh-autoreconf, it breaks daily PPA builds from
