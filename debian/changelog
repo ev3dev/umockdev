@@ -1,8 +1,8 @@
-umockdev (0.6-1) UNRELEASED; urgency=medium
+umockdev (0.6-1) unstable; urgency=medium
 
   * New upstream release.
 
- -- Martin Pitt <mpitt@debian.org>  Sat, 15 Feb 2014 01:56:17 +0100
+ -- Martin Pitt <mpitt@debian.org>  Sat, 15 Feb 2014 01:58:22 +0100
 
 umockdev (0.5.1-3) unstable; urgency=medium
 
