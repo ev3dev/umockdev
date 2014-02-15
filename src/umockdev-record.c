@@ -74,7 +74,7 @@ gchar* dev_contents (const gchar* dev);
 void record_device (const gchar* dev);
 static void _g_list_free__g_free0_ (GList* self);
 void dump_devices (gchar** devices, int devices_length1);
-void split_devfile_arg (const gchar* arg, gchar** devnum, gchar** fname);
+void split_devfile_arg (const gchar* arg, gchar** dev, gchar** devnum, gchar** fname);
 void record_ioctl (const gchar* arg);
 void record_script (const gchar* arg);
 gint _vala_main (gchar** args, int args_length1);
@@ -1395,7 +1395,8 @@ static gchar* string_strip (const gchar* self) {
 }
 
 
-void split_devfile_arg (const gchar* arg, gchar** devnum, gchar** fname) {
+void split_devfile_arg (const gchar* arg, gchar** dev, gchar** devnum, gchar** fname) {
+	gchar* _vala_dev = NULL;
 	gchar* _vala_devnum = NULL;
 	gchar* _vala_fname = NULL;
 	gchar** parts = NULL;
@@ -1406,7 +1407,6 @@ void split_devfile_arg (const gchar* arg, gchar** devnum, gchar** fname) {
 	gint _parts_size_ = 0;
 	gchar** _tmp3_ = NULL;
 	gint _tmp3__length1 = 0;
-	gchar* dev = NULL;
 	gchar** _tmp4_ = NULL;
 	gint _tmp4__length1 = 0;
 	const gchar* _tmp5_ = NULL;
@@ -1440,21 +1440,22 @@ void split_devfile_arg (const gchar* arg, gchar** devnum, gchar** fname) {
 	_tmp4__length1 = parts_length1;
 	_tmp5_ = _tmp4_[0];
 	_tmp6_ = g_strdup (_tmp5_);
-	dev = _tmp6_;
+	_g_free0 (_vala_dev);
+	_vala_dev = _tmp6_;
 	_tmp7_ = parts;
 	_tmp7__length1 = parts_length1;
 	_tmp8_ = _tmp7_[1];
 	_tmp9_ = g_strdup (_tmp8_);
 	_g_free0 (_vala_fname);
 	_vala_fname = _tmp9_;
-	_tmp10_ = dev;
+	_tmp10_ = _vala_dev;
 	_tmp12_ = stat (_tmp10_, &_tmp11_);
 	st = _tmp11_;
 	if (_tmp12_ != 0) {
 		const gchar* _tmp13_ = NULL;
 		gint _tmp14_ = 0;
 		const gchar* _tmp15_ = NULL;
-		_tmp13_ = dev;
+		_tmp13_ = _vala_dev;
 		_tmp14_ = errno;
 		_tmp15_ = g_strerror (_tmp14_);
 		exit_error ("Cannot access device %s: %s", _tmp13_, _tmp15_, NULL);
@@ -1501,7 +1502,7 @@ void split_devfile_arg (const gchar* arg, gchar** devnum, gchar** fname) {
 		if (_tmp33_) {
 			const gchar* _tmp34_ = NULL;
 			gchar* _tmp35_ = NULL;
-			_tmp34_ = dev;
+			_tmp34_ = _vala_dev;
 			_tmp35_ = g_strdup (_tmp34_);
 			_g_free0 (_vala_devnum);
 			_vala_devnum = _tmp35_;
@@ -1533,7 +1534,7 @@ void split_devfile_arg (const gchar* arg, gchar** devnum, gchar** fname) {
 				gchar* _tmp37_ = NULL;
 				gchar* _tmp38_ = NULL;
 				gchar* _tmp39_ = NULL;
-				_tmp36_ = dev;
+				_tmp36_ = _vala_dev;
 				_tmp37_ = g_build_filename (_tmp36_, "dev", NULL);
 				_tmp38_ = _tmp37_;
 				g_file_get_contents (_tmp38_, &_tmp39_, NULL, &_inner_error_);
@@ -1553,7 +1554,7 @@ void split_devfile_arg (const gchar* arg, gchar** devnum, gchar** fname) {
 				const gchar* _tmp42_ = NULL;
 				e = _inner_error_;
 				_inner_error_ = NULL;
-				_tmp40_ = dev;
+				_tmp40_ = _vala_dev;
 				_tmp41_ = e;
 				_tmp42_ = _tmp41_->message;
 				exit_error ("Cannot open %s/dev: %s", _tmp40_, _tmp42_, NULL);
@@ -1562,7 +1563,6 @@ void split_devfile_arg (const gchar* arg, gchar** devnum, gchar** fname) {
 			__finally5:
 			if (_inner_error_ != NULL) {
 				_g_free0 (contents);
-				_g_free0 (dev);
 				parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
 				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 				g_clear_error (&_inner_error_);
@@ -1596,8 +1596,12 @@ void split_devfile_arg (const gchar* arg, gchar** devnum, gchar** fname) {
 			_g_free0 (contents);
 		}
 	}
-	_g_free0 (dev);
 	parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
+	if (dev) {
+		*dev = _vala_dev;
+	} else {
+		_g_free0 (_vala_dev);
+	}
 	if (devnum) {
 		*devnum = _vala_devnum;
 	} else {
@@ -1612,62 +1616,73 @@ void split_devfile_arg (const gchar* arg, gchar** devnum, gchar** fname) {
 
 
 void record_ioctl (const gchar* arg) {
+	gchar* dev = NULL;
 	gchar* devnum = NULL;
 	gchar* outfile = NULL;
 	const gchar* _tmp0_ = NULL;
 	gchar* _tmp1_ = NULL;
 	gchar* _tmp2_ = NULL;
+	gchar* _tmp3_ = NULL;
 	g_return_if_fail (arg != NULL);
 	_tmp0_ = arg;
-	split_devfile_arg (_tmp0_, &_tmp1_, &_tmp2_);
+	split_devfile_arg (_tmp0_, &_tmp1_, &_tmp2_, &_tmp3_);
+	_g_free0 (dev);
+	dev = _tmp1_;
 	_g_free0 (devnum);
-	devnum = _tmp1_;
+	devnum = _tmp2_;
 	_g_free0 (outfile);
-	outfile = _tmp2_;
+	outfile = _tmp3_;
 	g_setenv ("UMOCKDEV_IOCTL_RECORD_FILE", outfile, TRUE);
 	g_setenv ("UMOCKDEV_IOCTL_RECORD_DEV", devnum, TRUE);
+	g_setenv ("UMOCKDEV_IOCTL_RECORD_DEVICE_PATH", dev, TRUE);
 	_g_free0 (outfile);
 	_g_free0 (devnum);
+	_g_free0 (dev);
 }
 
 
 void record_script (const gchar* arg) {
+	gchar* dev = NULL;
 	gchar* devnum = NULL;
 	gchar* outfile = NULL;
 	const gchar* _tmp0_ = NULL;
 	gchar* _tmp1_ = NULL;
 	gchar* _tmp2_ = NULL;
+	gchar* _tmp3_ = NULL;
 	gchar* c = NULL;
-	guint _tmp3_ = 0U;
-	gchar* _tmp4_ = NULL;
+	guint _tmp4_ = 0U;
 	gchar* _tmp5_ = NULL;
 	gchar* _tmp6_ = NULL;
 	gchar* _tmp7_ = NULL;
 	gchar* _tmp8_ = NULL;
-	guint _tmp9_ = 0U;
+	gchar* _tmp9_ = NULL;
+	guint _tmp10_ = 0U;
 	g_return_if_fail (arg != NULL);
 	_tmp0_ = arg;
-	split_devfile_arg (_tmp0_, &_tmp1_, &_tmp2_);
+	split_devfile_arg (_tmp0_, &_tmp1_, &_tmp2_, &_tmp3_);
+	_g_free0 (dev);
+	dev = _tmp1_;
 	_g_free0 (devnum);
-	devnum = _tmp1_;
+	devnum = _tmp2_;
 	_g_free0 (outfile);
-	outfile = _tmp2_;
-	_tmp3_ = record_script_counter;
-	_tmp4_ = g_strdup_printf ("%u", _tmp3_);
-	c = _tmp4_;
-	_tmp5_ = g_strconcat ("UMOCKDEV_SCRIPT_RECORD_FILE_", c, NULL);
-	_tmp6_ = _tmp5_;
-	g_setenv (_tmp6_, outfile, TRUE);
-	_g_free0 (_tmp6_);
-	_tmp7_ = g_strconcat ("UMOCKDEV_SCRIPT_RECORD_DEV_", c, NULL);
-	_tmp8_ = _tmp7_;
-	g_setenv (_tmp8_, devnum, TRUE);
-	_g_free0 (_tmp8_);
-	_tmp9_ = record_script_counter;
-	record_script_counter = _tmp9_ + 1;
+	outfile = _tmp3_;
+	_tmp4_ = record_script_counter;
+	_tmp5_ = g_strdup_printf ("%u", _tmp4_);
+	c = _tmp5_;
+	_tmp6_ = g_strconcat ("UMOCKDEV_SCRIPT_RECORD_FILE_", c, NULL);
+	_tmp7_ = _tmp6_;
+	g_setenv (_tmp7_, outfile, TRUE);
+	_g_free0 (_tmp7_);
+	_tmp8_ = g_strconcat ("UMOCKDEV_SCRIPT_RECORD_DEV_", c, NULL);
+	_tmp9_ = _tmp8_;
+	g_setenv (_tmp9_, devnum, TRUE);
+	_g_free0 (_tmp9_);
+	_tmp10_ = record_script_counter;
+	record_script_counter = _tmp10_ + 1;
 	_g_free0 (c);
 	_g_free0 (outfile);
 	_g_free0 (devnum);
+	_g_free0 (dev);
 }
 
 

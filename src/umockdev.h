@@ -8,6 +8,7 @@
 #include <glib-object.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gio/gio.h>
 
 G_BEGIN_DECLS
 
