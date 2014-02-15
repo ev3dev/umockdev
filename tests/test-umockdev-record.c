@@ -1013,7 +1013,7 @@ void t_system_ioctl_log (void) {
 	_vala_assert (_tmp30_, "FileUtils.test (log, FileTest.EXISTS)");
 	_tmp31_ = file_contents (log);
 	_tmp32_ = _tmp31_;
-	g_assert_cmpstr (_tmp32_, ==, "");
+	g_assert_cmpstr (_tmp32_, ==, "@DEV /dev/zero\n");
 	_g_free0 (_tmp32_);
 	g_remove (log);
 	_tmp33_ = umockdev_record_path;

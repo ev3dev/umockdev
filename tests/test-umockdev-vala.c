@@ -54,6 +54,8 @@ void t_testbed_gudev_query_list (void);
 void t_usbfs_ioctl_static (void);
 void t_usbfs_ioctl_tree (void);
 static guint8* _vala_array_dup1 (guint8* self, int length);
+void t_usbfs_ioctl_tree_with_default_device (void);
+void t_usbfs_ioctl_tree_override_default_device (void);
 void t_usbfs_ioctl_tree_xz (void);
 void t_tty_stty (void);
 void t_tty_data (void);
@@ -63,6 +65,8 @@ static void _t_testbed_add_device_gtest_func (void);
 static void _t_testbed_gudev_query_list_gtest_func (void);
 static void _t_usbfs_ioctl_static_gtest_func (void);
 static void _t_usbfs_ioctl_tree_gtest_func (void);
+static void _t_usbfs_ioctl_tree_with_default_device_gtest_func (void);
+static void _t_usbfs_ioctl_tree_override_default_device_gtest_func (void);
 static void _t_usbfs_ioctl_tree_xz_gtest_func (void);
 static void _t_tty_stty_gtest_func (void);
 static void _t_tty_data_gtest_func (void);
@@ -576,19 +580,11 @@ void t_usbfs_ioctl_tree (void) {
 		_tmp17_ = tb;
 		umockdev_testbed_load_ioctl (_tmp17_, "/dev/001", tmppath, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			if (_inner_error_->domain == G_FILE_ERROR) {
-				goto __catch2_g_file_error;
-			}
-			_g_free0 (tmppath);
-			_g_free0 (test_tree);
-			_g_object_unref0 (tb);
-			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return;
+			goto __catch2_g_error;
 		}
 	}
 	goto __finally2;
-	__catch2_g_file_error:
+	__catch2_g_error:
 	{
 		GError* e = NULL;
 		FILE* _tmp18_ = NULL;
@@ -739,6 +735,282 @@ void t_usbfs_ioctl_tree (void) {
 }
 
 
+void t_usbfs_ioctl_tree_with_default_device (void) {
+	UMockdevTestbed* tb = NULL;
+	UMockdevTestbed* _tmp0_ = NULL;
+	UMockdevTestbed* _tmp1_ = NULL;
+	gchar* test_tree = NULL;
+	gchar* tmppath = NULL;
+	gint fd = 0;
+	gint _tmp7_ = 0;
+	const gchar* _tmp8_ = NULL;
+	const gchar* _tmp9_ = NULL;
+	gint _tmp10_ = 0;
+	gint _tmp11_ = 0;
+	gssize _tmp12_ = 0L;
+	gint _tmp13_ = 0;
+	gint _tmp17_ = 0;
+	gint _tmp18_ = 0;
+	struct usbdevfs_connectinfo ci = {0};
+	gint _tmp19_ = 0;
+	gint _tmp20_ = 0;
+	gint _tmp21_ = 0;
+	struct usbdevfs_connectinfo _tmp22_ = {0};
+	guint _tmp23_ = 0U;
+	struct usbdevfs_connectinfo _tmp24_ = {0};
+	guint _tmp25_ = 0U;
+	GError * _inner_error_ = NULL;
+	_tmp0_ = umockdev_testbed_new ();
+	tb = _tmp0_;
+	_tmp1_ = tb;
+	tb_add_from_string (_tmp1_, "P: /devices/mycam\nN: 001\nE: SUBSYSTEM=usb\n");
+	if (G_BYTE_ORDER == G_LITTLE_ENDIAN) {
+		gchar* _tmp2_ = NULL;
+		_tmp2_ = g_strdup ("# little-endian test ioctls\n" \
+"@DEV /dev/001\n" \
+"USBDEVFS_CONNECTINFO 0 0B00000000000000\n");
+		_g_free0 (test_tree);
+		test_tree = _tmp2_;
+	} else {
+		gchar* _tmp3_ = NULL;
+		_tmp3_ = g_strdup ("# big-endian test ioctls\n" \
+"@DEV /dev/001\n" \
+"USBDEVFS_CONNECTINFO 0 0000000B00000000\n");
+		_g_free0 (test_tree);
+		test_tree = _tmp3_;
+	}
+	{
+		gint _tmp4_ = 0;
+		gchar* _tmp5_ = NULL;
+		gint _tmp6_ = 0;
+		_tmp6_ = g_file_open_tmp ("test_ioctl_tree.XXXXXX", &_tmp5_, &_inner_error_);
+		_g_free0 (tmppath);
+		tmppath = _tmp5_;
+		_tmp4_ = _tmp6_;
+		if (_inner_error_ != NULL) {
+			goto __catch3_g_error;
+		}
+		fd = _tmp4_;
+	}
+	goto __finally3;
+	__catch3_g_error:
+	{
+		GError* e = NULL;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		abort ();
+		_g_error_free0 (e);
+	}
+	__finally3:
+	if (_inner_error_ != NULL) {
+		_g_free0 (tmppath);
+		_g_free0 (test_tree);
+		_g_object_unref0 (tb);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+	_tmp7_ = fd;
+	_tmp8_ = test_tree;
+	_tmp9_ = test_tree;
+	_tmp10_ = strlen (_tmp9_);
+	_tmp11_ = _tmp10_;
+	_tmp12_ = write (_tmp7_, _tmp8_, (gsize) _tmp11_);
+	g_assert_cmpint ((gint) _tmp12_, >, 20);
+	_tmp13_ = fd;
+	close (_tmp13_);
+	{
+		UMockdevTestbed* _tmp14_ = NULL;
+		_tmp14_ = tb;
+		umockdev_testbed_load_ioctl (_tmp14_, NULL, tmppath, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			goto __catch4_g_error;
+		}
+	}
+	goto __finally4;
+	__catch4_g_error:
+	{
+		GError* e = NULL;
+		FILE* _tmp15_ = NULL;
+		const gchar* _tmp16_ = NULL;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		_tmp15_ = stderr;
+		_tmp16_ = e->message;
+		fprintf (_tmp15_, "Cannot load ioctls: %s\n", _tmp16_);
+		abort ();
+		_g_error_free0 (e);
+	}
+	__finally4:
+	if (_inner_error_ != NULL) {
+		_g_free0 (tmppath);
+		_g_free0 (test_tree);
+		_g_object_unref0 (tb);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+	g_unlink (tmppath);
+	_tmp17_ = open ("/dev/001", O_RDWR, (mode_t) 0);
+	fd = _tmp17_;
+	_tmp18_ = fd;
+	g_assert_cmpint (_tmp18_, >=, 0);
+	memset (&ci, 0, sizeof (struct usbdevfs_connectinfo));
+	_tmp19_ = fd;
+	_tmp20_ = ioctl (_tmp19_, USBDEVFS_CONNECTINFO, &ci);
+	g_assert_cmpint (_tmp20_, ==, 0);
+	_tmp21_ = errno;
+	g_assert_cmpint (_tmp21_, ==, 0);
+	_tmp22_ = ci;
+	_tmp23_ = _tmp22_.devnum;
+	g_assert_cmpuint (_tmp23_, ==, (guint) 11);
+	_tmp24_ = ci;
+	_tmp25_ = _tmp24_.slow;
+	g_assert_cmpuint (_tmp25_, ==, (guint) 0);
+	_g_free0 (tmppath);
+	_g_free0 (test_tree);
+	_g_object_unref0 (tb);
+}
+
+
+void t_usbfs_ioctl_tree_override_default_device (void) {
+	UMockdevTestbed* tb = NULL;
+	UMockdevTestbed* _tmp0_ = NULL;
+	UMockdevTestbed* _tmp1_ = NULL;
+	gchar* test_tree = NULL;
+	gchar* tmppath = NULL;
+	gint fd = 0;
+	gint _tmp7_ = 0;
+	const gchar* _tmp8_ = NULL;
+	const gchar* _tmp9_ = NULL;
+	gint _tmp10_ = 0;
+	gint _tmp11_ = 0;
+	gssize _tmp12_ = 0L;
+	gint _tmp13_ = 0;
+	gint _tmp17_ = 0;
+	gint _tmp18_ = 0;
+	struct usbdevfs_connectinfo ci = {0};
+	gint _tmp19_ = 0;
+	gint _tmp20_ = 0;
+	gint _tmp21_ = 0;
+	struct usbdevfs_connectinfo _tmp22_ = {0};
+	guint _tmp23_ = 0U;
+	struct usbdevfs_connectinfo _tmp24_ = {0};
+	guint _tmp25_ = 0U;
+	GError * _inner_error_ = NULL;
+	_tmp0_ = umockdev_testbed_new ();
+	tb = _tmp0_;
+	_tmp1_ = tb;
+	tb_add_from_string (_tmp1_, "P: /devices/mycam\nN: 002\nE: SUBSYSTEM=usb\n");
+	if (G_BYTE_ORDER == G_LITTLE_ENDIAN) {
+		gchar* _tmp2_ = NULL;
+		_tmp2_ = g_strdup ("# little-endian test ioctls\n" \
+"@DEV /dev/001\n" \
+"USBDEVFS_CONNECTINFO 0 0B00000000000000\n");
+		_g_free0 (test_tree);
+		test_tree = _tmp2_;
+	} else {
+		gchar* _tmp3_ = NULL;
+		_tmp3_ = g_strdup ("# big-endian test ioctls\n" \
+"@DEV /dev/001\n" \
+"USBDEVFS_CONNECTINFO 0 0000000B00000000\n");
+		_g_free0 (test_tree);
+		test_tree = _tmp3_;
+	}
+	{
+		gint _tmp4_ = 0;
+		gchar* _tmp5_ = NULL;
+		gint _tmp6_ = 0;
+		_tmp6_ = g_file_open_tmp ("test_ioctl_tree.XXXXXX", &_tmp5_, &_inner_error_);
+		_g_free0 (tmppath);
+		tmppath = _tmp5_;
+		_tmp4_ = _tmp6_;
+		if (_inner_error_ != NULL) {
+			goto __catch5_g_error;
+		}
+		fd = _tmp4_;
+	}
+	goto __finally5;
+	__catch5_g_error:
+	{
+		GError* e = NULL;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		abort ();
+		_g_error_free0 (e);
+	}
+	__finally5:
+	if (_inner_error_ != NULL) {
+		_g_free0 (tmppath);
+		_g_free0 (test_tree);
+		_g_object_unref0 (tb);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+	_tmp7_ = fd;
+	_tmp8_ = test_tree;
+	_tmp9_ = test_tree;
+	_tmp10_ = strlen (_tmp9_);
+	_tmp11_ = _tmp10_;
+	_tmp12_ = write (_tmp7_, _tmp8_, (gsize) _tmp11_);
+	g_assert_cmpint ((gint) _tmp12_, >, 20);
+	_tmp13_ = fd;
+	close (_tmp13_);
+	{
+		UMockdevTestbed* _tmp14_ = NULL;
+		_tmp14_ = tb;
+		umockdev_testbed_load_ioctl (_tmp14_, "/dev/002", tmppath, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			goto __catch6_g_error;
+		}
+	}
+	goto __finally6;
+	__catch6_g_error:
+	{
+		GError* e = NULL;
+		FILE* _tmp15_ = NULL;
+		const gchar* _tmp16_ = NULL;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		_tmp15_ = stderr;
+		_tmp16_ = e->message;
+		fprintf (_tmp15_, "Cannot load ioctls: %s\n", _tmp16_);
+		abort ();
+		_g_error_free0 (e);
+	}
+	__finally6:
+	if (_inner_error_ != NULL) {
+		_g_free0 (tmppath);
+		_g_free0 (test_tree);
+		_g_object_unref0 (tb);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+	g_unlink (tmppath);
+	_tmp17_ = open ("/dev/002", O_RDWR, (mode_t) 0);
+	fd = _tmp17_;
+	_tmp18_ = fd;
+	g_assert_cmpint (_tmp18_, >=, 0);
+	memset (&ci, 0, sizeof (struct usbdevfs_connectinfo));
+	_tmp19_ = fd;
+	_tmp20_ = ioctl (_tmp19_, USBDEVFS_CONNECTINFO, &ci);
+	g_assert_cmpint (_tmp20_, ==, 0);
+	_tmp21_ = errno;
+	g_assert_cmpint (_tmp21_, ==, 0);
+	_tmp22_ = ci;
+	_tmp23_ = _tmp22_.devnum;
+	g_assert_cmpuint (_tmp23_, ==, (guint) 11);
+	_tmp24_ = ci;
+	_tmp25_ = _tmp24_.slow;
+	g_assert_cmpuint (_tmp25_, ==, (guint) 0);
+	_g_free0 (tmppath);
+	_g_free0 (test_tree);
+	_g_object_unref0 (tb);
+}
+
+
 void t_usbfs_ioctl_tree_xz (void) {
 	UMockdevTestbed* tb = NULL;
 	UMockdevTestbed* _tmp0_ = NULL;
@@ -790,12 +1062,12 @@ void t_usbfs_ioctl_tree_xz (void) {
 		tmppath = _tmp5_;
 		_tmp4_ = _tmp6_;
 		if (_inner_error_ != NULL) {
-			goto __catch3_g_error;
+			goto __catch7_g_error;
 		}
 		close (_tmp4_);
 	}
-	goto __finally3;
-	__catch3_g_error:
+	goto __finally7;
+	__catch7_g_error:
 	{
 		GError* e = NULL;
 		e = _inner_error_;
@@ -803,7 +1075,7 @@ void t_usbfs_ioctl_tree_xz (void) {
 		abort ();
 		_g_error_free0 (e);
 	}
-	__finally3:
+	__finally7:
 	if (_inner_error_ != NULL) {
 		_g_free0 (tmppath);
 		_g_free0 (test_tree);
@@ -840,7 +1112,7 @@ void t_usbfs_ioctl_tree_xz (void) {
 		_g_free0 (_tmp9_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_SPAWN_ERROR) {
-				goto __catch4_g_spawn_error;
+				goto __catch8_g_spawn_error;
 			}
 			_g_free0 (tmppath);
 			_g_free0 (test_tree);
@@ -850,8 +1122,8 @@ void t_usbfs_ioctl_tree_xz (void) {
 			return;
 		}
 	}
-	goto __finally4;
-	__catch4_g_spawn_error:
+	goto __finally8;
+	__catch8_g_spawn_error:
 	{
 		GError* e = NULL;
 		FILE* _tmp17_ = NULL;
@@ -864,7 +1136,7 @@ void t_usbfs_ioctl_tree_xz (void) {
 		abort ();
 		_g_error_free0 (e);
 	}
-	__finally4:
+	__finally8:
 	if (_inner_error_ != NULL) {
 		_g_free0 (tmppath);
 		_g_free0 (test_tree);
@@ -879,19 +1151,11 @@ void t_usbfs_ioctl_tree_xz (void) {
 		_tmp19_ = tb;
 		umockdev_testbed_load_ioctl (_tmp19_, "/dev/001", tmppath, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			if (_inner_error_->domain == G_FILE_ERROR) {
-				goto __catch5_g_file_error;
-			}
-			_g_free0 (tmppath);
-			_g_free0 (test_tree);
-			_g_object_unref0 (tb);
-			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return;
+			goto __catch9_g_error;
 		}
 	}
-	goto __finally5;
-	__catch5_g_file_error:
+	goto __finally9;
+	__catch9_g_error:
 	{
 		GError* e = NULL;
 		FILE* _tmp20_ = NULL;
@@ -904,7 +1168,7 @@ void t_usbfs_ioctl_tree_xz (void) {
 		abort ();
 		_g_error_free0 (e);
 	}
-	__finally5:
+	__finally9:
 	if (_inner_error_ != NULL) {
 		_g_free0 (tmppath);
 		_g_free0 (test_tree);
@@ -1012,7 +1276,7 @@ void t_tty_stty (void) {
 		pexit = _tmp14_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_SPAWN_ERROR) {
-				goto __catch6_g_spawn_error;
+				goto __catch10_g_spawn_error;
 			}
 			_g_free0 (perr);
 			_g_free0 (pout);
@@ -1022,8 +1286,8 @@ void t_tty_stty (void) {
 			return;
 		}
 	}
-	goto __finally6;
-	__catch6_g_spawn_error:
+	goto __finally10;
+	__catch10_g_spawn_error:
 	{
 		GError* e = NULL;
 		FILE* _tmp15_ = NULL;
@@ -1036,7 +1300,7 @@ void t_tty_stty (void) {
 		abort ();
 		_g_error_free0 (e);
 	}
-	__finally6:
+	__finally10:
 	if (_inner_error_ != NULL) {
 		_g_free0 (perr);
 		_g_free0 (pout);
@@ -1150,6 +1414,16 @@ static void _t_usbfs_ioctl_tree_gtest_func (void) {
 }
 
 
+static void _t_usbfs_ioctl_tree_with_default_device_gtest_func (void) {
+	t_usbfs_ioctl_tree_with_default_device ();
+}
+
+
+static void _t_usbfs_ioctl_tree_override_default_device_gtest_func (void) {
+	t_usbfs_ioctl_tree_override_default_device ();
+}
+
+
 static void _t_usbfs_ioctl_tree_xz_gtest_func (void) {
 	t_usbfs_ioctl_tree_xz ();
 }
@@ -1174,6 +1448,8 @@ gint _vala_main (gchar** args, int args_length1) {
 	g_test_add_func ("/umockdev-testbed-vala/gudev-query-list", _t_testbed_gudev_query_list_gtest_func);
 	g_test_add_func ("/umockdev-testbed-vala/usbfs_ioctl_static", _t_usbfs_ioctl_static_gtest_func);
 	g_test_add_func ("/umockdev-testbed-vala/usbfs_ioctl_tree", _t_usbfs_ioctl_tree_gtest_func);
+	g_test_add_func ("/umockdev-testbed-vala/usbfs_ioctl_tree_with_default_device", _t_usbfs_ioctl_tree_with_default_device_gtest_func);
+	g_test_add_func ("/umockdev-testbed-vala/usbfs_ioctl_tree_override_default_device", _t_usbfs_ioctl_tree_override_default_device_gtest_func);
 	g_test_add_func ("/umockdev-testbed-vala/usbfs_ioctl_tree_xz", _t_usbfs_ioctl_tree_xz_gtest_func);
 	g_test_add_func ("/umockdev-testbed-vala/tty_stty", _t_tty_stty_gtest_func);
 	g_test_add_func ("/umockdev-testbed-vala/tty_data", _t_tty_data_gtest_func);

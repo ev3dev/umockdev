@@ -861,7 +861,9 @@ required to have an .xz file name suffix).
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>dev</code></em> :</span></p></td>
-<td>Device path (/dev/...) for which to load the ioctl record.</td>
+<td>Device path (/dev/...) for which to load the ioctl record.
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> is valid; in this case the ioctl record is associated with
+the device node it was recorded from.</td>
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>recordfile</code></em> :</span></p></td>
