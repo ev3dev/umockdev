@@ -1,10 +1,10 @@
-umockdev (0.7-1) UNRELEASED; urgency=medium
+umockdev (0.7-1) unstable; urgency=medium
 
   * New upstream release.
   * debian/tests/upstream: Drop workaround for #711209, it was fixed half a
     year ago.
 
- -- Martin Pitt <mpitt@debian.org>  Mon, 24 Feb 2014 12:16:43 +0100
+ -- Martin Pitt <mpitt@debian.org>  Wed, 05 Mar 2014 08:58:54 +0100
 
 umockdev (0.6-1) unstable; urgency=medium
 
