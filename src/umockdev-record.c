@@ -1656,7 +1656,9 @@ void record_script (const gchar* arg) {
 	gchar* _tmp7_ = NULL;
 	gchar* _tmp8_ = NULL;
 	gchar* _tmp9_ = NULL;
-	guint _tmp10_ = 0U;
+	gchar* _tmp10_ = NULL;
+	gchar* _tmp11_ = NULL;
+	guint _tmp12_ = 0U;
 	g_return_if_fail (arg != NULL);
 	_tmp0_ = arg;
 	split_devfile_arg (_tmp0_, &_tmp1_, &_tmp2_, &_tmp3_);
@@ -1677,8 +1679,12 @@ void record_script (const gchar* arg) {
 	_tmp9_ = _tmp8_;
 	g_setenv (_tmp9_, devnum, TRUE);
 	_g_free0 (_tmp9_);
-	_tmp10_ = record_script_counter;
-	record_script_counter = _tmp10_ + 1;
+	_tmp10_ = g_strconcat ("UMOCKDEV_SCRIPT_RECORD_DEVICE_PATH_", c, NULL);
+	_tmp11_ = _tmp10_;
+	g_setenv (_tmp11_, dev, TRUE);
+	_g_free0 (_tmp11_);
+	_tmp12_ = record_script_counter;
+	record_script_counter = _tmp12_ + 1;
 	_g_free0 (c);
 	_g_free0 (outfile);
 	_g_free0 (devnum);
