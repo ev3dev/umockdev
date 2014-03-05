@@ -2,32 +2,27 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>umockdev</title>
+<title>umockdev Reference Manual: umockdev</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="umockdev Reference Manual">
 <link rel="up" href="ch01.html" title="API reference">
 <link rel="prev" href="ch01.html" title="API reference">
 <link rel="next" href="umockdev-umockdev-errors.html" title="umockdev errors">
-<meta name="generator" content="GTK-Doc V1.19 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.20 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
-<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
-<tr valign="middle">
-<td><a accesskey="p" href="ch01.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
-<td><a accesskey="u" href="ch01.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
-<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
-<th width="100%" align="center">umockdev Reference Manual</th>
-<td><a accesskey="n" href="umockdev-umockdev-errors.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
-</tr>
-<tr><td colspan="5" class="shortcuts">
-<a href="#umockdev-UMockdev.synopsis" class="shortcut">Top</a>
-                   | 
-                  <a href="#umockdev-UMockdev.description" class="shortcut">Description</a>
-                   | 
-                  <a href="#umockdev-UMockdev.object-hierarchy" class="shortcut">Object Hierarchy</a>
-</td></tr>
-</table>
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description"> <span class="dim">|</span> 
+                  <a href="#umockdev-UMockdev.description" class="shortcut">Description</a></span><span id="nav_hierarchy"> <span class="dim">|</span> 
+                  <a href="#umockdev-UMockdev.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch01.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch01.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="umockdev-umockdev-errors.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
 <div class="refentry">
 <a name="umockdev-UMockdev"></a><div class="titlepage"></div>
 <div class="refnamediv"><table width="100%"><tr>
@@ -36,707 +31,883 @@
 <p>umockdev — Build a test bed for testing software that handles Linux
 hardware devices.</p>
 </td>
-<td valign="top" align="right"></td>
+<td class="gallery_image" valign="top" align="right"></td>
 </tr></table></div>
-<div class="refsynopsisdiv">
-<a name="umockdev-UMockdev.synopsis"></a><h2>Synopsis</h2>
-<a name="UMockdevTestbed"></a><pre class="synopsis">struct              <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed-struct" title="struct UMockdevTestbed">UMockdevTestbed</a>;
-<a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="returnvalue">UMockdevTestbed</span></a> *   <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-new" title="umockdev_testbed_new ()">umockdev_testbed_new</a>                (<em class="parameter"><code><span class="type">void</span></code></em>);
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()">umockdev_testbed_add_device</a>         (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subsystem</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *parent</code></em>,
-                                                         <em class="parameter"><code>...</code></em>);
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-devicev" title="umockdev_testbed_add_devicev ()">umockdev_testbed_add_devicev</a>        (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subsystem</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *parent</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **attributes</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **properties</code></em>);
-<span class="returnvalue">void</span>                <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-remove-device" title="umockdev_testbed_remove_device ()">umockdev_testbed_remove_device</a>      (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *syspath</code></em>);
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-get-root-dir" title="umockdev_testbed_get_root_dir ()">umockdev_testbed_get_root_dir</a>       (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>);
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-get-sys-dir" title="umockdev_testbed_get_sys_dir ()">umockdev_testbed_get_sys_dir</a>        (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>);
-<span class="returnvalue">void</span>                <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-attribute" title="umockdev_testbed_set_attribute ()">umockdev_testbed_set_attribute</a>      (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);
-<span class="returnvalue">void</span>                <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-attribute-int" title="umockdev_testbed_set_attribute_int ()">umockdev_testbed_set_attribute_int</a>  (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> value</code></em>);
-<span class="returnvalue">void</span>                <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-attribute-hex" title="umockdev_testbed_set_attribute_hex ()">umockdev_testbed_set_attribute_hex</a>  (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> value</code></em>);
-<span class="returnvalue">void</span>                <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-attribute-binary" title="umockdev_testbed_set_attribute_binary ()">umockdev_testbed_set_attribute_binary</a>
-                                                        (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code><span class="type">guint8</span> *value</code></em>,
-                                                         <em class="parameter"><code><span class="type">int</span> value_length1</code></em>);
-<span class="returnvalue">void</span>                <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-attribute-link" title="umockdev_testbed_set_attribute_link ()">umockdev_testbed_set_attribute_link</a> (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);
-<span class="returnvalue">void</span>                <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-property" title="umockdev_testbed_set_property ()">umockdev_testbed_set_property</a>       (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);
-<span class="returnvalue">void</span>                <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-property-int" title="umockdev_testbed_set_property_int ()">umockdev_testbed_set_property_int</a>   (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> value</code></em>);
-<span class="returnvalue">void</span>                <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-property-hex" title="umockdev_testbed_set_property_hex ()">umockdev_testbed_set_property_hex</a>   (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> value</code></em>);
-<span class="returnvalue">void</span>                <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-uevent" title="umockdev_testbed_uevent ()">umockdev_testbed_uevent</a>             (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action</code></em>);
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-from-string" title="umockdev_testbed_add_from_string ()">umockdev_testbed_add_from_string</a>    (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *data</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-from-file" title="umockdev_testbed_add_from_file ()">umockdev_testbed_add_from_file</a>      (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *path</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-load-ioctl" title="umockdev_testbed_load_ioctl ()">umockdev_testbed_load_ioctl</a>         (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dev</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *recordfile</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-load-script" title="umockdev_testbed_load_script ()">umockdev_testbed_load_script</a>        (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dev</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *recordfile</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-load-socket-script" title="umockdev_testbed_load_socket_script ()">umockdev_testbed_load_socket_script</a> (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *path</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> type</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *recordfile</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>                <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-get-dev-fd" title="umockdev_testbed_get_dev_fd ()">umockdev_testbed_get_dev_fd</a>         (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devnode</code></em>);
-<span class="returnvalue">void</span>                <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-clear" title="umockdev_testbed_clear ()">umockdev_testbed_clear</a>              (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>);
-<span class="returnvalue">void</span>                <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-disable" title="umockdev_testbed_disable ()">umockdev_testbed_disable</a>            (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>);
-<span class="returnvalue">void</span>                <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-enable" title="umockdev_testbed_enable ()">umockdev_testbed_enable</a>             (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>);
-</pre>
+<div class="refsect1">
+<a name="umockdev-UMockdev.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="returnvalue">UMockdevTestbed</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-new" title="umockdev_testbed_new ()">umockdev_testbed_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()">umockdev_testbed_add_device</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-devicev" title="umockdev_testbed_add_devicev ()">umockdev_testbed_add_devicev</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-remove-device" title="umockdev_testbed_remove_device ()">umockdev_testbed_remove_device</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-get-root-dir" title="umockdev_testbed_get_root_dir ()">umockdev_testbed_get_root_dir</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-get-sys-dir" title="umockdev_testbed_get_sys_dir ()">umockdev_testbed_get_sys_dir</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-attribute" title="umockdev_testbed_set_attribute ()">umockdev_testbed_set_attribute</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-attribute-int" title="umockdev_testbed_set_attribute_int ()">umockdev_testbed_set_attribute_int</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-attribute-hex" title="umockdev_testbed_set_attribute_hex ()">umockdev_testbed_set_attribute_hex</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-attribute-binary" title="umockdev_testbed_set_attribute_binary ()">umockdev_testbed_set_attribute_binary</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-attribute-link" title="umockdev_testbed_set_attribute_link ()">umockdev_testbed_set_attribute_link</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-property" title="umockdev_testbed_set_property ()">umockdev_testbed_set_property</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-property-int" title="umockdev_testbed_set_property_int ()">umockdev_testbed_set_property_int</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-property-hex" title="umockdev_testbed_set_property_hex ()">umockdev_testbed_set_property_hex</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-uevent" title="umockdev_testbed_uevent ()">umockdev_testbed_uevent</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-from-string" title="umockdev_testbed_add_from_string ()">umockdev_testbed_add_from_string</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-from-file" title="umockdev_testbed_add_from_file ()">umockdev_testbed_add_from_file</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-load-ioctl" title="umockdev_testbed_load_ioctl ()">umockdev_testbed_load_ioctl</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-load-script" title="umockdev_testbed_load_script ()">umockdev_testbed_load_script</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-load-socket-script" title="umockdev_testbed_load_socket_script ()">umockdev_testbed_load_socket_script</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-get-dev-fd" title="umockdev_testbed_get_dev_fd ()">umockdev_testbed_get_dev_fd</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-clear" title="umockdev_testbed_clear ()">umockdev_testbed_clear</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-disable" title="umockdev_testbed_disable ()">umockdev_testbed_disable</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-enable" title="umockdev_testbed_enable ()">umockdev_testbed_enable</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<a name="UMockdevTestbed"></a><div class="refsect1">
+<a name="umockdev-UMockdev.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed-struct" title="struct UMockdevTestbed">UMockdevTestbed</a></td>
+</tr></tbody>
+</table></div>
 </div>
 <div class="refsect1">
 <a name="umockdev-UMockdev.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="synopsis">
-  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
-   +----UMockdevTestbed
+<pre class="screen">    <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+    <span class="lineart">╰──</span> UMockdevTestbed
 </pre>
 </div>
 <div class="refsect1">
 <a name="umockdev-UMockdev.description"></a><h2>Description</h2>
-<p>
-Please see README.rst about an overview of the parts of umockdev, and how
-they fit together.
-</p>
+<p>Please see README.rst about an overview of the parts of umockdev, and how
+they fit together.</p>
 </div>
 <div class="refsect1">
-<a name="umockdev-UMockdev.details"></a><h2>Details</h2>
+<a name="umockdev-UMockdev.functions_details"></a><h2>Functions</h2>
 <div class="refsect2">
-<a name="UMockdevTestbed-struct"></a><h3>struct UMockdevTestbed</h3>
-<pre class="programlisting">struct UMockdevTestbed;</pre>
-<p>
-The <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> class builds a temporary sandbox for mock devices.
-You can add a number of devices including arbitrary sysfs attributes and
-udev properties, and then run your software in that test bed that is
-independent of the actual hardware it is running on.  With this you can
-simulate particular hardware in virtual environments up to some degree,
-without needing any particular privileges or disturbing the whole system.
-</p>
-<p>
-You can either add devices by specifying individual device paths,
-properties, and attributes, or use the umockdev-record tool to create a human
-readable/editable record of a real device (and all its parents) and load
-that into the testbed with <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-from-string" title="umockdev_testbed_add_from_string ()"><code class="function">umockdev_testbed_add_from_string()</code></a>.
-</p>
-<p>
-Instantiating a <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> object creates a temporary directory with
-an empty sysfs tree and sets the $UMOCKDEV_DIR environment variable so that
-programs subsequently started under umockdev-wrapper will use the test bed
-instead of the system's real sysfs.
-</p>
+<a name="umockdev-testbed-new"></a><h3>umockdev_testbed_new ()</h3>
+<pre class="programlisting"><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="returnvalue">UMockdevTestbed</span></a> *
+umockdev_testbed_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Create a new <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> object. This is initially empty, call
+methods like <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><span class="type">umockdev_testbed_add_device</span></a> or
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-from-string" title="umockdev_testbed_add_from_string ()"><span class="type">umockdev_testbed_add_from_string</span></a> to fill it.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.2.5"></a><h4>Returns</h4>
+<p> The newly created <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> object.</p>
+<p></p>
+</div>
 </div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-new"></a><h3>umockdev_testbed_new ()</h3>
-<pre class="programlisting"><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="returnvalue">UMockdevTestbed</span></a> *   umockdev_testbed_new                (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
-<p>
-Create a new <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> object. This is initially empty, call
-methods like <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><span class="type">umockdev_testbed_add_device</span></a> or
-<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-from-string" title="umockdev_testbed_add_from_string ()"><span class="type">umockdev_testbed_add_from_string</span></a> to fill it.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
-<colgroup>
-<col align="left" valign="top">
-<col>
-</colgroup>
-<tbody><tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>The newly created <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> object.</td>
-</tr></tbody>
-</table></div>
-</div>
-<hr>
-<div class="refsect2">
-<a name="umockdev-testbed-add-device"></a><h3>umockdev_testbed_add_device ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             umockdev_testbed_add_device         (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subsystem</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *parent</code></em>,
-                                                         <em class="parameter"><code>...</code></em>);</pre>
-<p>
-Add a new device to the testbed. A Linux kernel device always has a
+<a name="umockdev-testbed-add-device"></a><h3>umockdev_testbed_add_device ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+umockdev_testbed_add_device (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                             <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subsystem</code></em>,
+                             <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                             <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *parent</code></em>,
+                             <em class="parameter"><code>...</code></em>);</pre>
+<p>Add a new device to the testbed. A Linux kernel device always has a
 subsystem (such as "usb" or "pci"), and a device name. The test bed only
 builds a very simple sysfs structure without nested namespaces, so it
 requires device names to be unique. Some gudev client programs might make
 assumptions about the name (e. g. a SCSI disk block device should be called
 sdaN). A device also has an arbitrary number of sysfs attributes and udev
 properties; usually you should specify them upon creation, but it is also
-possible to change them later on with <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-attribute" title="umockdev_testbed_set_attribute ()"><code class="function">umockdev_testbed_set_attribute()</code></a> and
-<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-property" title="umockdev_testbed_set_property ()"><code class="function">umockdev_testbed_set_property()</code></a>.
-</p>
-<p>
-Example:
-  </p>
+possible to change them later on with <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-attribute" title="umockdev_testbed_set_attribute ()"><code class="function">umockdev_testbed_set_attribute()</code></a> and
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-property" title="umockdev_testbed_set_property ()"><code class="function">umockdev_testbed_set_property()</code></a>.</p>
+<p>Example:</p>
 <div class="informalexample"><pre class="programlisting">
   umockdev_testbed_add_device (testbed, "usb", "dev1", NULL,
                              "idVendor", "0815", "idProduct", "AFFE", NULL,
                              "ID_MODEL", "KoolGadget", NULL);
-  </pre></div>
-<p>
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+</pre></div>
+<p></p>
+<div class="refsect3">
+<a name="id-1.2.2.8.3.8"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>subsystem</code></em> :</span></p></td>
-<td>The subsystem name, e. g. "usb"</td>
+<td class="parameter_name"><p>subsystem</p></td>
+<td class="parameter_description"><p>The subsystem name, e. g. "usb"</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
-<td>The device name; arbitrary, but needs to be unique within the testbed</td>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>The device name; arbitrary, but needs to be unique within the testbed</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>parent</code></em> :</span></p></td>
-<td>device path of the parent device. Use <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> for a
-top-level device. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
-</td>
+<td class="parameter_name"><p>parent</p></td>
+<td class="parameter_description"><p> device path of the parent device. Use <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> for a
+top-level device. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span></td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>...</code></em> :</span></p></td>
-<td>Arbitrarily many pairs of sysfs attributes (alternating names and
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>Arbitrarily many pairs of sysfs attributes (alternating names and
 values), terminated by <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, followed by arbitrarily many pairs of udev
-properties, terminated by another <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>The sysfs path for the newly created device. Free with <a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a>.</td>
+properties, terminated by another <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
+<div class="refsect3">
+<a name="id-1.2.2.8.3.9"></a><h4>Returns</h4>
+<p> The sysfs path for the newly created device. Free with <a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a>.</p>
+<p></p>
+</div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-add-devicev"></a><h3>umockdev_testbed_add_devicev ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             umockdev_testbed_add_devicev        (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subsystem</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *parent</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **attributes</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **properties</code></em>);</pre>
-<p>
-This method is mostly meant for language bindings (where it is named
-<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a>). For C programs it is usually more convenient to
-use <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a>.
-</p>
-<p>
-Add a new device to the testbed. A Linux kernel device always has a
+<a name="umockdev-testbed-add-devicev"></a><h3>umockdev_testbed_add_devicev ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+umockdev_testbed_add_devicev (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                              <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subsystem</code></em>,
+                              <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                              <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *parent</code></em>,
+                              <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **attributes</code></em>,
+                              <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **properties</code></em>);</pre>
+<p>This method is mostly meant for language bindings (where it is named
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a>). For C programs it is usually more convenient to
+use <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a>.</p>
+<p>Add a new device to the testbed. A Linux kernel device always has a
 subsystem (such as "usb" or "pci"), and a device name. The test bed only
 builds a very simple sysfs structure without nested namespaces, so it
 requires device names to be unique. Some gudev client programs might make
 assumptions about the name (e. g. a SCSI disk block device should be called
 sdaN). A device also has an arbitrary number of sysfs attributes and udev
 properties; usually you should specify them upon creation, but it is also
-possible to change them later on with <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-attribute" title="umockdev_testbed_set_attribute ()"><code class="function">umockdev_testbed_set_attribute()</code></a> and
-<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-property" title="umockdev_testbed_set_property ()"><code class="function">umockdev_testbed_set_property()</code></a>.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+possible to change them later on with <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-attribute" title="umockdev_testbed_set_attribute ()"><code class="function">umockdev_testbed_set_attribute()</code></a> and
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-set-property" title="umockdev_testbed_set_property ()"><code class="function">umockdev_testbed_set_property()</code></a>.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.4.6"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>subsystem</code></em> :</span></p></td>
-<td>The subsystem name, e. g. "usb"</td>
+<td class="parameter_name"><p>subsystem</p></td>
+<td class="parameter_description"><p>The subsystem name, e. g. "usb"</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
-<td>The device name; arbitrary, but needs to be unique within the testbed</td>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>The device name; arbitrary, but needs to be unique within the testbed</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>parent</code></em> :</span></p></td>
-<td>device path of the parent device. Use <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> for a
-top-level device. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
-</td>
+<td class="parameter_name"><p>parent</p></td>
+<td class="parameter_description"><p> device path of the parent device. Use <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> for a
+top-level device. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span></td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>attributes</code></em> :</span></p></td>
-<td>A list of device sysfs attributes, alternating names and
+<td class="parameter_name"><p>attributes</p></td>
+<td class="parameter_description"><p>             A list of device sysfs attributes, alternating names and
 values, terminated with <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>:
-{ "key1", "value1", "key2", "value2", ..., NULL }. <span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span>
-</td>
+{ "key1", "value1", "key2", "value2", ..., NULL }. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>properties</code></em> :</span></p></td>
-<td>A list of device udev properties; same format as <em class="parameter"><code>attributes</code></em>. <span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span>
-</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>The sysfs path for the newly created device. Free with <a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a>.
-Rename to: umockdev_testbed_add_device</td>
+<td class="parameter_name"><p>properties</p></td>
+<td class="parameter_description"><p>             A list of device udev properties; same format as <em class="parameter"><code>attributes</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
 </tr>
 </tbody>
 </table></div>
 </div>
+<div class="refsect3">
+<a name="id-1.2.2.8.4.7"></a><h4>Returns</h4>
+<p> The sysfs path for the newly created device. Free with <a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a>.</p>
+<p>Rename to: umockdev_testbed_add_device</p>
+<p></p>
+</div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-remove-device"></a><h3>umockdev_testbed_remove_device ()</h3>
-<pre class="programlisting"><span class="returnvalue">void</span>                umockdev_testbed_remove_device      (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *syspath</code></em>);</pre>
-<p>
-Remove a device from the testbed. This removes the sysfs directory, the
+<a name="umockdev-testbed-remove-device"></a><h3>umockdev_testbed_remove_device ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+umockdev_testbed_remove_device (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *syspath</code></em>);</pre>
+<p>Remove a device from the testbed. This removes the sysfs directory, the
 /sys/class/ link, the device node, and all other information related to
 it. Note that this will also remove all child devices (i. e.
-subdirectories of <em class="parameter"><code>syspath</code></em>).
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+subdirectories of <em class="parameter"><code>syspath</code></em>
+).</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.5.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>syspath</code></em> :</span></p></td>
-<td>Sysfs path of device</td>
+<td class="parameter_name"><p>syspath</p></td>
+<td class="parameter_description"><p>Sysfs path of device</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-get-root-dir"></a><h3>umockdev_testbed_get_root_dir ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             umockdev_testbed_get_root_dir       (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>);</pre>
-<p>
-Get the root directory for the testbed.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+<a name="umockdev-testbed-get-root-dir"></a><h3>umockdev_testbed_get_root_dir ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+umockdev_testbed_get_root_dir (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>);</pre>
+<p>Get the root directory for the testbed.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.6.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.2.2.8.6.6"></a><h4>Returns</h4>
+<p> The testbed's root directory.</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="umockdev-testbed-get-sys-dir"></a><h3>umockdev_testbed_get_sys_dir ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+umockdev_testbed_get_sys_dir (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>);</pre>
+<p>Get the sysfs directory for the testbed.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.7.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.2.2.8.7.6"></a><h4>Returns</h4>
+<p> The testbed's sysfs directory.</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="umockdev-testbed-set-attribute"></a><h3>umockdev_testbed_set_attribute ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+umockdev_testbed_set_attribute (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
+<p>Set a text sysfs attribute for a device.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.8.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>The testbed's root directory.</td>
+<td class="parameter_name"><p>devpath</p></td>
+<td class="parameter_description"><p>The full device path, as returned by <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>Attribute name</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>Attribute string value</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-get-sys-dir"></a><h3>umockdev_testbed_get_sys_dir ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             umockdev_testbed_get_sys_dir        (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>);</pre>
-<p>
-Get the sysfs directory for the testbed.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+<a name="umockdev-testbed-set-attribute-int"></a><h3>umockdev_testbed_set_attribute_int ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+umockdev_testbed_set_attribute_int (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                                    <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
+                                    <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                    <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> value</code></em>);</pre>
+<p>Set an integer sysfs attribute for a device.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.9.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>The testbed's sysfs directory.</td>
+<td class="parameter_name"><p>devpath</p></td>
+<td class="parameter_description"><p>The full device path, as returned by <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>Attribute name</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>Attribute integer value</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-set-attribute"></a><h3>umockdev_testbed_set_attribute ()</h3>
-<pre class="programlisting"><span class="returnvalue">void</span>                umockdev_testbed_set_attribute      (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
-<p>
-Set a text sysfs attribute for a device.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+<a name="umockdev-testbed-set-attribute-hex"></a><h3>umockdev_testbed_set_attribute_hex ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+umockdev_testbed_set_attribute_hex (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                                    <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
+                                    <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                    <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> value</code></em>);</pre>
+<p>Set an integer sysfs attribute for a device. Set an integer udev
+property for a device. <em class="parameter"><code>value</code></em>
+ is interpreted as a hexadecimal number.
+For example, for value==31 this sets the attribute contents to "1f".</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.10.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>devpath</code></em> :</span></p></td>
-<td>The full device path, as returned by #<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a>
-</td>
+<td class="parameter_name"><p>devpath</p></td>
+<td class="parameter_description"><p>The full device path, as returned by <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a></p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
-<td>Attribute name</td>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>Attribute name</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
-<td>Attribute string value</td>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>Attribute integer value</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-set-attribute-int"></a><h3>umockdev_testbed_set_attribute_int ()</h3>
-<pre class="programlisting"><span class="returnvalue">void</span>                umockdev_testbed_set_attribute_int  (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> value</code></em>);</pre>
-<p>
-Set an integer sysfs attribute for a device.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+<a name="umockdev-testbed-set-attribute-binary"></a><h3>umockdev_testbed_set_attribute_binary ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+umockdev_testbed_set_attribute_binary (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                                       <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
+                                       <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                       <em class="parameter"><code><span class="type">guint8</span> *value</code></em>,
+                                       <em class="parameter"><code><span class="type">int</span> value_length1</code></em>);</pre>
+<p>Set a binary sysfs attribute for a device.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.11.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>devpath</code></em> :</span></p></td>
-<td>The full device path, as returned by #<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a>
-</td>
+<td class="parameter_name"><p>devpath</p></td>
+<td class="parameter_description"><p>The full device path, as returned by <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a></p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
-<td>Attribute name</td>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>Attribute name</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
-<td>Attribute integer value</td>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>Attribute binary value</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_length1</p></td>
+<td class="parameter_description"><p>Length of <em class="parameter"><code>value</code></em>
+in bytes.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-set-attribute-hex"></a><h3>umockdev_testbed_set_attribute_hex ()</h3>
-<pre class="programlisting"><span class="returnvalue">void</span>                umockdev_testbed_set_attribute_hex  (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> value</code></em>);</pre>
-<p>
-Set an integer sysfs attribute for a device. Set an integer udev
-property for a device. <em class="parameter"><code>value</code></em> is interpreted as a hexadecimal number.
-For example, for value==31 this sets the attribute contents to "1f".
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+<a name="umockdev-testbed-set-attribute-link"></a><h3>umockdev_testbed_set_attribute_link ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+umockdev_testbed_set_attribute_link (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                                     <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
+                                     <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                     <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
+<p>Set a symlink sysfs attribute for a device; this is primarily important
+for setting "driver" links.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.12.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>devpath</code></em> :</span></p></td>
-<td>The full device path, as returned by #<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a>
-</td>
+<td class="parameter_name"><p>devpath</p></td>
+<td class="parameter_description"><p>The full device path, as returned by <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a></p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
-<td>Attribute name</td>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>Attribute name</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
-<td>Attribute integer value</td>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>Attribute link target value</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-set-attribute-binary"></a><h3>umockdev_testbed_set_attribute_binary ()</h3>
-<pre class="programlisting"><span class="returnvalue">void</span>                umockdev_testbed_set_attribute_binary
-                                                        (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code><span class="type">guint8</span> *value</code></em>,
-                                                         <em class="parameter"><code><span class="type">int</span> value_length1</code></em>);</pre>
-<p>
-Set a binary sysfs attribute for a device.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+<a name="umockdev-testbed-set-property"></a><h3>umockdev_testbed_set_property ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+umockdev_testbed_set_property (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                               <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
+                               <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                               <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
+<p>Set a string udev property for a device.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.13.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>devpath</code></em> :</span></p></td>
-<td>The full device path, as returned by #<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a>
-</td>
+<td class="parameter_name"><p>devpath</p></td>
+<td class="parameter_description"><p>The full device path, as returned by <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a></p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
-<td>Attribute name</td>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>Property name</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
-<td>Attribute binary value</td>
-</tr>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>value_length1</code></em> :</span></p></td>
-<td>Length of <em class="parameter"><code>value</code></em> in bytes.</td>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>Property string value</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-set-attribute-link"></a><h3>umockdev_testbed_set_attribute_link ()</h3>
-<pre class="programlisting"><span class="returnvalue">void</span>                umockdev_testbed_set_attribute_link (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
-<p>
-Set a symlink sysfs attribute for a device; this is primarily important
-for setting "driver" links.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+<a name="umockdev-testbed-set-property-int"></a><h3>umockdev_testbed_set_property_int ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+umockdev_testbed_set_property_int (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                                   <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
+                                   <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                   <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> value</code></em>);</pre>
+<p>Set an integer udev property for a device.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.14.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>devpath</code></em> :</span></p></td>
-<td>The full device path, as returned by #<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a>
-</td>
+<td class="parameter_name"><p>devpath</p></td>
+<td class="parameter_description"><p>The full device path, as returned by <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a></p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
-<td>Attribute name</td>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>Property name</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
-<td>Attribute link target value</td>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>Property integer value</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
-<hr>
-<div class="refsect2">
-<a name="umockdev-testbed-set-property"></a><h3>umockdev_testbed_set_property ()</h3>
-<pre class="programlisting"><span class="returnvalue">void</span>                umockdev_testbed_set_property       (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
-<p>
-Set a string udev property for a device.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
-<colgroup>
-<col align="left" valign="top">
-<col>
-</colgroup>
-<tbody>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
-</tr>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>devpath</code></em> :</span></p></td>
-<td>The full device path, as returned by #<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a>
-</td>
-</tr>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
-<td>Property name</td>
-</tr>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
-<td>Property string value</td>
-</tr>
-</tbody>
-</table></div>
 </div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-set-property-int"></a><h3>umockdev_testbed_set_property_int ()</h3>
-<pre class="programlisting"><span class="returnvalue">void</span>                umockdev_testbed_set_property_int   (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> value</code></em>);</pre>
-<p>
-Set an integer udev property for a device.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
-<colgroup>
-<col align="left" valign="top">
-<col>
-</colgroup>
-<tbody>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
-</tr>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>devpath</code></em> :</span></p></td>
-<td>The full device path, as returned by #<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a>
-</td>
-</tr>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
-<td>Property name</td>
-</tr>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
-<td>Property integer value</td>
-</tr>
-</tbody>
-</table></div>
-</div>
-<hr>
-<div class="refsect2">
-<a name="umockdev-testbed-set-property-hex"></a><h3>umockdev_testbed_set_property_hex ()</h3>
-<pre class="programlisting"><span class="returnvalue">void</span>                umockdev_testbed_set_property_hex   (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> value</code></em>);</pre>
-<p>
-Set an integer udev property for a device. <em class="parameter"><code>value</code></em> is interpreted as a
+<a name="umockdev-testbed-set-property-hex"></a><h3>umockdev_testbed_set_property_hex ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+umockdev_testbed_set_property_hex (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                                   <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
+                                   <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                   <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> value</code></em>);</pre>
+<p>Set an integer udev property for a device. <em class="parameter"><code>value</code></em>
+ is interpreted as a
 hexadecimal number. For example, for value==31 this sets the property's
-value to "1f".
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+value to "1f".</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.15.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>devpath</code></em> :</span></p></td>
-<td>The full device path, as returned by #<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a>
-</td>
+<td class="parameter_name"><p>devpath</p></td>
+<td class="parameter_description"><p>The full device path, as returned by <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a></p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
-<td>Property name</td>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>Property name</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
-<td>Property integer value</td>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>Property integer value</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-uevent"></a><h3>umockdev_testbed_uevent ()</h3>
-<pre class="programlisting"><span class="returnvalue">void</span>                umockdev_testbed_uevent             (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action</code></em>);</pre>
-<p>
-Generate an uevent for a device.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+<a name="umockdev-testbed-uevent"></a><h3>umockdev_testbed_uevent ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+umockdev_testbed_uevent (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
+                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action</code></em>);</pre>
+<p>Generate an uevent for a device.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.16.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>devpath</code></em> :</span></p></td>
-<td>The full device path, as returned by #<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a>
-</td>
+<td class="parameter_name"><p>devpath</p></td>
+<td class="parameter_description"><p>The full device path, as returned by <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a></p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>action</code></em> :</span></p></td>
-<td>"add", "remove", or "change"</td>
+<td class="parameter_name"><p>action</p></td>
+<td class="parameter_description"><p>"add", "remove", or "change"</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-add-from-string"></a><h3>umockdev_testbed_add_from_string ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            umockdev_testbed_add_from_string    (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *data</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
-<p>
-Add a set of devices to the testbed from a textual description. This reads
-the format generated by the umockdev-record tool.
-</p>
-<p>
-Each paragraph defines one device. A line starts with a type tag (like 'E'),
+<a name="umockdev-testbed-add-from-string"></a><h3>umockdev_testbed_add_from_string ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+umockdev_testbed_add_from_string (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                                  <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *data</code></em>,
+                                  <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Add a set of devices to the testbed from a textual description. This reads
+the format generated by the umockdev-record tool.</p>
+<p>Each paragraph defines one device. A line starts with a type tag (like 'E'),
 followed by a colon, followed by either a value or a "key=value" assignment,
 depending on the type tag. A device description must start with a 'P:' line.
-Available type tags are:
-</p>
+Available type tags are:</p>
 <div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
 <li class="listitem">
 <span class="type">P:</span><span class="emphasis"><em>path</em></span>: device path in sysfs, starting with
@@ -760,321 +931,401 @@ Available type tags are:
             continuous hex string), it creates a
             <code class="filename">/dev/devname</code> in the mock environment with
             the given contents, otherwise the created dev file will be a
-            pty; see <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-get-dev-fd" title="umockdev_testbed_get_dev_fd ()"><span class="type">umockdev_testbed_get_dev_fd</span></a> for details.</li>
+            pty; see <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-get-dev-fd" title="umockdev_testbed_get_dev_fd ()"><span class="type">umockdev_testbed_get_dev_fd</span></a> for details.</li>
 <li class="listitem">
 <span class="type">S:</span><span class="emphasis"><em>linkname</em></span>: device node
             symlink (without the <code class="filename">/dev/</code> prefix); ignored right
             now.</li>
 </ul></div>
-<p>
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+<div class="refsect3">
+<a name="id-1.2.2.8.17.7"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
-<td>Description of the device(s) as generated with umockdev-record</td>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>Description of the device(s) as generated with umockdev-record</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
-<td>return location for a GError, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
-</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the data is invalid and an error
-occurred.</td>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a GError, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
+<div class="refsect3">
+<a name="id-1.2.2.8.17.8"></a><h4>Returns</h4>
+<p> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the data is invalid and an error
+occurred.</p>
+<p></p>
+</div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-add-from-file"></a><h3>umockdev_testbed_add_from_file ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            umockdev_testbed_add_from_file      (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *path</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
-<p>
-Add a set of devices to the testbed from a textual description. This
+<a name="umockdev-testbed-add-from-file"></a><h3>umockdev_testbed_add_from_file ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+umockdev_testbed_add_from_file (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *path</code></em>,
+                                <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Add a set of devices to the testbed from a textual description. This
 reads a file with the format generated by the umockdev-record tool, and
 is mostly a convenience wrapper around
-<em class="parameter"><code>umockdev_testbed_add_from_string</code></em>.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+<em class="parameter"><code>umockdev_testbed_add_from_string</code></em>
+.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.18.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>path</code></em> :</span></p></td>
-<td>Path to file with description of the device(s) as generated with umockdev-record</td>
+<td class="parameter_name"><p>path</p></td>
+<td class="parameter_description"><p>Path to file with description of the device(s) as generated with umockdev-record</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
-<td>return location for a GError, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
-</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the <em class="parameter"><code>path</code></em> cannot be read or thhe
-data is invalid and an error occurred.</td>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a GError, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
+<div class="refsect3">
+<a name="id-1.2.2.8.18.6"></a><h4>Returns</h4>
+<p> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the <em class="parameter"><code>path</code></em>
+cannot be read or thhe
+data is invalid and an error occurred.</p>
+<p></p>
+</div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-load-ioctl"></a><h3>umockdev_testbed_load_ioctl ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            umockdev_testbed_load_ioctl         (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dev</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *recordfile</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
-<p>
-Load an ioctl record file for a particular device into the testbed.
+<a name="umockdev-testbed-load-ioctl"></a><h3>umockdev_testbed_load_ioctl ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+umockdev_testbed_load_ioctl (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                             <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dev</code></em>,
+                             <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *recordfile</code></em>,
+                             <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Load an ioctl record file for a particular device into the testbed.
 ioctl records can be created with umockdev-record --ioctl.
 They can optionally be xz compressed to save space (but then are
-required to have an .xz file name suffix).
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+required to have an .xz file name suffix).</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.19.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>dev</code></em> :</span></p></td>
-<td>Device path (/dev/...) for which to load the ioctl record.
+<td class="parameter_name"><p>dev</p></td>
+<td class="parameter_description"><p>Device path (/dev/...) for which to load the ioctl record.
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> is valid; in this case the ioctl record is associated with
-the device node it was recorded from.</td>
+the device node it was recorded from.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>recordfile</code></em> :</span></p></td>
-<td>Path of the ioctl record file.</td>
+<td class="parameter_name"><p>recordfile</p></td>
+<td class="parameter_description"><p>Path of the ioctl record file.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
-<td>return location for a GError, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
-</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the data is invalid and an error
-occurred.</td>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a GError, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
+<div class="refsect3">
+<a name="id-1.2.2.8.19.6"></a><h4>Returns</h4>
+<p> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the data is invalid and an error
+occurred.</p>
+<p></p>
+</div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-load-script"></a><h3>umockdev_testbed_load_script ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            umockdev_testbed_load_script        (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dev</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *recordfile</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
-<p>
-Load a script record file for a particular device into the testbed.
-script records can be created with umockdev-record --script.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+<a name="umockdev-testbed-load-script"></a><h3>umockdev_testbed_load_script ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+umockdev_testbed_load_script (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                              <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dev</code></em>,
+                              <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *recordfile</code></em>,
+                              <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Load a script record file for a particular device into the testbed.
+script records can be created with umockdev-record --script.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.20.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>dev</code></em> :</span></p></td>
-<td>Device path (/dev/...) for which to load the script record.</td>
+<td class="parameter_name"><p>dev</p></td>
+<td class="parameter_description"><p>Device path (/dev/...) for which to load the script record.
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> is valid; in this case the script is associated with
+the device node it was recorded from.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>recordfile</code></em> :</span></p></td>
-<td>Path of the script record file.</td>
+<td class="parameter_name"><p>recordfile</p></td>
+<td class="parameter_description"><p>Path of the script record file.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
-<td>return location for a GError, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
-</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if <em class="parameter"><code>recordfile</code></em> is invalid and an error
-occurred.</td>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a GError, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
+<div class="refsect3">
+<a name="id-1.2.2.8.20.6"></a><h4>Returns</h4>
+<p> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if <em class="parameter"><code>recordfile</code></em>
+is invalid and an error
+occurred.</p>
+<p></p>
+</div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-load-socket-script"></a><h3>umockdev_testbed_load_socket_script ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            umockdev_testbed_load_socket_script (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *path</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> type</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *recordfile</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
-<p>
-Add an Unix socket to the testbed that is backed by a recorded script.
-Clients can connect to the socket using <em class="parameter"><code>path</code></em> (i. e. without the testbed
-prefix).
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+<a name="umockdev-testbed-load-socket-script"></a><h3>umockdev_testbed_load_socket_script ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+umockdev_testbed_load_socket_script (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                                     <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *path</code></em>,
+                                     <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> type</code></em>,
+                                     <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *recordfile</code></em>,
+                                     <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Add an Unix socket to the testbed that is backed by a recorded script.
+Clients can connect to the socket using <em class="parameter"><code>path</code></em>
+ (i. e. without the testbed
+prefix).</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.21.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>path</code></em> :</span></p></td>
-<td>Unix socket path</td>
+<td class="parameter_name"><p>path</p></td>
+<td class="parameter_description"><p>Unix socket path</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>type</code></em> :</span></p></td>
-<td>Unix socket type (<span class="type">SOCK_STREAM</span>, <span class="type">SOCK_DGRAM</span>)</td>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>Unix socket type (<span class="type">SOCK_STREAM</span>, <span class="type">SOCK_DGRAM</span>)</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>recordfile</code></em> :</span></p></td>
-<td>Path of the script record file.</td>
+<td class="parameter_name"><p>recordfile</p></td>
+<td class="parameter_description"><p>Path of the script record file.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
-<td>return location for a GError, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
-</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the <em class="parameter"><code>path</code></em> or <em class="parameter"><code>type</code></em> are
-invalid and an error occurred.</td>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a GError, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
+<div class="refsect3">
+<a name="id-1.2.2.8.21.6"></a><h4>Returns</h4>
+<p> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the <em class="parameter"><code>path</code></em>
+or <em class="parameter"><code>type</code></em>
+are
+invalid and an error occurred.</p>
+<p></p>
+</div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-get-dev-fd"></a><h3>umockdev_testbed_get_dev_fd ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>                umockdev_testbed_get_dev_fd         (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devnode</code></em>);</pre>
-<p>
-Simulated devices without a pre-defined contents are backed by a
+<a name="umockdev-testbed-get-dev-fd"></a><h3>umockdev_testbed_get_dev_fd ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>
+umockdev_testbed_get_dev_fd (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                             <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devnode</code></em>);</pre>
+<p>Simulated devices without a pre-defined contents are backed by a
 stream-like device node (PTY). Return the file descriptor
 for accessing their "master" side, i. e. the end that gets
 controlled by test suites. The tested program opens the "slave" side,
-which is just openening the device specified by <em class="parameter"><code>devnode</code></em>, e. g.
+which is just openening the device specified by <em class="parameter"><code>devnode</code></em>
+, e. g.
 /dev/ttyUSB2. Once that happened, your test can directly communicate
-with the tested program over that descriptor.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+with the tested program over that descriptor.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.22.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>devnode</code></em> :</span></p></td>
-<td>Device node name ("/dev/...")</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>File descriptor for communicating with clients that connect to
-<em class="parameter"><code>devnode</code></em>, or -1 if <em class="parameter"><code>devnode</code></em> does not exist or is not a
-simulated stream device. This must not be closed!</td>
+<td class="parameter_name"><p>devnode</p></td>
+<td class="parameter_description"><p>Device node name ("/dev/...")</p></td>
+<td class="parameter_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
 </div>
+<div class="refsect3">
+<a name="id-1.2.2.8.22.6"></a><h4>Returns</h4>
+<p> File descriptor for communicating with clients that connect to
+<em class="parameter"><code>devnode</code></em>
+, or -1 if <em class="parameter"><code>devnode</code></em>
+does not exist or is not a
+simulated stream device. This must not be closed!</p>
+<p></p>
+</div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-clear"></a><h3>umockdev_testbed_clear ()</h3>
-<pre class="programlisting"><span class="returnvalue">void</span>                umockdev_testbed_clear              (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>);</pre>
-<p>
-Remove all added devices from testbed directory.  After that, the
+<a name="umockdev-testbed-clear"></a><h3>umockdev_testbed_clear ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+umockdev_testbed_clear (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>);</pre>
+<p>Remove all added devices from testbed directory.  After that, the
 umockdev root directory will be in the same state as directly after the
-constructor.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+constructor.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.23.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody><tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr></tbody>
 </table></div>
 </div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-disable"></a><h3>umockdev_testbed_disable ()</h3>
-<pre class="programlisting"><span class="returnvalue">void</span>                umockdev_testbed_disable            (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>);</pre>
-<p>
-Disable the testbed.  This can be used for temporarily switching back to
+<a name="umockdev-testbed-disable"></a><h3>umockdev_testbed_disable ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+umockdev_testbed_disable (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>);</pre>
+<p>Disable the testbed.  This can be used for temporarily switching back to
 the real /sys and /dev without having to destroy or change $UMOCKDEV_DIR
-and the <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> instance. Use <em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#umockdev-testbed-enable" title="umockdev_testbed_enable ()"><code class="function">umockdev_testbed_enable()</code></a></code></em> to
-re-enable the testbed.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+and the <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> instance. Use <em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#umockdev-testbed-enable" title="umockdev_testbed_enable ()"><code class="function">umockdev_testbed_enable()</code></a></code></em>
+ to
+re-enable the testbed.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.24.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody><tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr></tbody>
 </table></div>
 </div>
+</div>
 <hr>
 <div class="refsect2">
-<a name="umockdev-testbed-enable"></a><h3>umockdev_testbed_enable ()</h3>
-<pre class="programlisting"><span class="returnvalue">void</span>                umockdev_testbed_enable             (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>);</pre>
-<p>
-Re-enable the testbed after @<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#umockdev-testbed-disable" title="umockdev_testbed_disable ()"><code class="function">umockdev_testbed_disable()</code></a></code></em>.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+<a name="umockdev-testbed-enable"></a><h3>umockdev_testbed_enable ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+umockdev_testbed_enable (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>);</pre>
+<p>Re-enable the testbed after @<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#umockdev-testbed-disable" title="umockdev_testbed_disable ()"><code class="function">umockdev_testbed_disable()</code></a></code></em>
+.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.25.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody><tr>
-<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
-<td>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</td>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
 </tr></tbody>
 </table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="umockdev-UMockdev.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="UMockdevTestbed-struct"></a><h3>struct UMockdevTestbed</h3>
+<pre class="programlisting">struct UMockdevTestbed;</pre>
+<p>The <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> class builds a temporary sandbox for mock devices.
+You can add a number of devices including arbitrary sysfs attributes and
+udev properties, and then run your software in that test bed that is
+independent of the actual hardware it is running on.  With this you can
+simulate particular hardware in virtual environments up to some degree,
+without needing any particular privileges or disturbing the whole system.</p>
+<p>You can either add devices by specifying individual device paths,
+properties, and attributes, or use the umockdev-record tool to create a human
+readable/editable record of a real device (and all its parents) and load
+that into the testbed with <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-from-string" title="umockdev_testbed_add_from_string ()"><code class="function">umockdev_testbed_add_from_string()</code></a>.</p>
+<p>Instantiating a <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> object creates a temporary directory with
+an empty sysfs tree and sets the $UMOCKDEV_DIR environment variable so that
+programs subsequently started under umockdev-wrapper will use the test bed
+instead of the system's real sysfs.</p>
 </div>
 </div>
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.19</div>
+          Generated by GTK-Doc V1.20</div>
 </body>
 </html>
