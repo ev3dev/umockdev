@@ -59,6 +59,9 @@ void t_usbfs_ioctl_tree_override_default_device (void);
 void t_usbfs_ioctl_tree_xz (void);
 void t_tty_stty (void);
 void t_tty_data (void);
+void t_detects_running_in_testbed (void);
+void t_detects_not_running_in_testbed (void);
+gint is_test_inside_testbed (gint pipefd);
 gint _vala_main (gchar** args, int args_length1);
 static void _t_testbed_empty_gtest_func (void);
 static void _t_testbed_add_device_gtest_func (void);
@@ -70,6 +73,8 @@ static void _t_usbfs_ioctl_tree_override_default_device_gtest_func (void);
 static void _t_usbfs_ioctl_tree_xz_gtest_func (void);
 static void _t_tty_stty_gtest_func (void);
 static void _t_tty_data_gtest_func (void);
+static void _t_detects_running_in_testbed_gtest_func (void);
+static void _t_detects_not_running_in_testbed_gtest_func (void);
 static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
 
@@ -1389,6 +1394,95 @@ void t_tty_data (void) {
 }
 
 
+void t_detects_running_in_testbed (void) {
+	gboolean _tmp0_ = FALSE;
+	_tmp0_ = umockdev_in_mock_environment ();
+	_vala_assert (_tmp0_, "UMockdev.in_mock_environment()");
+}
+
+
+void t_detects_not_running_in_testbed (void) {
+	gint pipefds[2] = {0};
+	gint _tmp0_ = 0;
+	pid_t pid = 0;
+	pid_t _tmp1_ = 0;
+	pid_t _tmp2_ = 0;
+	pid_t _tmp3_ = 0;
+	gint _tmp10_ = 0;
+	gchar buf = '\0';
+	gint _tmp11_ = 0;
+	gssize _tmp12_ = 0L;
+	gint _tmp13_ = 0;
+	_tmp0_ = pipe (pipefds);
+	g_assert_cmpint (_tmp0_, ==, 0);
+	_tmp1_ = fork ();
+	pid = _tmp1_;
+	_tmp2_ = pid;
+	g_assert_cmpint ((gint) _tmp2_, !=, -1);
+	_tmp3_ = pid;
+	if (_tmp3_ == ((pid_t) 0)) {
+		gint _tmp4_ = 0;
+		gchar** argv = NULL;
+		gchar* _tmp5_ = NULL;
+		gint _tmp6_ = 0;
+		gchar* _tmp7_ = NULL;
+		gchar** _tmp8_ = NULL;
+		gint argv_length1 = 0;
+		gint _argv_size_ = 0;
+		gchar** _tmp9_ = NULL;
+		gint _tmp9__length1 = 0;
+		_tmp4_ = pipefds[0];
+		close (_tmp4_);
+		g_unsetenv ("LD_PRELOAD");
+		_tmp5_ = g_strdup ("--test-outside-testbed");
+		_tmp6_ = pipefds[1];
+		_tmp7_ = g_strdup_printf ("%i", _tmp6_);
+		_tmp8_ = g_new0 (gchar*, 2 + 1);
+		_tmp8_[0] = _tmp5_;
+		_tmp8_[1] = _tmp7_;
+		argv = _tmp8_;
+		argv_length1 = 2;
+		_argv_size_ = argv_length1;
+		_tmp9_ = argv;
+		_tmp9__length1 = argv_length1;
+		execv ("/proc/self/exe", _tmp9_);
+		argv = (_vala_array_free (argv, argv_length1, (GDestroyNotify) g_free), NULL);
+	}
+	_tmp10_ = pipefds[1];
+	close (_tmp10_);
+	buf = 'x';
+	_tmp11_ = pipefds[0];
+	_tmp12_ = read (_tmp11_, &buf, (gsize) 1);
+	g_assert_cmpint ((gint) _tmp12_, ==, 1);
+	g_assert_cmpint ((gint) buf, ==, (gint) '0');
+	_tmp13_ = pipefds[0];
+	close (_tmp13_);
+}
+
+
+gint is_test_inside_testbed (gint pipefd) {
+	gint result = 0;
+	gchar buf[1] = {0};
+	gchar _tmp0_ = '\0';
+	gboolean _tmp1_ = FALSE;
+	gint _tmp3_ = 0;
+	gint _tmp4_ = 0;
+	buf[0] = '0';
+	_tmp0_ = buf[0];
+	_tmp1_ = umockdev_in_mock_environment ();
+	if (_tmp1_) {
+		gchar _tmp2_ = '\0';
+		buf[0] = '1';
+		_tmp2_ = buf[0];
+	}
+	_tmp3_ = pipefd;
+	write (_tmp3_, buf, (gsize) 1);
+	_tmp4_ = atoi ((const gchar*) buf);
+	result = _tmp4_;
+	return result;
+}
+
+
 static void _t_testbed_empty_gtest_func (void) {
 	t_testbed_empty ();
 }
@@ -1439,9 +1533,70 @@ static void _t_tty_data_gtest_func (void) {
 }
 
 
+static void _t_detects_running_in_testbed_gtest_func (void) {
+	t_detects_running_in_testbed ();
+}
+
+
+static void _t_detects_not_running_in_testbed_gtest_func (void) {
+	t_detects_not_running_in_testbed ();
+}
+
+
 gint _vala_main (gchar** args, int args_length1) {
 	gint result = 0;
-	gint _tmp0_ = 0;
+	gint _tmp13_ = 0;
+	{
+		gint i = 0;
+		i = 0;
+		{
+			gboolean _tmp0_ = FALSE;
+			_tmp0_ = TRUE;
+			while (TRUE) {
+				gboolean _tmp1_ = FALSE;
+				gint _tmp3_ = 0;
+				gchar** _tmp4_ = NULL;
+				gint _tmp4__length1 = 0;
+				gchar** _tmp5_ = NULL;
+				gint _tmp5__length1 = 0;
+				gint _tmp6_ = 0;
+				const gchar* _tmp7_ = NULL;
+				_tmp1_ = _tmp0_;
+				if (!_tmp1_) {
+					gint _tmp2_ = 0;
+					_tmp2_ = i;
+					i = _tmp2_ + 1;
+				}
+				_tmp0_ = FALSE;
+				_tmp3_ = i;
+				_tmp4_ = args;
+				_tmp4__length1 = args_length1;
+				if (!(_tmp3_ < _tmp4__length1)) {
+					break;
+				}
+				_tmp5_ = args;
+				_tmp5__length1 = args_length1;
+				_tmp6_ = i;
+				_tmp7_ = _tmp5_[_tmp6_];
+				if (g_strcmp0 (_tmp7_, "--test-outside-testbed") == 0) {
+					gchar** _tmp8_ = NULL;
+					gint _tmp8__length1 = 0;
+					gint _tmp9_ = 0;
+					const gchar* _tmp10_ = NULL;
+					gint _tmp11_ = 0;
+					gint _tmp12_ = 0;
+					_tmp8_ = args;
+					_tmp8__length1 = args_length1;
+					_tmp9_ = i;
+					_tmp10_ = _tmp8_[_tmp9_ + 1];
+					_tmp11_ = atoi (_tmp10_);
+					_tmp12_ = is_test_inside_testbed (_tmp11_);
+					result = _tmp12_;
+					return result;
+				}
+			}
+		}
+	}
 	g_test_init (&args_length1, &args, NULL);
 	g_test_add_func ("/umockdev-testbed-vala/empty", _t_testbed_empty_gtest_func);
 	g_test_add_func ("/umockdev-testbed-vala/add_devicev", _t_testbed_add_device_gtest_func);
@@ -1453,8 +1608,10 @@ gint _vala_main (gchar** args, int args_length1) {
 	g_test_add_func ("/umockdev-testbed-vala/usbfs_ioctl_tree_xz", _t_usbfs_ioctl_tree_xz_gtest_func);
 	g_test_add_func ("/umockdev-testbed-vala/tty_stty", _t_tty_stty_gtest_func);
 	g_test_add_func ("/umockdev-testbed-vala/tty_data", _t_tty_data_gtest_func);
-	_tmp0_ = g_test_run ();
-	result = _tmp0_;
+	g_test_add_func ("/umockdev-testbed-vala/detects_running_in_testbed", _t_detects_running_in_testbed_gtest_func);
+	g_test_add_func ("/umockdev-testbed-vala/detects_running_outside_testbed", _t_detects_not_running_in_testbed_gtest_func);
+	_tmp13_ = g_test_run ();
+	result = _tmp13_;
 	return result;
 }
 

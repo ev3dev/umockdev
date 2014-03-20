@@ -62,10 +62,12 @@ void umockdev_testbed_uevent (UMockdevTestbed* self, const gchar* devpath, const
 gboolean umockdev_testbed_load_ioctl (UMockdevTestbed* self, const gchar* dev, const gchar* recordfile, GError** error);
 gboolean umockdev_testbed_load_script (UMockdevTestbed* self, const gchar* dev, const gchar* recordfile, GError** error);
 gboolean umockdev_testbed_load_socket_script (UMockdevTestbed* self, const gchar* path, gint type, const gchar* recordfile, GError** error);
+gboolean umockdev_testbed_load_evemu_events (UMockdevTestbed* self, const gchar* dev, const gchar* eventsfile, GError** error);
 void umockdev_testbed_disable (UMockdevTestbed* self);
 void umockdev_testbed_enable (UMockdevTestbed* self);
 void umockdev_testbed_clear (UMockdevTestbed* self);
 gint umockdev_testbed_get_dev_fd (UMockdevTestbed* self, const gchar* devnode);
+gboolean umockdev_in_mock_environment (void);
 
 
 G_END_DECLS

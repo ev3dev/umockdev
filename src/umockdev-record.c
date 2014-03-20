@@ -58,6 +58,8 @@ extern gchar* opt_ioctl;
 gchar* opt_ioctl = NULL;
 extern gchar** opt_script;
 gchar** opt_script = NULL;
+extern gchar** opt_evemu_events;
+gchar** opt_evemu_events = NULL;
 extern gboolean opt_version;
 gboolean opt_version = FALSE;
 
@@ -76,17 +78,20 @@ static void _g_list_free__g_free0_ (GList* self);
 void dump_devices (gchar** devices, int devices_length1);
 void split_devfile_arg (const gchar* arg, gchar** dev, gchar** devnum, gchar** fname);
 void record_ioctl (const gchar* arg);
-void record_script (const gchar* arg);
+void record_script (const gchar* arg, const gchar* format);
 gint _vala_main (gchar** args, int args_length1);
 static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static gint _vala_array_length (gpointer array);
 
-const GOptionEntry options[6] = {{"all", 'a', 0, G_OPTION_ARG_NONE, &opt_all, "Record all devices"}, {"ioctl", 'i', 0, G_OPTION_ARG_FILENAME, &opt_ioctl, "Trace ioctls on the device, record into given file. In this case, all " \
+const GOptionEntry options[7] = {{"all", 'a', 0, G_OPTION_ARG_NONE, &opt_all, "Record all devices"}, {"ioctl", 'i', 0, G_OPTION_ARG_FILENAME, &opt_ioctl, "Trace ioctls on the device, record into given file. In this case, all " \
 "positional arguments are a command (and its arguments) to run that get" \
 "s traced.", "devname=FILE"}, {"script", 's', 0, G_OPTION_ARG_FILENAME_ARRAY, &opt_script, "Trace reads and writes on the device, record into given file. In this " \
 "case, all positional arguments are a command (and its arguments) to ru" \
-"n that gets traced. Can be specified multiple times.", "devname=FILE"}, {"", (gchar) 0, 0, G_OPTION_ARG_STRING_ARRAY, &opt_devices, "Path of a device in /dev or /sys, or command and arguments with --ioct" \
+"n that gets traced. Can be specified multiple times.", "devname=FILE"}, {"evemu-events", 'e', 0, G_OPTION_ARG_FILENAME_ARRAY, &opt_evemu_events, "Trace evdev event reads on the device, record into given file in EVEMU" \
+" event format. In this case, all positional arguments are a command (a" \
+"nd its arguments) to run that gets traced. Can be specified multiple t" \
+"imes.", "devname=FILE"}, {"", (gchar) 0, 0, G_OPTION_ARG_STRING_ARRAY, &opt_devices, "Path of a device in /dev or /sys, or command and arguments with --ioct" \
 "l.", "DEVICE [...]"}, {"version", (gchar) 0, 0, G_OPTION_ARG_NONE, &opt_version, "Output version information and exit"}, {NULL}};
 
 void exit_error (const gchar* message, ...) {
@@ -1641,7 +1646,7 @@ void record_ioctl (const gchar* arg) {
 }
 
 
-void record_script (const gchar* arg) {
+void record_script (const gchar* arg, const gchar* format) {
 	gchar* dev = NULL;
 	gchar* devnum = NULL;
 	gchar* outfile = NULL;
@@ -1658,8 +1663,12 @@ void record_script (const gchar* arg) {
 	gchar* _tmp9_ = NULL;
 	gchar* _tmp10_ = NULL;
 	gchar* _tmp11_ = NULL;
-	guint _tmp12_ = 0U;
+	gchar* _tmp12_ = NULL;
+	gchar* _tmp13_ = NULL;
+	const gchar* _tmp14_ = NULL;
+	guint _tmp15_ = 0U;
 	g_return_if_fail (arg != NULL);
+	g_return_if_fail (format != NULL);
 	_tmp0_ = arg;
 	split_devfile_arg (_tmp0_, &_tmp1_, &_tmp2_, &_tmp3_);
 	_g_free0 (dev);
@@ -1683,8 +1692,13 @@ void record_script (const gchar* arg) {
 	_tmp11_ = _tmp10_;
 	g_setenv (_tmp11_, dev, TRUE);
 	_g_free0 (_tmp11_);
-	_tmp12_ = record_script_counter;
-	record_script_counter = _tmp12_ + 1;
+	_tmp12_ = g_strconcat ("UMOCKDEV_SCRIPT_RECORD_FORMAT_", c, NULL);
+	_tmp13_ = _tmp12_;
+	_tmp14_ = format;
+	g_setenv (_tmp13_, _tmp14_, TRUE);
+	_g_free0 (_tmp13_);
+	_tmp15_ = record_script_counter;
+	record_script_counter = _tmp15_ + 1;
 	_g_free0 (c);
 	_g_free0 (outfile);
 	_g_free0 (devnum);
@@ -1707,32 +1721,38 @@ gint _vala_main (gchar** args, int args_length1) {
 	gboolean _tmp17_ = FALSE;
 	gboolean _tmp18_ = FALSE;
 	gboolean _tmp19_ = FALSE;
-	const gchar* _tmp20_ = NULL;
-	gboolean _tmp22_ = FALSE;
-	gboolean _tmp27_ = FALSE;
-	gboolean _tmp28_ = FALSE;
-	const gchar* _tmp29_ = NULL;
+	gboolean _tmp20_ = FALSE;
+	const gchar* _tmp21_ = NULL;
+	gboolean _tmp23_ = FALSE;
+	gboolean _tmp25_ = FALSE;
+	gboolean _tmp30_ = FALSE;
 	gboolean _tmp31_ = FALSE;
+	gboolean _tmp32_ = FALSE;
+	const gchar* _tmp33_ = NULL;
+	gboolean _tmp35_ = FALSE;
+	gboolean _tmp37_ = FALSE;
 	gchar* preload = NULL;
-	const gchar* _tmp48_ = NULL;
-	gchar* _tmp49_ = NULL;
-	const gchar* _tmp50_ = NULL;
 	const gchar* _tmp54_ = NULL;
 	gchar* _tmp55_ = NULL;
-	gchar* _tmp56_ = NULL;
-	const gchar* _tmp57_ = NULL;
-	gchar** _tmp59_ = NULL;
-	gint _tmp59__length1 = 0;
-	gchar** _tmp62_ = NULL;
-	gint _tmp62__length1 = 0;
+	const gchar* _tmp56_ = NULL;
+	const gchar* _tmp60_ = NULL;
+	gchar* _tmp61_ = NULL;
+	gchar* _tmp62_ = NULL;
 	const gchar* _tmp63_ = NULL;
-	gchar** _tmp64_ = NULL;
-	gint _tmp64__length1 = 0;
 	gchar** _tmp65_ = NULL;
 	gint _tmp65__length1 = 0;
-	const gchar* _tmp66_ = NULL;
-	gint _tmp67_ = 0;
-	const gchar* _tmp68_ = NULL;
+	gchar** _tmp68_ = NULL;
+	gint _tmp68__length1 = 0;
+	gchar** _tmp71_ = NULL;
+	gint _tmp71__length1 = 0;
+	const gchar* _tmp72_ = NULL;
+	gchar** _tmp73_ = NULL;
+	gint _tmp73__length1 = 0;
+	gchar** _tmp74_ = NULL;
+	gint _tmp74__length1 = 0;
+	const gchar* _tmp75_ = NULL;
+	gint _tmp76_ = 0;
+	const gchar* _tmp77_ = NULL;
 	GError * _inner_error_ = NULL;
 	_tmp0_ = g_option_context_new ("");
 	oc = _tmp0_;
@@ -1812,180 +1832,222 @@ gint _vala_main (gchar** args, int args_length1) {
 	if (_tmp17_) {
 		exit_error ("Need to specify at least one device or --all.", NULL);
 	}
-	_tmp20_ = opt_ioctl;
-	if (_tmp20_ != NULL) {
+	_tmp21_ = opt_ioctl;
+	if (_tmp21_ != NULL) {
+		_tmp20_ = TRUE;
+	} else {
+		gchar** _tmp22_ = NULL;
+		gint _tmp22__length1 = 0;
+		_tmp22_ = opt_script;
+		_tmp22__length1 = _vala_array_length (opt_script);
+		_tmp20_ = _tmp22__length1 > 0;
+	}
+	_tmp23_ = _tmp20_;
+	if (_tmp23_) {
 		_tmp19_ = TRUE;
 	} else {
-		gchar** _tmp21_ = NULL;
-		gint _tmp21__length1 = 0;
-		_tmp21_ = opt_script;
-		_tmp21__length1 = _vala_array_length (opt_script);
-		_tmp19_ = _tmp21__length1 > 0;
+		gchar** _tmp24_ = NULL;
+		gint _tmp24__length1 = 0;
+		_tmp24_ = opt_evemu_events;
+		_tmp24__length1 = _vala_array_length (opt_evemu_events);
+		_tmp19_ = _tmp24__length1 > 0;
 	}
-	_tmp22_ = _tmp19_;
-	if (_tmp22_) {
-		gboolean _tmp23_ = FALSE;
-		gboolean _tmp24_ = FALSE;
+	_tmp25_ = _tmp19_;
+	if (_tmp25_) {
 		gboolean _tmp26_ = FALSE;
-		_tmp24_ = opt_all;
-		if (_tmp24_) {
-			_tmp23_ = TRUE;
+		gboolean _tmp27_ = FALSE;
+		gboolean _tmp29_ = FALSE;
+		_tmp27_ = opt_all;
+		if (_tmp27_) {
+			_tmp26_ = TRUE;
 		} else {
-			gchar** _tmp25_ = NULL;
-			gint _tmp25__length1 = 0;
-			_tmp25_ = opt_devices;
-			_tmp25__length1 = _vala_array_length (opt_devices);
-			_tmp23_ = _tmp25__length1 < 1;
+			gchar** _tmp28_ = NULL;
+			gint _tmp28__length1 = 0;
+			_tmp28_ = opt_devices;
+			_tmp28__length1 = _vala_array_length (opt_devices);
+			_tmp26_ = _tmp28__length1 < 1;
 		}
-		_tmp26_ = _tmp23_;
-		_tmp18_ = _tmp26_;
+		_tmp29_ = _tmp26_;
+		_tmp18_ = _tmp29_;
 	} else {
 		_tmp18_ = FALSE;
 	}
-	_tmp27_ = _tmp18_;
-	if (_tmp27_) {
+	_tmp30_ = _tmp18_;
+	if (_tmp30_) {
 		exit_error ("For recording ioctls or scripts you have to specify a command to run", NULL);
 	}
-	_tmp29_ = opt_ioctl;
-	if (_tmp29_ == NULL) {
-		gchar** _tmp30_ = NULL;
-		gint _tmp30__length1 = 0;
-		_tmp30_ = opt_script;
-		_tmp30__length1 = _vala_array_length (opt_script);
-		_tmp28_ = _tmp30__length1 == 0;
+	_tmp33_ = opt_ioctl;
+	if (_tmp33_ == NULL) {
+		gchar** _tmp34_ = NULL;
+		gint _tmp34__length1 = 0;
+		_tmp34_ = opt_script;
+		_tmp34__length1 = _vala_array_length (opt_script);
+		_tmp32_ = _tmp34__length1 == 0;
 	} else {
-		_tmp28_ = FALSE;
+		_tmp32_ = FALSE;
 	}
-	_tmp31_ = _tmp28_;
-	if (_tmp31_) {
-		gboolean _tmp32_ = FALSE;
-		gchar** _tmp47_ = NULL;
-		gint _tmp47__length1 = 0;
-		_tmp32_ = opt_all;
-		if (_tmp32_) {
-			gchar** _tmp33_ = NULL;
-			gchar** _tmp34_ = NULL;
-			_tmp34_ = _tmp33_ = all_devices ();
+	_tmp35_ = _tmp32_;
+	if (_tmp35_) {
+		gchar** _tmp36_ = NULL;
+		gint _tmp36__length1 = 0;
+		_tmp36_ = opt_evemu_events;
+		_tmp36__length1 = _vala_array_length (opt_evemu_events);
+		_tmp31_ = _tmp36__length1 == 0;
+	} else {
+		_tmp31_ = FALSE;
+	}
+	_tmp37_ = _tmp31_;
+	if (_tmp37_) {
+		gboolean _tmp38_ = FALSE;
+		gchar** _tmp53_ = NULL;
+		gint _tmp53__length1 = 0;
+		_tmp38_ = opt_all;
+		if (_tmp38_) {
+			gchar** _tmp39_ = NULL;
+			gchar** _tmp40_ = NULL;
+			_tmp40_ = _tmp39_ = all_devices ();
 			opt_devices = (_vala_array_free (opt_devices, _vala_array_length (opt_devices), (GDestroyNotify) g_free), NULL);
-			opt_devices = _tmp34_;
+			opt_devices = _tmp40_;
 		} else {
 			{
 				gint i = 0;
 				i = 0;
 				{
-					gboolean _tmp35_ = FALSE;
-					_tmp35_ = TRUE;
+					gboolean _tmp41_ = FALSE;
+					_tmp41_ = TRUE;
 					while (TRUE) {
-						gboolean _tmp36_ = FALSE;
-						gint _tmp38_ = 0;
-						gchar** _tmp39_ = NULL;
-						gint _tmp39__length1 = 0;
-						gchar** _tmp40_ = NULL;
-						gint _tmp40__length1 = 0;
-						gint _tmp41_ = 0;
-						gchar** _tmp42_ = NULL;
-						gint _tmp42__length1 = 0;
-						gint _tmp43_ = 0;
-						const gchar* _tmp44_ = NULL;
-						gchar* _tmp45_ = NULL;
-						gchar* _tmp46_ = NULL;
-						_tmp36_ = _tmp35_;
-						if (!_tmp36_) {
-							gint _tmp37_ = 0;
-							_tmp37_ = i;
-							i = _tmp37_ + 1;
+						gboolean _tmp42_ = FALSE;
+						gint _tmp44_ = 0;
+						gchar** _tmp45_ = NULL;
+						gint _tmp45__length1 = 0;
+						gchar** _tmp46_ = NULL;
+						gint _tmp46__length1 = 0;
+						gint _tmp47_ = 0;
+						gchar** _tmp48_ = NULL;
+						gint _tmp48__length1 = 0;
+						gint _tmp49_ = 0;
+						const gchar* _tmp50_ = NULL;
+						gchar* _tmp51_ = NULL;
+						gchar* _tmp52_ = NULL;
+						_tmp42_ = _tmp41_;
+						if (!_tmp42_) {
+							gint _tmp43_ = 0;
+							_tmp43_ = i;
+							i = _tmp43_ + 1;
 						}
-						_tmp35_ = FALSE;
-						_tmp38_ = i;
-						_tmp39_ = opt_devices;
-						_tmp39__length1 = _vala_array_length (opt_devices);
-						if (!(_tmp38_ < _tmp39__length1)) {
+						_tmp41_ = FALSE;
+						_tmp44_ = i;
+						_tmp45_ = opt_devices;
+						_tmp45__length1 = _vala_array_length (opt_devices);
+						if (!(_tmp44_ < _tmp45__length1)) {
 							break;
 						}
-						_tmp40_ = opt_devices;
-						_tmp40__length1 = _vala_array_length (opt_devices);
-						_tmp41_ = i;
-						_tmp42_ = opt_devices;
-						_tmp42__length1 = _vala_array_length (opt_devices);
-						_tmp43_ = i;
-						_tmp44_ = _tmp42_[_tmp43_];
-						_tmp45_ = resolve (_tmp44_);
-						_g_free0 (_tmp40_[_tmp41_]);
-						_tmp40_[_tmp41_] = _tmp45_;
-						_tmp46_ = _tmp40_[_tmp41_];
+						_tmp46_ = opt_devices;
+						_tmp46__length1 = _vala_array_length (opt_devices);
+						_tmp47_ = i;
+						_tmp48_ = opt_devices;
+						_tmp48__length1 = _vala_array_length (opt_devices);
+						_tmp49_ = i;
+						_tmp50_ = _tmp48_[_tmp49_];
+						_tmp51_ = resolve (_tmp50_);
+						_g_free0 (_tmp46_[_tmp47_]);
+						_tmp46_[_tmp47_] = _tmp51_;
+						_tmp52_ = _tmp46_[_tmp47_];
 					}
 				}
 			}
 		}
-		_tmp47_ = opt_devices;
-		_tmp47__length1 = _vala_array_length (opt_devices);
-		dump_devices (_tmp47_, _tmp47__length1);
+		_tmp53_ = opt_devices;
+		_tmp53__length1 = _vala_array_length (opt_devices);
+		dump_devices (_tmp53_, _tmp53__length1);
 		result = 0;
 		_g_option_context_free0 (oc);
 		return result;
 	}
-	_tmp48_ = g_getenv ("LD_PRELOAD");
-	_tmp49_ = g_strdup (_tmp48_);
-	preload = _tmp49_;
-	_tmp50_ = preload;
-	if (_tmp50_ == NULL) {
-		gchar* _tmp51_ = NULL;
-		_tmp51_ = g_strdup ("");
+	_tmp54_ = g_getenv ("LD_PRELOAD");
+	_tmp55_ = g_strdup (_tmp54_);
+	preload = _tmp55_;
+	_tmp56_ = preload;
+	if (_tmp56_ == NULL) {
+		gchar* _tmp57_ = NULL;
+		_tmp57_ = g_strdup ("");
 		_g_free0 (preload);
-		preload = _tmp51_;
+		preload = _tmp57_;
 	} else {
-		const gchar* _tmp52_ = NULL;
-		gchar* _tmp53_ = NULL;
-		_tmp52_ = preload;
-		_tmp53_ = g_strconcat (_tmp52_, ":", NULL);
-		_g_free0 (preload);
-		preload = _tmp53_;
-	}
-	_tmp54_ = preload;
-	_tmp55_ = g_strconcat (_tmp54_, "libumockdev-preload.so.0", NULL);
-	_tmp56_ = _tmp55_;
-	g_setenv ("LD_PRELOAD", _tmp56_, TRUE);
-	_g_free0 (_tmp56_);
-	_tmp57_ = opt_ioctl;
-	if (_tmp57_ != NULL) {
 		const gchar* _tmp58_ = NULL;
-		_tmp58_ = opt_ioctl;
-		record_ioctl (_tmp58_);
+		gchar* _tmp59_ = NULL;
+		_tmp58_ = preload;
+		_tmp59_ = g_strconcat (_tmp58_, ":", NULL);
+		_g_free0 (preload);
+		preload = _tmp59_;
 	}
-	_tmp59_ = opt_script;
-	_tmp59__length1 = _vala_array_length (opt_script);
+	_tmp60_ = preload;
+	_tmp61_ = g_strconcat (_tmp60_, "libumockdev-preload.so.0", NULL);
+	_tmp62_ = _tmp61_;
+	g_setenv ("LD_PRELOAD", _tmp62_, TRUE);
+	_g_free0 (_tmp62_);
+	_tmp63_ = opt_ioctl;
+	if (_tmp63_ != NULL) {
+		const gchar* _tmp64_ = NULL;
+		_tmp64_ = opt_ioctl;
+		record_ioctl (_tmp64_);
+	}
+	_tmp65_ = opt_script;
+	_tmp65__length1 = _vala_array_length (opt_script);
 	{
 		gchar** s_collection = NULL;
 		gint s_collection_length1 = 0;
 		gint _s_collection_size_ = 0;
 		gint s_it = 0;
-		s_collection = _tmp59_;
-		s_collection_length1 = _tmp59__length1;
-		for (s_it = 0; s_it < _tmp59__length1; s_it = s_it + 1) {
-			gchar* _tmp60_ = NULL;
+		s_collection = _tmp65_;
+		s_collection_length1 = _tmp65__length1;
+		for (s_it = 0; s_it < _tmp65__length1; s_it = s_it + 1) {
+			gchar* _tmp66_ = NULL;
 			gchar* s = NULL;
-			_tmp60_ = g_strdup (s_collection[s_it]);
-			s = _tmp60_;
+			_tmp66_ = g_strdup (s_collection[s_it]);
+			s = _tmp66_;
 			{
-				const gchar* _tmp61_ = NULL;
-				_tmp61_ = s;
-				record_script (_tmp61_);
+				const gchar* _tmp67_ = NULL;
+				_tmp67_ = s;
+				record_script (_tmp67_, "default");
 				_g_free0 (s);
 			}
 		}
 	}
-	_tmp62_ = opt_devices;
-	_tmp62__length1 = _vala_array_length (opt_devices);
-	_tmp63_ = _tmp62_[0];
-	_tmp64_ = opt_devices;
-	_tmp64__length1 = _vala_array_length (opt_devices);
-	execvp (_tmp63_, _tmp64_);
-	_tmp65_ = opt_devices;
-	_tmp65__length1 = _vala_array_length (opt_devices);
-	_tmp66_ = _tmp65_[0];
-	_tmp67_ = errno;
-	_tmp68_ = g_strerror (_tmp67_);
-	exit_error ("Cannot run program %s: %s", _tmp66_, _tmp68_, NULL);
+	_tmp68_ = opt_evemu_events;
+	_tmp68__length1 = _vala_array_length (opt_evemu_events);
+	{
+		gchar** s_collection = NULL;
+		gint s_collection_length1 = 0;
+		gint _s_collection_size_ = 0;
+		gint s_it = 0;
+		s_collection = _tmp68_;
+		s_collection_length1 = _tmp68__length1;
+		for (s_it = 0; s_it < _tmp68__length1; s_it = s_it + 1) {
+			gchar* _tmp69_ = NULL;
+			gchar* s = NULL;
+			_tmp69_ = g_strdup (s_collection[s_it]);
+			s = _tmp69_;
+			{
+				const gchar* _tmp70_ = NULL;
+				_tmp70_ = s;
+				record_script (_tmp70_, "evemu");
+				_g_free0 (s);
+			}
+		}
+	}
+	_tmp71_ = opt_devices;
+	_tmp71__length1 = _vala_array_length (opt_devices);
+	_tmp72_ = _tmp71_[0];
+	_tmp73_ = opt_devices;
+	_tmp73__length1 = _vala_array_length (opt_devices);
+	execvp (_tmp72_, _tmp73_);
+	_tmp74_ = opt_devices;
+	_tmp74__length1 = _vala_array_length (opt_devices);
+	_tmp75_ = _tmp74_[0];
+	_tmp76_ = errno;
+	_tmp77_ = g_strerror (_tmp76_);
+	exit_error ("Cannot run program %s: %s", _tmp75_, _tmp77_, NULL);
 	result = 0;
 	_g_free0 (preload);
 	_g_option_context_free0 (oc);

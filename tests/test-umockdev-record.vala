@@ -297,6 +297,40 @@ t_system_ioctl_log ()
     DirUtils.remove (workdir);
 }
 
+static void
+t_system_ioctl_log_append_dev_mismatch ()
+{
+    string sout;
+    string serr;
+    int exit;
+    string log;
+
+    try {
+        FileUtils.close(FileUtils.open_tmp ("ioctl_log_test.XXXXXX", out log));
+    } catch (Error e) { Process.abort (); }
+
+    // should log the header plus one read
+    spawn (umockdev_record_path + " -i /dev/zero=" + log + " -- head -c1 /dev/zero",
+           out sout, out serr, out exit);
+    assert_cmpstr (serr, Op.EQ, "");
+    assert_cmpint (exit, Op.EQ, 0);
+    assert_cmpstr (sout, Op.EQ, "\0");
+
+    string orig_contents = file_contents (log);
+
+    // should fail as it is a different device
+    spawn (umockdev_record_path + " -i /dev/null=" + log + " -- head -c1 /dev/null",
+           out sout, out serr, out exit);
+    assert (serr.contains ("two different devices"));
+    assert_cmpint (exit, Op.EQ, 256);
+    assert_cmpstr (sout, Op.EQ, "\0");
+
+    // should not change original record
+    assert_cmpstr (file_contents (log), Op.EQ, orig_contents);
+
+    FileUtils.remove (log);
+}
+
 /*
  * umockdev-record --script recording to a file, with simple "head" command
  */
@@ -328,17 +362,96 @@ t_system_script_log_simple ()
     assert_cmpstr (sout, Op.EQ, "\0");
     string[] loglines = file_contents (log).split("\n");
     assert_cmpuint (loglines.length, Op.EQ, 2);
-    string[] logheader = loglines[0].split(" ");
-    assert_cmpuint (logheader.length, Op.EQ, 3);
-    assert_cmpstr (logheader[0], Op.EQ, "d");
-    assert_cmpstr (logheader[1], Op.EQ, "0");
-    assert_cmpstr (logheader[2], Op.EQ, "/dev/zero");
+    assert_cmpstr (loglines[0], Op.EQ, "d 0 /dev/zero");
+
     string[] logwords = loglines[1].split(" ");
     assert_cmpuint (logwords.length, Op.EQ, 3);
     assert_cmpstr (logwords[0], Op.EQ, "r");
     // should be quick, give it 5 ms at most
     assert_cmpint (int.parse(logwords[1]), Op.LE, 5);
     assert_cmpstr (logwords[2], Op.EQ, "^@");
+
+    FileUtils.remove (log);
+}
+
+static void
+t_system_script_log_append_same_dev ()
+{
+    string sout;
+    string serr;
+    int exit;
+    string log;
+
+    try {
+        FileUtils.close(FileUtils.open_tmp ("test_script_log.XXXXXX", out log));
+    } catch (Error e) { Process.abort (); }
+
+    // should log the header plus one read
+    spawn (umockdev_record_path + " --script=/dev/zero=" + log + " -- head -c1 /dev/zero",
+           out sout, out serr, out exit);
+    assert_cmpstr (serr, Op.EQ, "");
+    assert_cmpint (exit, Op.EQ, 0);
+    assert_cmpstr (sout, Op.EQ, "\0");
+
+    // should still work as it is the same device, and append
+    spawn (umockdev_record_path + " --script=/dev/zero=" + log + " -- head -c1 /dev/zero",
+           out sout, out serr, out exit);
+    assert_cmpstr (serr, Op.EQ, "");
+    assert_cmpint (exit, Op.EQ, 0);
+    assert_cmpstr (sout, Op.EQ, "\0");
+
+    // should now have the header and two reads
+    string[] loglines = file_contents (log).split("\n");
+    assert_cmpuint (loglines.length, Op.EQ, 3);
+    assert_cmpstr (loglines[0], Op.EQ, "d 0 /dev/zero");
+
+    string[] logwords = loglines[1].split(" ");
+    assert_cmpuint (logwords.length, Op.EQ, 3);
+    assert_cmpstr (logwords[0], Op.EQ, "r");
+    // should be quick, give it 5 ms at most
+    assert_cmpint (int.parse(logwords[1]), Op.LE, 5);
+    assert_cmpstr (logwords[2], Op.EQ, "^@");
+
+    logwords = loglines[2].split(" ");
+    assert_cmpuint (logwords.length, Op.EQ, 3);
+    assert_cmpstr (logwords[0], Op.EQ, "r");
+    // should be quick, give it 5 ms at most
+    assert_cmpint (int.parse(logwords[1]), Op.LE, 5);
+    assert_cmpstr (logwords[2], Op.EQ, "^@");
+
+    FileUtils.remove (log);
+}
+
+static void
+t_system_script_log_append_dev_mismatch ()
+{
+    string sout;
+    string serr;
+    int exit;
+    string log;
+
+    try {
+        FileUtils.close(FileUtils.open_tmp ("test_script_log.XXXXXX", out log));
+    } catch (Error e) { Process.abort (); }
+
+    // should log the header plus one read
+    spawn (umockdev_record_path + " --script=/dev/zero=" + log + " -- head -c1 /dev/zero",
+           out sout, out serr, out exit);
+    assert_cmpstr (serr, Op.EQ, "");
+    assert_cmpint (exit, Op.EQ, 0);
+    assert_cmpstr (sout, Op.EQ, "\0");
+
+    string orig_contents = file_contents (log);
+
+    // should fail as it is a different device
+    spawn (umockdev_record_path + " --script=/dev/null=" + log + " -- head -c1 /dev/null",
+           out sout, out serr, out exit);
+    assert (serr.contains ("two different devices"));
+    assert_cmpint (exit, Op.EQ, 256);
+    assert_cmpstr (sout, Op.EQ, "\0");
+
+    // should not change original record
+    assert_cmpstr (file_contents (log), Op.EQ, orig_contents);
 
     FileUtils.remove (log);
 }
@@ -553,6 +666,65 @@ t_system_script_log_chatter_socket_stream ()
     FileUtils.remove (log);
 }
 
+/*
+ * umockdev-record --evemu-events recording to a file
+ *
+ * Note that this cannot test actual events, as we cannot inject events into a
+ * device without root privileges; but we can at least ensure that the preload
+ * lib gets loaded, the log gets created, the header written, and recording
+ * happens on the right device.
+ */
+static void
+t_system_evemu_log ()
+{
+    string sout;
+    string serr;
+    int exit;
+
+    string workdir;
+    try {
+        workdir = DirUtils.make_tmp ("evemu_log_test.XXXXXX");
+    } catch (Error e) { Process.abort (); }
+    string log = Path.build_filename (workdir, "log");
+
+    spawn (umockdev_record_path + " --evemu-events=/dev/null=" + log + " -- head -c1 /dev/null",
+           out sout, out serr, out exit);
+    assert_cmpstr (serr, Op.EQ, "");
+    assert_cmpint (exit, Op.EQ, 0);
+    assert_cmpstr (sout, Op.EQ, "\0");
+    assert_cmpstr (file_contents (log), Op.EQ, "# EVEMU 1.2\n# device /dev/null\n");
+
+    // appending a record for the same device should work
+    spawn (umockdev_record_path + " --evemu-events=/dev/null=" + log + " -- head -c1 /dev/null",
+           out sout, out serr, out exit);
+    assert_cmpstr (serr, Op.EQ, "");
+    assert_cmpint (exit, Op.EQ, 0);
+    assert_cmpstr (sout, Op.EQ, "\0");
+    // appends an extra NL at the end
+    assert_cmpstr (file_contents (log), Op.EQ, "# EVEMU 1.2\n# device /dev/null\n\n");
+
+    // appending a record for a different device should fail
+    spawn (umockdev_record_path + " --evemu-events=/dev/zero=" + log + " -- head -c1 /dev/zero",
+           out sout, out serr, out exit);
+    assert (serr.contains ("two different devices"));
+    assert_cmpint (exit, Op.EQ, 256);
+    assert_cmpstr (sout, Op.EQ, "\0");
+    // unchanged
+    assert_cmpstr (file_contents (log), Op.EQ, "# EVEMU 1.2\n# device /dev/null\n\n");
+
+    FileUtils.remove (log);
+
+    // invalid syntax
+    spawn (umockdev_record_path + " --evemu-events /dev/null -- true",
+           out sout, out serr, out exit);
+    assert_cmpint (exit, Op.NE, 1);
+    assert_cmpstr (sout, Op.EQ, "");
+    assert (serr.contains ("--ioctl"));
+    assert (serr.contains ("="));
+    assert (!FileUtils.test (log, FileTest.EXISTS));
+
+    DirUtils.remove (workdir);
+}
 static void
 t_run_invalid_args ()
 {
@@ -653,9 +825,13 @@ main (string[] args)
     Test.add_func ("/umockdev-record/system-all", t_system_all);
     Test.add_func ("/umockdev-record/system-invalid", t_system_invalid);
     Test.add_func ("/umockdev-record/ioctl-log", t_system_ioctl_log);
+    Test.add_func ("/umockdev-record/ioctl-log-append-dev-mismatch", t_system_ioctl_log_append_dev_mismatch);
     Test.add_func ("/umockdev-record/script-log-simple", t_system_script_log_simple);
+    Test.add_func ("/umockdev-record/script-log-append-same-dev", t_system_script_log_append_same_dev);
+    Test.add_func ("/umockdev-record/script-log-append-dev-mismatch", t_system_script_log_append_dev_mismatch);
     Test.add_func ("/umockdev-record/script-log-chatter", t_system_script_log_chatter);
     Test.add_func ("/umockdev-record/script-log-socket", t_system_script_log_chatter_socket_stream);
+    Test.add_func ("/umockdev-record/evemu-log", t_system_evemu_log);
 
     // error conditions
     Test.add_func ("/umockdev-record/invalid-args", t_run_invalid_args);

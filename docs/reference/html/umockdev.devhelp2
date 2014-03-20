@@ -4,6 +4,7 @@
   <chapters>
     <sub name="API reference" link="ch01.html">
       <sub name="umockdev" link="umockdev-UMockdev.html"/>
+      <sub name="global functions" link="umockdev-global-functions.html"/>
       <sub name="umockdev errors" link="umockdev-umockdev-errors.html"/>
     </sub>
     <sub name="Object Hierarchy" link="object-tree.html"/>
@@ -32,11 +33,13 @@
     <keyword type="function" name="umockdev_testbed_load_ioctl ()" link="umockdev-UMockdev.html#umockdev-testbed-load-ioctl"/>
     <keyword type="function" name="umockdev_testbed_load_script ()" link="umockdev-UMockdev.html#umockdev-testbed-load-script"/>
     <keyword type="function" name="umockdev_testbed_load_socket_script ()" link="umockdev-UMockdev.html#umockdev-testbed-load-socket-script"/>
+    <keyword type="function" name="umockdev_testbed_load_evemu_events ()" link="umockdev-UMockdev.html#umockdev-testbed-load-evemu-events"/>
     <keyword type="function" name="umockdev_testbed_get_dev_fd ()" link="umockdev-UMockdev.html#umockdev-testbed-get-dev-fd"/>
     <keyword type="function" name="umockdev_testbed_clear ()" link="umockdev-UMockdev.html#umockdev-testbed-clear"/>
     <keyword type="function" name="umockdev_testbed_disable ()" link="umockdev-UMockdev.html#umockdev-testbed-disable"/>
     <keyword type="function" name="umockdev_testbed_enable ()" link="umockdev-UMockdev.html#umockdev-testbed-enable"/>
     <keyword type="struct" name="struct UMockdevTestbed" link="umockdev-UMockdev.html#UMockdevTestbed-struct"/>
+    <keyword type="function" name="umockdev_in_mock_environment ()" link="umockdev-global-functions.html#umockdev-in-mock-environment"/>
     <keyword type="enum" name="enum UMockdevError" link="umockdev-umockdev-errors.html#UMockdevError"/>
   </functions>
 </book>

@@ -63,10 +63,14 @@ void t_system_single (void);
 void t_system_all (void);
 void t_system_invalid (void);
 void t_system_ioctl_log (void);
+void t_system_ioctl_log_append_dev_mismatch (void);
 void t_system_script_log_simple (void);
+void t_system_script_log_append_same_dev (void);
+void t_system_script_log_append_dev_mismatch (void);
 gchar* read_line_timeout (FILE* stream);
 void t_system_script_log_chatter (void);
 void t_system_script_log_chatter_socket_stream (void);
+void t_system_evemu_log (void);
 void t_run_invalid_args (void);
 void t_gphoto2_record (void);
 gint _vala_main (gchar** args, int args_length1);
@@ -78,9 +82,13 @@ static void _t_system_single_gtest_func (void);
 static void _t_system_all_gtest_func (void);
 static void _t_system_invalid_gtest_func (void);
 static void _t_system_ioctl_log_gtest_func (void);
+static void _t_system_ioctl_log_append_dev_mismatch_gtest_func (void);
 static void _t_system_script_log_simple_gtest_func (void);
+static void _t_system_script_log_append_same_dev_gtest_func (void);
+static void _t_system_script_log_append_dev_mismatch_gtest_func (void);
 static void _t_system_script_log_chatter_gtest_func (void);
 static void _t_system_script_log_chatter_socket_stream_gtest_func (void);
+static void _t_system_evemu_log_gtest_func (void);
 static void _t_run_invalid_args_gtest_func (void);
 static void _t_gphoto2_record_gtest_func (void);
 static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNotify destroy_func);
@@ -1046,6 +1054,133 @@ void t_system_ioctl_log (void) {
 }
 
 
+void t_system_ioctl_log_append_dev_mismatch (void) {
+	gchar* sout = NULL;
+	gchar* serr = NULL;
+	gint exit = 0;
+	gchar* log = NULL;
+	const gchar* _tmp3_ = NULL;
+	gchar* _tmp4_ = NULL;
+	gchar* _tmp5_ = NULL;
+	gchar* _tmp6_ = NULL;
+	gchar* _tmp7_ = NULL;
+	gchar* _tmp8_ = NULL;
+	gchar* _tmp9_ = NULL;
+	gchar* _tmp10_ = NULL;
+	gchar* _tmp11_ = NULL;
+	gint _tmp12_ = 0;
+	const gchar* _tmp13_ = NULL;
+	gint _tmp14_ = 0;
+	const gchar* _tmp15_ = NULL;
+	gchar* orig_contents = NULL;
+	gchar* _tmp16_ = NULL;
+	const gchar* _tmp17_ = NULL;
+	gchar* _tmp18_ = NULL;
+	gchar* _tmp19_ = NULL;
+	gchar* _tmp20_ = NULL;
+	gchar* _tmp21_ = NULL;
+	gchar* _tmp22_ = NULL;
+	gchar* _tmp23_ = NULL;
+	gchar* _tmp24_ = NULL;
+	gchar* _tmp25_ = NULL;
+	gint _tmp26_ = 0;
+	const gchar* _tmp27_ = NULL;
+	gboolean _tmp28_ = FALSE;
+	gint _tmp29_ = 0;
+	const gchar* _tmp30_ = NULL;
+	gchar* _tmp31_ = NULL;
+	gchar* _tmp32_ = NULL;
+	GError * _inner_error_ = NULL;
+	{
+		gint _tmp0_ = 0;
+		gchar* _tmp1_ = NULL;
+		gint _tmp2_ = 0;
+		_tmp2_ = g_file_open_tmp ("ioctl_log_test.XXXXXX", &_tmp1_, &_inner_error_);
+		_g_free0 (log);
+		log = _tmp1_;
+		_tmp0_ = _tmp2_;
+		if (_inner_error_ != NULL) {
+			goto __catch4_g_error;
+		}
+		close (_tmp0_);
+	}
+	goto __finally4;
+	__catch4_g_error:
+	{
+		GError* e = NULL;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		abort ();
+		_g_error_free0 (e);
+	}
+	__finally4:
+	if (_inner_error_ != NULL) {
+		_g_free0 (log);
+		_g_free0 (serr);
+		_g_free0 (sout);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+	_tmp3_ = umockdev_record_path;
+	_tmp4_ = g_strconcat (_tmp3_, " -i /dev/zero=", NULL);
+	_tmp5_ = _tmp4_;
+	_tmp6_ = g_strconcat (_tmp5_, log, NULL);
+	_tmp7_ = _tmp6_;
+	_tmp8_ = g_strconcat (_tmp7_, " -- head -c1 /dev/zero", NULL);
+	_tmp9_ = _tmp8_;
+	spawn (_tmp9_, &_tmp10_, &_tmp11_, &_tmp12_);
+	_g_free0 (sout);
+	sout = _tmp10_;
+	_g_free0 (serr);
+	serr = _tmp11_;
+	exit = _tmp12_;
+	_g_free0 (_tmp9_);
+	_g_free0 (_tmp7_);
+	_g_free0 (_tmp5_);
+	_tmp13_ = serr;
+	g_assert_cmpstr (_tmp13_, ==, "");
+	_tmp14_ = exit;
+	g_assert_cmpint (_tmp14_, ==, 0);
+	_tmp15_ = sout;
+	g_assert_cmpstr (_tmp15_, ==, "\0");
+	_tmp16_ = file_contents (log);
+	orig_contents = _tmp16_;
+	_tmp17_ = umockdev_record_path;
+	_tmp18_ = g_strconcat (_tmp17_, " -i /dev/null=", NULL);
+	_tmp19_ = _tmp18_;
+	_tmp20_ = g_strconcat (_tmp19_, log, NULL);
+	_tmp21_ = _tmp20_;
+	_tmp22_ = g_strconcat (_tmp21_, " -- head -c1 /dev/null", NULL);
+	_tmp23_ = _tmp22_;
+	spawn (_tmp23_, &_tmp24_, &_tmp25_, &_tmp26_);
+	_g_free0 (sout);
+	sout = _tmp24_;
+	_g_free0 (serr);
+	serr = _tmp25_;
+	exit = _tmp26_;
+	_g_free0 (_tmp23_);
+	_g_free0 (_tmp21_);
+	_g_free0 (_tmp19_);
+	_tmp27_ = serr;
+	_tmp28_ = string_contains (_tmp27_, "two different devices");
+	_vala_assert (_tmp28_, "serr.contains (\"two different devices\")");
+	_tmp29_ = exit;
+	g_assert_cmpint (_tmp29_, ==, 256);
+	_tmp30_ = sout;
+	g_assert_cmpstr (_tmp30_, ==, "\0");
+	_tmp31_ = file_contents (log);
+	_tmp32_ = _tmp31_;
+	g_assert_cmpstr (_tmp32_, ==, orig_contents);
+	_g_free0 (_tmp32_);
+	g_remove (log);
+	_g_free0 (orig_contents);
+	_g_free0 (log);
+	_g_free0 (serr);
+	_g_free0 (sout);
+}
+
+
 void t_system_script_log_simple (void) {
 	gchar* sout = NULL;
 	gchar* serr = NULL;
@@ -1088,25 +1223,17 @@ void t_system_script_log_simple (void) {
 	gint _tmp35__length1 = 0;
 	gint loglines_length1 = 0;
 	gint _loglines_size_ = 0;
-	gchar** logheader = NULL;
 	const gchar* _tmp36_ = NULL;
-	gchar** _tmp37_ = NULL;
-	gchar** _tmp38_ = NULL;
-	gint logheader_length1 = 0;
-	gint _logheader_size_ = 0;
-	const gchar* _tmp39_ = NULL;
-	const gchar* _tmp40_ = NULL;
-	const gchar* _tmp41_ = NULL;
 	gchar** logwords = NULL;
-	const gchar* _tmp42_ = NULL;
-	gchar** _tmp43_ = NULL;
-	gchar** _tmp44_ = NULL;
+	const gchar* _tmp37_ = NULL;
+	gchar** _tmp38_ = NULL;
+	gchar** _tmp39_ = NULL;
 	gint logwords_length1 = 0;
 	gint _logwords_size_ = 0;
-	const gchar* _tmp45_ = NULL;
-	const gchar* _tmp46_ = NULL;
-	gint _tmp47_ = 0;
-	const gchar* _tmp48_ = NULL;
+	const gchar* _tmp40_ = NULL;
+	const gchar* _tmp41_ = NULL;
+	gint _tmp42_ = 0;
+	const gchar* _tmp43_ = NULL;
 	GError * _inner_error_ = NULL;
 	{
 		gint _tmp0_ = 0;
@@ -1117,12 +1244,12 @@ void t_system_script_log_simple (void) {
 		log = _tmp1_;
 		_tmp0_ = _tmp2_;
 		if (_inner_error_ != NULL) {
-			goto __catch4_g_error;
+			goto __catch5_g_error;
 		}
 		close (_tmp0_);
 	}
-	goto __finally4;
-	__catch4_g_error:
+	goto __finally5;
+	__catch5_g_error:
 	{
 		GError* e = NULL;
 		e = _inner_error_;
@@ -1130,7 +1257,7 @@ void t_system_script_log_simple (void) {
 		abort ();
 		_g_error_free0 (e);
 	}
-	__finally4:
+	__finally5:
 	if (_inner_error_ != NULL) {
 		_g_free0 (log);
 		_g_free0 (serr);
@@ -1198,34 +1325,364 @@ void t_system_script_log_simple (void) {
 	_loglines_size_ = loglines_length1;
 	g_assert_cmpuint ((guint) loglines_length1, ==, (guint) 2);
 	_tmp36_ = loglines[0];
-	_tmp38_ = _tmp37_ = g_strsplit (_tmp36_, " ", 0);
-	logheader = _tmp38_;
-	logheader_length1 = _vala_array_length (_tmp37_);
-	_logheader_size_ = logheader_length1;
-	g_assert_cmpuint ((guint) logheader_length1, ==, (guint) 3);
-	_tmp39_ = logheader[0];
-	g_assert_cmpstr (_tmp39_, ==, "d");
-	_tmp40_ = logheader[1];
-	g_assert_cmpstr (_tmp40_, ==, "0");
-	_tmp41_ = logheader[2];
-	g_assert_cmpstr (_tmp41_, ==, "/dev/zero");
-	_tmp42_ = loglines[1];
-	_tmp44_ = _tmp43_ = g_strsplit (_tmp42_, " ", 0);
-	logwords = _tmp44_;
-	logwords_length1 = _vala_array_length (_tmp43_);
+	g_assert_cmpstr (_tmp36_, ==, "d 0 /dev/zero");
+	_tmp37_ = loglines[1];
+	_tmp39_ = _tmp38_ = g_strsplit (_tmp37_, " ", 0);
+	logwords = _tmp39_;
+	logwords_length1 = _vala_array_length (_tmp38_);
 	_logwords_size_ = logwords_length1;
 	g_assert_cmpuint ((guint) logwords_length1, ==, (guint) 3);
-	_tmp45_ = logwords[0];
-	g_assert_cmpstr (_tmp45_, ==, "r");
-	_tmp46_ = logwords[1];
-	_tmp47_ = atoi (_tmp46_);
-	g_assert_cmpint (_tmp47_, <=, 5);
-	_tmp48_ = logwords[2];
-	g_assert_cmpstr (_tmp48_, ==, "^@");
+	_tmp40_ = logwords[0];
+	g_assert_cmpstr (_tmp40_, ==, "r");
+	_tmp41_ = logwords[1];
+	_tmp42_ = atoi (_tmp41_);
+	g_assert_cmpint (_tmp42_, <=, 5);
+	_tmp43_ = logwords[2];
+	g_assert_cmpstr (_tmp43_, ==, "^@");
 	g_remove (log);
 	logwords = (_vala_array_free (logwords, logwords_length1, (GDestroyNotify) g_free), NULL);
-	logheader = (_vala_array_free (logheader, logheader_length1, (GDestroyNotify) g_free), NULL);
 	loglines = (_vala_array_free (loglines, loglines_length1, (GDestroyNotify) g_free), NULL);
+	_g_free0 (log);
+	_g_free0 (serr);
+	_g_free0 (sout);
+}
+
+
+void t_system_script_log_append_same_dev (void) {
+	gchar* sout = NULL;
+	gchar* serr = NULL;
+	gint exit = 0;
+	gchar* log = NULL;
+	const gchar* _tmp3_ = NULL;
+	gchar* _tmp4_ = NULL;
+	gchar* _tmp5_ = NULL;
+	gchar* _tmp6_ = NULL;
+	gchar* _tmp7_ = NULL;
+	gchar* _tmp8_ = NULL;
+	gchar* _tmp9_ = NULL;
+	gchar* _tmp10_ = NULL;
+	gchar* _tmp11_ = NULL;
+	gint _tmp12_ = 0;
+	const gchar* _tmp13_ = NULL;
+	gint _tmp14_ = 0;
+	const gchar* _tmp15_ = NULL;
+	const gchar* _tmp16_ = NULL;
+	gchar* _tmp17_ = NULL;
+	gchar* _tmp18_ = NULL;
+	gchar* _tmp19_ = NULL;
+	gchar* _tmp20_ = NULL;
+	gchar* _tmp21_ = NULL;
+	gchar* _tmp22_ = NULL;
+	gchar* _tmp23_ = NULL;
+	gchar* _tmp24_ = NULL;
+	gint _tmp25_ = 0;
+	const gchar* _tmp26_ = NULL;
+	gint _tmp27_ = 0;
+	const gchar* _tmp28_ = NULL;
+	gchar** loglines = NULL;
+	gchar* _tmp29_ = NULL;
+	gchar* _tmp30_ = NULL;
+	gchar** _tmp31_ = NULL;
+	gchar** _tmp32_ = NULL;
+	gchar** _tmp33_ = NULL;
+	gint _tmp33__length1 = 0;
+	gint loglines_length1 = 0;
+	gint _loglines_size_ = 0;
+	const gchar* _tmp34_ = NULL;
+	gchar** logwords = NULL;
+	const gchar* _tmp35_ = NULL;
+	gchar** _tmp36_ = NULL;
+	gchar** _tmp37_ = NULL;
+	gint logwords_length1 = 0;
+	gint _logwords_size_ = 0;
+	gchar** _tmp38_ = NULL;
+	gint _tmp38__length1 = 0;
+	gchar** _tmp39_ = NULL;
+	gint _tmp39__length1 = 0;
+	const gchar* _tmp40_ = NULL;
+	gchar** _tmp41_ = NULL;
+	gint _tmp41__length1 = 0;
+	const gchar* _tmp42_ = NULL;
+	gint _tmp43_ = 0;
+	gchar** _tmp44_ = NULL;
+	gint _tmp44__length1 = 0;
+	const gchar* _tmp45_ = NULL;
+	const gchar* _tmp46_ = NULL;
+	gchar** _tmp47_ = NULL;
+	gchar** _tmp48_ = NULL;
+	gchar** _tmp49_ = NULL;
+	gint _tmp49__length1 = 0;
+	gchar** _tmp50_ = NULL;
+	gint _tmp50__length1 = 0;
+	const gchar* _tmp51_ = NULL;
+	gchar** _tmp52_ = NULL;
+	gint _tmp52__length1 = 0;
+	const gchar* _tmp53_ = NULL;
+	gint _tmp54_ = 0;
+	gchar** _tmp55_ = NULL;
+	gint _tmp55__length1 = 0;
+	const gchar* _tmp56_ = NULL;
+	GError * _inner_error_ = NULL;
+	{
+		gint _tmp0_ = 0;
+		gchar* _tmp1_ = NULL;
+		gint _tmp2_ = 0;
+		_tmp2_ = g_file_open_tmp ("test_script_log.XXXXXX", &_tmp1_, &_inner_error_);
+		_g_free0 (log);
+		log = _tmp1_;
+		_tmp0_ = _tmp2_;
+		if (_inner_error_ != NULL) {
+			goto __catch6_g_error;
+		}
+		close (_tmp0_);
+	}
+	goto __finally6;
+	__catch6_g_error:
+	{
+		GError* e = NULL;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		abort ();
+		_g_error_free0 (e);
+	}
+	__finally6:
+	if (_inner_error_ != NULL) {
+		_g_free0 (log);
+		_g_free0 (serr);
+		_g_free0 (sout);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+	_tmp3_ = umockdev_record_path;
+	_tmp4_ = g_strconcat (_tmp3_, " --script=/dev/zero=", NULL);
+	_tmp5_ = _tmp4_;
+	_tmp6_ = g_strconcat (_tmp5_, log, NULL);
+	_tmp7_ = _tmp6_;
+	_tmp8_ = g_strconcat (_tmp7_, " -- head -c1 /dev/zero", NULL);
+	_tmp9_ = _tmp8_;
+	spawn (_tmp9_, &_tmp10_, &_tmp11_, &_tmp12_);
+	_g_free0 (sout);
+	sout = _tmp10_;
+	_g_free0 (serr);
+	serr = _tmp11_;
+	exit = _tmp12_;
+	_g_free0 (_tmp9_);
+	_g_free0 (_tmp7_);
+	_g_free0 (_tmp5_);
+	_tmp13_ = serr;
+	g_assert_cmpstr (_tmp13_, ==, "");
+	_tmp14_ = exit;
+	g_assert_cmpint (_tmp14_, ==, 0);
+	_tmp15_ = sout;
+	g_assert_cmpstr (_tmp15_, ==, "\0");
+	_tmp16_ = umockdev_record_path;
+	_tmp17_ = g_strconcat (_tmp16_, " --script=/dev/zero=", NULL);
+	_tmp18_ = _tmp17_;
+	_tmp19_ = g_strconcat (_tmp18_, log, NULL);
+	_tmp20_ = _tmp19_;
+	_tmp21_ = g_strconcat (_tmp20_, " -- head -c1 /dev/zero", NULL);
+	_tmp22_ = _tmp21_;
+	spawn (_tmp22_, &_tmp23_, &_tmp24_, &_tmp25_);
+	_g_free0 (sout);
+	sout = _tmp23_;
+	_g_free0 (serr);
+	serr = _tmp24_;
+	exit = _tmp25_;
+	_g_free0 (_tmp22_);
+	_g_free0 (_tmp20_);
+	_g_free0 (_tmp18_);
+	_tmp26_ = serr;
+	g_assert_cmpstr (_tmp26_, ==, "");
+	_tmp27_ = exit;
+	g_assert_cmpint (_tmp27_, ==, 0);
+	_tmp28_ = sout;
+	g_assert_cmpstr (_tmp28_, ==, "\0");
+	_tmp29_ = file_contents (log);
+	_tmp30_ = _tmp29_;
+	_tmp32_ = _tmp31_ = g_strsplit (_tmp30_, "\n", 0);
+	_tmp33_ = _tmp32_;
+	_tmp33__length1 = _vala_array_length (_tmp31_);
+	_g_free0 (_tmp30_);
+	loglines = _tmp33_;
+	loglines_length1 = _tmp33__length1;
+	_loglines_size_ = loglines_length1;
+	g_assert_cmpuint ((guint) loglines_length1, ==, (guint) 3);
+	_tmp34_ = loglines[0];
+	g_assert_cmpstr (_tmp34_, ==, "d 0 /dev/zero");
+	_tmp35_ = loglines[1];
+	_tmp37_ = _tmp36_ = g_strsplit (_tmp35_, " ", 0);
+	logwords = _tmp37_;
+	logwords_length1 = _vala_array_length (_tmp36_);
+	_logwords_size_ = logwords_length1;
+	_tmp38_ = logwords;
+	_tmp38__length1 = logwords_length1;
+	g_assert_cmpuint ((guint) _tmp38__length1, ==, (guint) 3);
+	_tmp39_ = logwords;
+	_tmp39__length1 = logwords_length1;
+	_tmp40_ = _tmp39_[0];
+	g_assert_cmpstr (_tmp40_, ==, "r");
+	_tmp41_ = logwords;
+	_tmp41__length1 = logwords_length1;
+	_tmp42_ = _tmp41_[1];
+	_tmp43_ = atoi (_tmp42_);
+	g_assert_cmpint (_tmp43_, <=, 5);
+	_tmp44_ = logwords;
+	_tmp44__length1 = logwords_length1;
+	_tmp45_ = _tmp44_[2];
+	g_assert_cmpstr (_tmp45_, ==, "^@");
+	_tmp46_ = loglines[2];
+	_tmp48_ = _tmp47_ = g_strsplit (_tmp46_, " ", 0);
+	logwords = (_vala_array_free (logwords, logwords_length1, (GDestroyNotify) g_free), NULL);
+	logwords = _tmp48_;
+	logwords_length1 = _vala_array_length (_tmp47_);
+	_logwords_size_ = logwords_length1;
+	_tmp49_ = logwords;
+	_tmp49__length1 = logwords_length1;
+	g_assert_cmpuint ((guint) _tmp49__length1, ==, (guint) 3);
+	_tmp50_ = logwords;
+	_tmp50__length1 = logwords_length1;
+	_tmp51_ = _tmp50_[0];
+	g_assert_cmpstr (_tmp51_, ==, "r");
+	_tmp52_ = logwords;
+	_tmp52__length1 = logwords_length1;
+	_tmp53_ = _tmp52_[1];
+	_tmp54_ = atoi (_tmp53_);
+	g_assert_cmpint (_tmp54_, <=, 5);
+	_tmp55_ = logwords;
+	_tmp55__length1 = logwords_length1;
+	_tmp56_ = _tmp55_[2];
+	g_assert_cmpstr (_tmp56_, ==, "^@");
+	g_remove (log);
+	logwords = (_vala_array_free (logwords, logwords_length1, (GDestroyNotify) g_free), NULL);
+	loglines = (_vala_array_free (loglines, loglines_length1, (GDestroyNotify) g_free), NULL);
+	_g_free0 (log);
+	_g_free0 (serr);
+	_g_free0 (sout);
+}
+
+
+void t_system_script_log_append_dev_mismatch (void) {
+	gchar* sout = NULL;
+	gchar* serr = NULL;
+	gint exit = 0;
+	gchar* log = NULL;
+	const gchar* _tmp3_ = NULL;
+	gchar* _tmp4_ = NULL;
+	gchar* _tmp5_ = NULL;
+	gchar* _tmp6_ = NULL;
+	gchar* _tmp7_ = NULL;
+	gchar* _tmp8_ = NULL;
+	gchar* _tmp9_ = NULL;
+	gchar* _tmp10_ = NULL;
+	gchar* _tmp11_ = NULL;
+	gint _tmp12_ = 0;
+	const gchar* _tmp13_ = NULL;
+	gint _tmp14_ = 0;
+	const gchar* _tmp15_ = NULL;
+	gchar* orig_contents = NULL;
+	gchar* _tmp16_ = NULL;
+	const gchar* _tmp17_ = NULL;
+	gchar* _tmp18_ = NULL;
+	gchar* _tmp19_ = NULL;
+	gchar* _tmp20_ = NULL;
+	gchar* _tmp21_ = NULL;
+	gchar* _tmp22_ = NULL;
+	gchar* _tmp23_ = NULL;
+	gchar* _tmp24_ = NULL;
+	gchar* _tmp25_ = NULL;
+	gint _tmp26_ = 0;
+	const gchar* _tmp27_ = NULL;
+	gboolean _tmp28_ = FALSE;
+	gint _tmp29_ = 0;
+	const gchar* _tmp30_ = NULL;
+	gchar* _tmp31_ = NULL;
+	gchar* _tmp32_ = NULL;
+	GError * _inner_error_ = NULL;
+	{
+		gint _tmp0_ = 0;
+		gchar* _tmp1_ = NULL;
+		gint _tmp2_ = 0;
+		_tmp2_ = g_file_open_tmp ("test_script_log.XXXXXX", &_tmp1_, &_inner_error_);
+		_g_free0 (log);
+		log = _tmp1_;
+		_tmp0_ = _tmp2_;
+		if (_inner_error_ != NULL) {
+			goto __catch7_g_error;
+		}
+		close (_tmp0_);
+	}
+	goto __finally7;
+	__catch7_g_error:
+	{
+		GError* e = NULL;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		abort ();
+		_g_error_free0 (e);
+	}
+	__finally7:
+	if (_inner_error_ != NULL) {
+		_g_free0 (log);
+		_g_free0 (serr);
+		_g_free0 (sout);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+	_tmp3_ = umockdev_record_path;
+	_tmp4_ = g_strconcat (_tmp3_, " --script=/dev/zero=", NULL);
+	_tmp5_ = _tmp4_;
+	_tmp6_ = g_strconcat (_tmp5_, log, NULL);
+	_tmp7_ = _tmp6_;
+	_tmp8_ = g_strconcat (_tmp7_, " -- head -c1 /dev/zero", NULL);
+	_tmp9_ = _tmp8_;
+	spawn (_tmp9_, &_tmp10_, &_tmp11_, &_tmp12_);
+	_g_free0 (sout);
+	sout = _tmp10_;
+	_g_free0 (serr);
+	serr = _tmp11_;
+	exit = _tmp12_;
+	_g_free0 (_tmp9_);
+	_g_free0 (_tmp7_);
+	_g_free0 (_tmp5_);
+	_tmp13_ = serr;
+	g_assert_cmpstr (_tmp13_, ==, "");
+	_tmp14_ = exit;
+	g_assert_cmpint (_tmp14_, ==, 0);
+	_tmp15_ = sout;
+	g_assert_cmpstr (_tmp15_, ==, "\0");
+	_tmp16_ = file_contents (log);
+	orig_contents = _tmp16_;
+	_tmp17_ = umockdev_record_path;
+	_tmp18_ = g_strconcat (_tmp17_, " --script=/dev/null=", NULL);
+	_tmp19_ = _tmp18_;
+	_tmp20_ = g_strconcat (_tmp19_, log, NULL);
+	_tmp21_ = _tmp20_;
+	_tmp22_ = g_strconcat (_tmp21_, " -- head -c1 /dev/null", NULL);
+	_tmp23_ = _tmp22_;
+	spawn (_tmp23_, &_tmp24_, &_tmp25_, &_tmp26_);
+	_g_free0 (sout);
+	sout = _tmp24_;
+	_g_free0 (serr);
+	serr = _tmp25_;
+	exit = _tmp26_;
+	_g_free0 (_tmp23_);
+	_g_free0 (_tmp21_);
+	_g_free0 (_tmp19_);
+	_tmp27_ = serr;
+	_tmp28_ = string_contains (_tmp27_, "two different devices");
+	_vala_assert (_tmp28_, "serr.contains (\"two different devices\")");
+	_tmp29_ = exit;
+	g_assert_cmpint (_tmp29_, ==, 256);
+	_tmp30_ = sout;
+	g_assert_cmpstr (_tmp30_, ==, "\0");
+	_tmp31_ = file_contents (log);
+	_tmp32_ = _tmp31_;
+	g_assert_cmpstr (_tmp32_, ==, orig_contents);
+	_g_free0 (_tmp32_);
+	g_remove (log);
+	_g_free0 (orig_contents);
 	_g_free0 (log);
 	_g_free0 (serr);
 	_g_free0 (sout);
@@ -1337,12 +1794,12 @@ void t_system_script_log_chatter (void) {
 		log = _tmp1_;
 		_tmp0_ = _tmp2_;
 		if (_inner_error_ != NULL) {
-			goto __catch5_g_error;
+			goto __catch8_g_error;
 		}
 		close (_tmp0_);
 	}
-	goto __finally5;
-	__catch5_g_error:
+	goto __finally8;
+	__catch8_g_error:
 	{
 		GError* e = NULL;
 		e = _inner_error_;
@@ -1350,7 +1807,7 @@ void t_system_script_log_chatter (void) {
 		abort ();
 		_g_error_free0 (e);
 	}
-	__finally5:
+	__finally8:
 	if (_inner_error_ != NULL) {
 		_g_free0 (log);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1423,7 +1880,7 @@ void t_system_script_log_chatter (void) {
 		_tmp14_ = _tmp29_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_SPAWN_ERROR) {
-				goto __catch6_g_spawn_error;
+				goto __catch9_g_spawn_error;
 			}
 			ptyname = (g_free (ptyname), NULL);
 			_g_free0 (log);
@@ -1433,18 +1890,18 @@ void t_system_script_log_chatter (void) {
 		}
 		_vala_assert (_tmp14_, "Process.spawn_async_with_pipes (null,             {umockdev_record_path, \"--script\", (string) ptyname + \"=\" + log, \"--\",              Path.build_filename (rootdir, \"tests\", \"chatter\"), (string) ptyname},             null, SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD | SpawnFlags.STDOUT_TO_DEV_NULL,             null, out chatter_pid, null, null, null)");
 	}
-	goto __finally6;
-	__catch6_g_spawn_error:
+	goto __finally9;
+	__catch9_g_spawn_error:
 	{
 		GError* e = NULL;
 		const gchar* _tmp30_ = NULL;
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		_tmp30_ = e->message;
-		g_error ("test-umockdev-record.vala:399: Cannot call umockdev-record: %s", _tmp30_);
+		g_error ("test-umockdev-record.vala:512: Cannot call umockdev-record: %s", _tmp30_);
 		_g_error_free0 (e);
 	}
-	__finally6:
+	__finally9:
 	if (_inner_error_ != NULL) {
 		ptyname = (g_free (ptyname), NULL);
 		_g_free0 (log);
@@ -1672,13 +2129,13 @@ void t_system_script_log_chatter_socket_stream (void) {
 		log = _tmp2_;
 		_tmp1_ = _tmp3_;
 		if (_inner_error_ != NULL) {
-			goto __catch7_g_error;
+			goto __catch10_g_error;
 		}
 		close (_tmp1_);
 		_tmp4_ = g_socket_new (G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_DEFAULT, &_inner_error_);
 		s = _tmp4_;
 		if (_inner_error_ != NULL) {
-			goto __catch7_g_error;
+			goto __catch10_g_error;
 		}
 		_tmp5_ = s;
 		_vala_assert (_tmp5_ != NULL, "s != null");
@@ -1694,7 +2151,7 @@ void t_system_script_log_chatter_socket_stream (void) {
 		_tmp7_ = _tmp13_;
 		if (_inner_error_ != NULL) {
 			_g_object_unref0 (s);
-			goto __catch7_g_error;
+			goto __catch10_g_error;
 		}
 		_vala_assert (_tmp7_, "s.bind (new UnixSocketAddress (spath), true)");
 		_tmp15_ = s;
@@ -1702,7 +2159,7 @@ void t_system_script_log_chatter_socket_stream (void) {
 		_tmp14_ = _tmp16_;
 		if (_inner_error_ != NULL) {
 			_g_object_unref0 (s);
-			goto __catch7_g_error;
+			goto __catch10_g_error;
 		}
 		_vala_assert (_tmp14_, "s.listen ()");
 		{
@@ -1756,7 +2213,7 @@ void t_system_script_log_chatter_socket_stream (void) {
 			_tmp17_ = _tmp35_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == G_SPAWN_ERROR) {
-					goto __catch8_g_spawn_error;
+					goto __catch11_g_spawn_error;
 				}
 				_g_object_unref0 (s);
 				_g_free0 (spath);
@@ -1767,21 +2224,21 @@ void t_system_script_log_chatter_socket_stream (void) {
 			}
 			_vala_assert (_tmp17_, "Process.spawn_async_with_pipes (null,                 {umockdev_record_path, \"--script\", spath + \"=\" + log, \"--\",                  Path.build_filename (rootdir, \"tests\", \"chatter-socket-stream\"), spath},                 null, SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD | SpawnFlags.STDOUT_TO_DEV_NULL,                 null, out chatter_pid, null, null, null)");
 		}
-		goto __finally8;
-		__catch8_g_spawn_error:
+		goto __finally11;
+		__catch11_g_spawn_error:
 		{
 			GError* e = NULL;
 			const gchar* _tmp36_ = NULL;
 			e = _inner_error_;
 			_inner_error_ = NULL;
 			_tmp36_ = e->message;
-			g_error ("test-umockdev-record.vala:478: Cannot call umockdev-record: %s", _tmp36_);
+			g_error ("test-umockdev-record.vala:591: Cannot call umockdev-record: %s", _tmp36_);
 			_g_error_free0 (e);
 		}
-		__finally8:
+		__finally11:
 		if (_inner_error_ != NULL) {
 			_g_object_unref0 (s);
-			goto __catch7_g_error;
+			goto __catch10_g_error;
 		}
 		timeout = 20;
 		conn = NULL;
@@ -1800,16 +2257,16 @@ void t_system_script_log_chatter_socket_stream (void) {
 				_tmp38_ = _tmp40_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == G_IO_ERROR) {
-						goto __catch9_g_io_error;
+						goto __catch12_g_io_error;
 					}
-					goto __finally9;
+					goto __finally12;
 				}
 				_g_object_unref0 (conn);
 				conn = _tmp38_;
 				break;
 			}
-			goto __finally9;
-			__catch9_g_io_error:
+			goto __finally12;
+			__catch12_g_io_error:
 			{
 				GError* e = NULL;
 				GError* _tmp41_ = NULL;
@@ -1828,15 +2285,15 @@ void t_system_script_log_chatter_socket_stream (void) {
 					_tmp44_ = _g_error_copy0 (_tmp43_);
 					_inner_error_ = _tmp44_;
 					_g_error_free0 (e);
-					goto __finally9;
+					goto __finally12;
 				}
 				_g_error_free0 (e);
 			}
-			__finally9:
+			__finally12:
 			if (_inner_error_ != NULL) {
 				_g_object_unref0 (conn);
 				_g_object_unref0 (s);
-				goto __catch7_g_error;
+				goto __catch10_g_error;
 			}
 		}
 		_tmp45_ = conn;
@@ -1854,7 +2311,7 @@ void t_system_script_log_chatter_socket_stream (void) {
 			buf = (g_free (buf), NULL);
 			_g_object_unref0 (conn);
 			_g_object_unref0 (s);
-			goto __catch7_g_error;
+			goto __catch10_g_error;
 		}
 		_tmp50_ = len;
 		_vala_assert (_tmp50_ > ((gssize) 0), "len > 0");
@@ -1876,7 +2333,7 @@ void t_system_script_log_chatter_socket_stream (void) {
 			buf = (g_free (buf), NULL);
 			_g_object_unref0 (conn);
 			_g_object_unref0 (s);
-			goto __catch7_g_error;
+			goto __catch10_g_error;
 		}
 		g_usleep ((gulong) 10000);
 		_tmp59_ = conn;
@@ -1888,7 +2345,7 @@ void t_system_script_log_chatter_socket_stream (void) {
 			buf = (g_free (buf), NULL);
 			_g_object_unref0 (conn);
 			_g_object_unref0 (s);
-			goto __catch7_g_error;
+			goto __catch10_g_error;
 		}
 		len = _tmp58_;
 		_tmp62_ = len;
@@ -1911,7 +2368,7 @@ void t_system_script_log_chatter_socket_stream (void) {
 			buf = (g_free (buf), NULL);
 			_g_object_unref0 (conn);
 			_g_object_unref0 (s);
-			goto __catch7_g_error;
+			goto __catch10_g_error;
 		}
 		len = _tmp67_;
 		_tmp71_ = len;
@@ -1934,14 +2391,14 @@ void t_system_script_log_chatter_socket_stream (void) {
 			buf = (g_free (buf), NULL);
 			_g_object_unref0 (conn);
 			_g_object_unref0 (s);
-			goto __catch7_g_error;
+			goto __catch10_g_error;
 		}
 		buf = (g_free (buf), NULL);
 		_g_object_unref0 (conn);
 		_g_object_unref0 (s);
 	}
-	goto __finally7;
-	__catch7_g_error:
+	goto __finally10;
+	__catch10_g_error:
 	{
 		GError* e = NULL;
 		const gchar* _tmp79_ = NULL;
@@ -1951,10 +2408,10 @@ void t_system_script_log_chatter_socket_stream (void) {
 		_tmp79_ = spath;
 		g_remove (_tmp79_);
 		_tmp80_ = e->message;
-		g_error ("test-umockdev-record.vala:529: Error: %s", _tmp80_);
+		g_error ("test-umockdev-record.vala:642: Error: %s", _tmp80_);
 		_g_error_free0 (e);
 	}
-	__finally7:
+	__finally10:
 	if (_inner_error_ != NULL) {
 		_g_free0 (spath);
 		_g_free0 (log);
@@ -1996,6 +2453,214 @@ void t_system_script_log_chatter_socket_stream (void) {
 	_fclose0 (log_stream);
 	_g_free0 (spath);
 	_g_free0 (log);
+}
+
+
+void t_system_evemu_log (void) {
+	gchar* sout = NULL;
+	gchar* serr = NULL;
+	gint exit = 0;
+	gchar* workdir = NULL;
+	gchar* log = NULL;
+	gchar* _tmp2_ = NULL;
+	const gchar* _tmp3_ = NULL;
+	gchar* _tmp4_ = NULL;
+	gchar* _tmp5_ = NULL;
+	gchar* _tmp6_ = NULL;
+	gchar* _tmp7_ = NULL;
+	gchar* _tmp8_ = NULL;
+	gchar* _tmp9_ = NULL;
+	gchar* _tmp10_ = NULL;
+	gchar* _tmp11_ = NULL;
+	gint _tmp12_ = 0;
+	const gchar* _tmp13_ = NULL;
+	gint _tmp14_ = 0;
+	const gchar* _tmp15_ = NULL;
+	gchar* _tmp16_ = NULL;
+	gchar* _tmp17_ = NULL;
+	const gchar* _tmp18_ = NULL;
+	gchar* _tmp19_ = NULL;
+	gchar* _tmp20_ = NULL;
+	gchar* _tmp21_ = NULL;
+	gchar* _tmp22_ = NULL;
+	gchar* _tmp23_ = NULL;
+	gchar* _tmp24_ = NULL;
+	gchar* _tmp25_ = NULL;
+	gchar* _tmp26_ = NULL;
+	gint _tmp27_ = 0;
+	const gchar* _tmp28_ = NULL;
+	gint _tmp29_ = 0;
+	const gchar* _tmp30_ = NULL;
+	gchar* _tmp31_ = NULL;
+	gchar* _tmp32_ = NULL;
+	const gchar* _tmp33_ = NULL;
+	gchar* _tmp34_ = NULL;
+	gchar* _tmp35_ = NULL;
+	gchar* _tmp36_ = NULL;
+	gchar* _tmp37_ = NULL;
+	gchar* _tmp38_ = NULL;
+	gchar* _tmp39_ = NULL;
+	gchar* _tmp40_ = NULL;
+	gchar* _tmp41_ = NULL;
+	gint _tmp42_ = 0;
+	const gchar* _tmp43_ = NULL;
+	gboolean _tmp44_ = FALSE;
+	gint _tmp45_ = 0;
+	const gchar* _tmp46_ = NULL;
+	gchar* _tmp47_ = NULL;
+	gchar* _tmp48_ = NULL;
+	const gchar* _tmp49_ = NULL;
+	gchar* _tmp50_ = NULL;
+	gchar* _tmp51_ = NULL;
+	gchar* _tmp52_ = NULL;
+	gchar* _tmp53_ = NULL;
+	gint _tmp54_ = 0;
+	gint _tmp55_ = 0;
+	const gchar* _tmp56_ = NULL;
+	const gchar* _tmp57_ = NULL;
+	gboolean _tmp58_ = FALSE;
+	const gchar* _tmp59_ = NULL;
+	gboolean _tmp60_ = FALSE;
+	gboolean _tmp61_ = FALSE;
+	GError * _inner_error_ = NULL;
+	{
+		gchar* _tmp0_ = NULL;
+		gchar* _tmp1_ = NULL;
+		_tmp1_ = g_dir_make_tmp ("evemu_log_test.XXXXXX", &_inner_error_);
+		_tmp0_ = _tmp1_;
+		if (_inner_error_ != NULL) {
+			goto __catch13_g_error;
+		}
+		_g_free0 (workdir);
+		workdir = _tmp0_;
+	}
+	goto __finally13;
+	__catch13_g_error:
+	{
+		GError* e = NULL;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		abort ();
+		_g_error_free0 (e);
+	}
+	__finally13:
+	if (_inner_error_ != NULL) {
+		_g_free0 (workdir);
+		_g_free0 (serr);
+		_g_free0 (sout);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+	_tmp2_ = g_build_filename (workdir, "log", NULL);
+	log = _tmp2_;
+	_tmp3_ = umockdev_record_path;
+	_tmp4_ = g_strconcat (_tmp3_, " --evemu-events=/dev/null=", NULL);
+	_tmp5_ = _tmp4_;
+	_tmp6_ = g_strconcat (_tmp5_, log, NULL);
+	_tmp7_ = _tmp6_;
+	_tmp8_ = g_strconcat (_tmp7_, " -- head -c1 /dev/null", NULL);
+	_tmp9_ = _tmp8_;
+	spawn (_tmp9_, &_tmp10_, &_tmp11_, &_tmp12_);
+	_g_free0 (sout);
+	sout = _tmp10_;
+	_g_free0 (serr);
+	serr = _tmp11_;
+	exit = _tmp12_;
+	_g_free0 (_tmp9_);
+	_g_free0 (_tmp7_);
+	_g_free0 (_tmp5_);
+	_tmp13_ = serr;
+	g_assert_cmpstr (_tmp13_, ==, "");
+	_tmp14_ = exit;
+	g_assert_cmpint (_tmp14_, ==, 0);
+	_tmp15_ = sout;
+	g_assert_cmpstr (_tmp15_, ==, "\0");
+	_tmp16_ = file_contents (log);
+	_tmp17_ = _tmp16_;
+	g_assert_cmpstr (_tmp17_, ==, "# EVEMU 1.2\n# device /dev/null\n");
+	_g_free0 (_tmp17_);
+	_tmp18_ = umockdev_record_path;
+	_tmp19_ = g_strconcat (_tmp18_, " --evemu-events=/dev/null=", NULL);
+	_tmp20_ = _tmp19_;
+	_tmp21_ = g_strconcat (_tmp20_, log, NULL);
+	_tmp22_ = _tmp21_;
+	_tmp23_ = g_strconcat (_tmp22_, " -- head -c1 /dev/null", NULL);
+	_tmp24_ = _tmp23_;
+	spawn (_tmp24_, &_tmp25_, &_tmp26_, &_tmp27_);
+	_g_free0 (sout);
+	sout = _tmp25_;
+	_g_free0 (serr);
+	serr = _tmp26_;
+	exit = _tmp27_;
+	_g_free0 (_tmp24_);
+	_g_free0 (_tmp22_);
+	_g_free0 (_tmp20_);
+	_tmp28_ = serr;
+	g_assert_cmpstr (_tmp28_, ==, "");
+	_tmp29_ = exit;
+	g_assert_cmpint (_tmp29_, ==, 0);
+	_tmp30_ = sout;
+	g_assert_cmpstr (_tmp30_, ==, "\0");
+	_tmp31_ = file_contents (log);
+	_tmp32_ = _tmp31_;
+	g_assert_cmpstr (_tmp32_, ==, "# EVEMU 1.2\n# device /dev/null\n\n");
+	_g_free0 (_tmp32_);
+	_tmp33_ = umockdev_record_path;
+	_tmp34_ = g_strconcat (_tmp33_, " --evemu-events=/dev/zero=", NULL);
+	_tmp35_ = _tmp34_;
+	_tmp36_ = g_strconcat (_tmp35_, log, NULL);
+	_tmp37_ = _tmp36_;
+	_tmp38_ = g_strconcat (_tmp37_, " -- head -c1 /dev/zero", NULL);
+	_tmp39_ = _tmp38_;
+	spawn (_tmp39_, &_tmp40_, &_tmp41_, &_tmp42_);
+	_g_free0 (sout);
+	sout = _tmp40_;
+	_g_free0 (serr);
+	serr = _tmp41_;
+	exit = _tmp42_;
+	_g_free0 (_tmp39_);
+	_g_free0 (_tmp37_);
+	_g_free0 (_tmp35_);
+	_tmp43_ = serr;
+	_tmp44_ = string_contains (_tmp43_, "two different devices");
+	_vala_assert (_tmp44_, "serr.contains (\"two different devices\")");
+	_tmp45_ = exit;
+	g_assert_cmpint (_tmp45_, ==, 256);
+	_tmp46_ = sout;
+	g_assert_cmpstr (_tmp46_, ==, "\0");
+	_tmp47_ = file_contents (log);
+	_tmp48_ = _tmp47_;
+	g_assert_cmpstr (_tmp48_, ==, "# EVEMU 1.2\n# device /dev/null\n\n");
+	_g_free0 (_tmp48_);
+	g_remove (log);
+	_tmp49_ = umockdev_record_path;
+	_tmp50_ = g_strconcat (_tmp49_, " --evemu-events /dev/null -- true", NULL);
+	_tmp51_ = _tmp50_;
+	spawn (_tmp51_, &_tmp52_, &_tmp53_, &_tmp54_);
+	_g_free0 (sout);
+	sout = _tmp52_;
+	_g_free0 (serr);
+	serr = _tmp53_;
+	exit = _tmp54_;
+	_g_free0 (_tmp51_);
+	_tmp55_ = exit;
+	g_assert_cmpint (_tmp55_, !=, 1);
+	_tmp56_ = sout;
+	g_assert_cmpstr (_tmp56_, ==, "");
+	_tmp57_ = serr;
+	_tmp58_ = string_contains (_tmp57_, "--ioctl");
+	_vala_assert (_tmp58_, "serr.contains (\"--ioctl\")");
+	_tmp59_ = serr;
+	_tmp60_ = string_contains (_tmp59_, "=");
+	_vala_assert (_tmp60_, "serr.contains (\"=\")");
+	_tmp61_ = g_file_test (log, G_FILE_TEST_EXISTS);
+	_vala_assert (!_tmp61_, "!FileUtils.test (log, FileTest.EXISTS)");
+	g_rmdir (workdir);
+	_g_free0 (log);
+	_g_free0 (workdir);
+	_g_free0 (serr);
+	_g_free0 (sout);
 }
 
 
@@ -2138,7 +2803,7 @@ void t_gphoto2_record (void) {
 		_tmp14_ = _tmp15_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_REGEX_ERROR) {
-				goto __catch10_g_regex_error;
+				goto __catch14_g_regex_error;
 			}
 			_g_regex_unref0 (port_re);
 			_g_free0 (serr);
@@ -2151,18 +2816,18 @@ void t_gphoto2_record (void) {
 		_g_regex_unref0 (port_re);
 		port_re = _tmp14_;
 	}
-	goto __finally10;
-	__catch10_g_regex_error:
+	goto __finally14;
+	__catch14_g_regex_error:
 	{
 		GError* e = NULL;
 		const gchar* _tmp16_ = NULL;
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		_tmp16_ = e->message;
-		g_error ("test-umockdev-record.vala:594: Internal error building regex: %s", _tmp16_);
+		g_error ("test-umockdev-record.vala:766: Internal error building regex: %s", _tmp16_);
 		_g_error_free0 (e);
 	}
-	__finally10:
+	__finally14:
 	if (_inner_error_ != NULL) {
 		_g_regex_unref0 (port_re);
 		_g_free0 (serr);
@@ -2305,8 +2970,23 @@ static void _t_system_ioctl_log_gtest_func (void) {
 }
 
 
+static void _t_system_ioctl_log_append_dev_mismatch_gtest_func (void) {
+	t_system_ioctl_log_append_dev_mismatch ();
+}
+
+
 static void _t_system_script_log_simple_gtest_func (void) {
 	t_system_script_log_simple ();
+}
+
+
+static void _t_system_script_log_append_same_dev_gtest_func (void) {
+	t_system_script_log_append_same_dev ();
+}
+
+
+static void _t_system_script_log_append_dev_mismatch_gtest_func (void) {
+	t_system_script_log_append_dev_mismatch ();
 }
 
 
@@ -2317,6 +2997,11 @@ static void _t_system_script_log_chatter_gtest_func (void) {
 
 static void _t_system_script_log_chatter_socket_stream_gtest_func (void) {
 	t_system_script_log_chatter_socket_stream ();
+}
+
+
+static void _t_system_evemu_log_gtest_func (void) {
+	t_system_evemu_log ();
 }
 
 
@@ -2396,9 +3081,13 @@ gint _vala_main (gchar** args, int args_length1) {
 	g_test_add_func ("/umockdev-record/system-all", _t_system_all_gtest_func);
 	g_test_add_func ("/umockdev-record/system-invalid", _t_system_invalid_gtest_func);
 	g_test_add_func ("/umockdev-record/ioctl-log", _t_system_ioctl_log_gtest_func);
+	g_test_add_func ("/umockdev-record/ioctl-log-append-dev-mismatch", _t_system_ioctl_log_append_dev_mismatch_gtest_func);
 	g_test_add_func ("/umockdev-record/script-log-simple", _t_system_script_log_simple_gtest_func);
+	g_test_add_func ("/umockdev-record/script-log-append-same-dev", _t_system_script_log_append_same_dev_gtest_func);
+	g_test_add_func ("/umockdev-record/script-log-append-dev-mismatch", _t_system_script_log_append_dev_mismatch_gtest_func);
 	g_test_add_func ("/umockdev-record/script-log-chatter", _t_system_script_log_chatter_gtest_func);
 	g_test_add_func ("/umockdev-record/script-log-socket", _t_system_script_log_chatter_socket_stream_gtest_func);
+	g_test_add_func ("/umockdev-record/evemu-log", _t_system_evemu_log_gtest_func);
 	g_test_add_func ("/umockdev-record/invalid-args", _t_run_invalid_args_gtest_func);
 	g_test_add_func ("/umockdev-record/gphoto2-record", _t_gphoto2_record_gtest_func);
 	_tmp18_ = g_test_run ();

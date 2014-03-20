@@ -68,6 +68,7 @@ void t_gphoto_thumbs (void);
 void t_gphoto_download (void);
 void t_input_touchpad (void);
 void t_input_evtest (void);
+void t_input_evtest_evemu (void);
 gint _vala_main (gchar** args, int args_length1);
 static void _t_run_exit_code_gtest_func (void);
 static void _t_run_version_gtest_func (void);
@@ -86,6 +87,7 @@ static void _t_gphoto_thumbs_gtest_func (void);
 static void _t_gphoto_download_gtest_func (void);
 static void _t_input_touchpad_gtest_func (void);
 static void _t_input_evtest_gtest_func (void);
+static void _t_input_evtest_evemu_gtest_func (void);
 static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static gint _vala_array_length (gpointer array);
@@ -1816,6 +1818,285 @@ void t_input_evtest (void) {
 }
 
 
+void t_input_evtest_evemu (void) {
+	gboolean _tmp1_ = FALSE;
+	GPid evtest_pid = 0;
+	gint outfd = 0;
+	gint errfd = 0;
+	gchar* evemu_file = NULL;
+	const gchar* _tmp30_ = NULL;
+	GPid _tmp31_ = 0;
+	guint8* sout = NULL;
+	guint8* _tmp32_ = NULL;
+	gint sout_length1 = 0;
+	gint _sout_size_ = 0;
+	guint8* serr = NULL;
+	guint8* _tmp33_ = NULL;
+	gint serr_length1 = 0;
+	gint _serr_size_ = 0;
+	gssize sout_len = 0L;
+	gint _tmp34_ = 0;
+	guint8* _tmp35_ = NULL;
+	gint _tmp35__length1 = 0;
+	guint8* _tmp36_ = NULL;
+	gint _tmp36__length1 = 0;
+	gssize _tmp37_ = 0L;
+	gssize serr_len = 0L;
+	gint _tmp38_ = 0;
+	guint8* _tmp39_ = NULL;
+	gint _tmp39__length1 = 0;
+	guint8* _tmp40_ = NULL;
+	gint _tmp40__length1 = 0;
+	gssize _tmp41_ = 0L;
+	gint status = 0;
+	GPid _tmp42_ = 0;
+	gint _tmp43_ = 0;
+	GPid _tmp44_ = 0;
+	gssize _tmp45_ = 0L;
+	gssize _tmp51_ = 0L;
+	guint8* _tmp52_ = NULL;
+	gint _tmp52__length1 = 0;
+	gssize _tmp53_ = 0L;
+	guint8 _tmp54_ = 0U;
+	gchar* output = NULL;
+	guint8* _tmp55_ = NULL;
+	gint _tmp55__length1 = 0;
+	gchar* _tmp56_ = NULL;
+	const gchar* _tmp57_ = NULL;
+	GError * _inner_error_ = NULL;
+	if (G_BYTE_ORDER == G_BIG_ENDIAN) {
+		FILE* _tmp0_ = NULL;
+		_tmp0_ = stdout;
+		fprintf (_tmp0_, "[SKIP: this test only works on little endian machines] ");
+		return;
+	}
+	_tmp1_ = have_program ("evtest");
+	if (!_tmp1_) {
+		FILE* _tmp2_ = NULL;
+		_tmp2_ = stdout;
+		fprintf (_tmp2_, "[SKIP: evtest not installed] ");
+		return;
+	}
+	{
+		gint fd = 0;
+		gchar* _tmp3_ = NULL;
+		gint _tmp4_ = 0;
+		gint _tmp5_ = 0;
+		const gchar* _tmp6_ = NULL;
+		_tmp4_ = g_file_open_tmp ("evemu.XXXXXX.events", &_tmp3_, &_inner_error_);
+		_g_free0 (evemu_file);
+		evemu_file = _tmp3_;
+		fd = _tmp4_;
+		if (_inner_error_ != NULL) {
+			if (_inner_error_->domain == G_FILE_ERROR) {
+				goto __catch8_g_file_error;
+			}
+			_g_free0 (evemu_file);
+			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return;
+		}
+		_tmp5_ = fd;
+		close (_tmp5_);
+		_tmp6_ = evemu_file;
+		g_file_set_contents (_tmp6_, "E: 0.000000 0000 0000 0000\t# ------------ SYN_REPORT (0) ----------\n" \
+"E: 0.200000 0004 0004 458756\t# EV_MSC / MSC_SCAN             458756\n" \
+"E: 0.200000 0001 001e 0001\t# EV_KEY / KEY_A                1\n" \
+"E: 0.200000 0000 0000 0000\t# ------------ SYN_REPORT (0) ----------\n" \
+"E: 0.500000 0004 0004 458756\t# EV_MSC / MSC_SCAN             458756\n" \
+"E: 0.500000 0001 001e 0000\t# EV_KEY / KEY_A                0\n", (gssize) (-1), &_inner_error_);
+		if (_inner_error_ != NULL) {
+			if (_inner_error_->domain == G_FILE_ERROR) {
+				goto __catch8_g_file_error;
+			}
+			_g_free0 (evemu_file);
+			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return;
+		}
+	}
+	goto __finally8;
+	__catch8_g_file_error:
+	{
+		GError* e = NULL;
+		FILE* _tmp7_ = NULL;
+		const gchar* _tmp8_ = NULL;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		_tmp7_ = stderr;
+		_tmp8_ = e->message;
+		fprintf (_tmp7_, "cannot create temporary file: %s\n", _tmp8_);
+		abort ();
+		_g_error_free0 (e);
+	}
+	__finally8:
+	if (_inner_error_ != NULL) {
+		_g_free0 (evemu_file);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+	{
+		gchar* _tmp9_ = NULL;
+		gchar* _tmp10_ = NULL;
+		const gchar* _tmp11_ = NULL;
+		gchar* _tmp12_ = NULL;
+		gchar* _tmp13_ = NULL;
+		const gchar* _tmp14_ = NULL;
+		gchar* _tmp15_ = NULL;
+		gchar* _tmp16_ = NULL;
+		gchar* _tmp17_ = NULL;
+		gchar* _tmp18_ = NULL;
+		const gchar* _tmp19_ = NULL;
+		gchar* _tmp20_ = NULL;
+		gchar* _tmp21_ = NULL;
+		gchar* _tmp22_ = NULL;
+		gchar** _tmp23_ = NULL;
+		gchar** _tmp24_ = NULL;
+		gint _tmp24__length1 = 0;
+		GPid _tmp25_ = 0;
+		gint _tmp26_ = 0;
+		gint _tmp27_ = 0;
+		_tmp9_ = g_strdup ("umockdev-run");
+		_tmp10_ = g_strdup ("-d");
+		_tmp11_ = rootdir;
+		_tmp12_ = g_strconcat (_tmp11_, "/devices/input/usbkbd.umockdev", NULL);
+		_tmp13_ = g_strdup ("-i");
+		_tmp14_ = rootdir;
+		_tmp15_ = g_strconcat ("/dev/input/event5=", _tmp14_, NULL);
+		_tmp16_ = _tmp15_;
+		_tmp17_ = g_strconcat (_tmp16_, "/devices/input/usbkbd.evtest.ioctl", NULL);
+		_tmp18_ = g_strdup ("-e");
+		_tmp19_ = evemu_file;
+		_tmp20_ = g_strconcat ("/dev/input/event5=", _tmp19_, NULL);
+		_tmp21_ = g_strdup ("evtest");
+		_tmp22_ = g_strdup ("/dev/input/event5");
+		_tmp23_ = g_new0 (gchar*, 9 + 1);
+		_tmp23_[0] = _tmp9_;
+		_tmp23_[1] = _tmp10_;
+		_tmp23_[2] = _tmp12_;
+		_tmp23_[3] = _tmp13_;
+		_tmp23_[4] = _tmp17_;
+		_tmp23_[5] = _tmp18_;
+		_tmp23_[6] = _tmp20_;
+		_tmp23_[7] = _tmp21_;
+		_tmp23_[8] = _tmp22_;
+		_tmp24_ = _tmp23_;
+		_tmp24__length1 = 9;
+		g_spawn_async_with_pipes (NULL, _tmp24_, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &_tmp25_, NULL, &_tmp26_, &_tmp27_, &_inner_error_);
+		evtest_pid = _tmp25_;
+		outfd = _tmp26_;
+		errfd = _tmp27_;
+		_tmp24_ = (_vala_array_free (_tmp24_, _tmp24__length1, (GDestroyNotify) g_free), NULL);
+		_g_free0 (_tmp16_);
+		if (_inner_error_ != NULL) {
+			if (_inner_error_->domain == G_SPAWN_ERROR) {
+				goto __catch9_g_spawn_error;
+			}
+			_g_free0 (evemu_file);
+			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return;
+		}
+	}
+	goto __finally9;
+	__catch9_g_spawn_error:
+	{
+		GError* e = NULL;
+		FILE* _tmp28_ = NULL;
+		const gchar* _tmp29_ = NULL;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		_tmp28_ = stderr;
+		_tmp29_ = e->message;
+		fprintf (_tmp28_, "cannot call evtest: %s\n", _tmp29_);
+		abort ();
+		_g_error_free0 (e);
+	}
+	__finally9:
+	if (_inner_error_ != NULL) {
+		_g_free0 (evemu_file);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+	sleep ((guint) 1);
+	_tmp30_ = evemu_file;
+	g_remove (_tmp30_);
+	_tmp31_ = evtest_pid;
+	kill ((pid_t) _tmp31_, SIGTERM);
+	_tmp32_ = g_new0 (guint8, 10000);
+	sout = _tmp32_;
+	sout_length1 = 10000;
+	_sout_size_ = sout_length1;
+	_tmp33_ = g_new0 (guint8, 10000);
+	serr = _tmp33_;
+	serr_length1 = 10000;
+	_serr_size_ = serr_length1;
+	_tmp34_ = outfd;
+	_tmp35_ = sout;
+	_tmp35__length1 = sout_length1;
+	_tmp36_ = sout;
+	_tmp36__length1 = sout_length1;
+	_tmp37_ = read (_tmp34_, _tmp35_, (gsize) _tmp36__length1);
+	sout_len = _tmp37_;
+	_tmp38_ = errfd;
+	_tmp39_ = serr;
+	_tmp39__length1 = serr_length1;
+	_tmp40_ = sout;
+	_tmp40__length1 = sout_length1;
+	_tmp41_ = read (_tmp38_, _tmp39_, (gsize) _tmp40__length1);
+	serr_len = _tmp41_;
+	_tmp42_ = evtest_pid;
+	waitpid ((pid_t) _tmp42_, &_tmp43_, 0);
+	status = _tmp43_;
+	_tmp44_ = evtest_pid;
+	g_spawn_close_pid (_tmp44_);
+	_tmp45_ = serr_len;
+	if (_tmp45_ > ((gssize) 0)) {
+		guint8* _tmp46_ = NULL;
+		gint _tmp46__length1 = 0;
+		gssize _tmp47_ = 0L;
+		guint8 _tmp48_ = 0U;
+		FILE* _tmp49_ = NULL;
+		guint8* _tmp50_ = NULL;
+		gint _tmp50__length1 = 0;
+		_tmp46_ = serr;
+		_tmp46__length1 = serr_length1;
+		_tmp47_ = serr_len;
+		_tmp46_[_tmp47_] = (guint8) 0;
+		_tmp48_ = _tmp46_[_tmp47_];
+		_tmp49_ = stderr;
+		_tmp50_ = serr;
+		_tmp50__length1 = serr_length1;
+		fprintf (_tmp49_, "evtest error: %s\n", (const gchar*) _tmp50_);
+		abort ();
+	}
+	_tmp51_ = sout_len;
+	g_assert_cmpint ((gint) _tmp51_, >, 10);
+	_tmp52_ = sout;
+	_tmp52__length1 = sout_length1;
+	_tmp53_ = sout_len;
+	_tmp52_[_tmp53_] = (guint8) 0;
+	_tmp54_ = _tmp52_[_tmp53_];
+	_tmp55_ = sout;
+	_tmp55__length1 = sout_length1;
+	_tmp56_ = g_strdup ((const gchar*) _tmp55_);
+	output = _tmp56_;
+	_tmp57_ = output;
+	assert_in ("Event: time 0.000000, -------------- SYN_REPORT ------------\n" \
+"Event: time 0.200000, type 4 (EV_MSC), code 4 (MSC_SCAN), value 70004\n" \
+"Event: time 0.200000, type 1 (EV_KEY), code 30 (KEY_A), value 1\n" \
+"Event: time 0.200000, -------------- SYN_REPORT ------------\n" \
+"Event: time 0.500000, type 4 (EV_MSC), code 4 (MSC_SCAN), value 70004\n" \
+"Event: time 0.500000, type 1 (EV_KEY), code 30 (KEY_A), value 0\n", _tmp57_);
+	_g_free0 (output);
+	serr = (g_free (serr), NULL);
+	sout = (g_free (sout), NULL);
+	_g_free0 (evemu_file);
+}
+
+
 static void _t_run_exit_code_gtest_func (void) {
 	t_run_exit_code ();
 }
@@ -1901,6 +2182,11 @@ static void _t_input_evtest_gtest_func (void) {
 }
 
 
+static void _t_input_evtest_evemu_gtest_func (void) {
+	t_input_evtest_evemu ();
+}
+
+
 gint _vala_main (gchar** args, int args_length1) {
 	gint result = 0;
 	gchar* top_srcdir = NULL;
@@ -1943,6 +2229,7 @@ gint _vala_main (gchar** args, int args_length1) {
 	g_test_add_func ("/umockdev-run/integration/gphoto-download", _t_gphoto_download_gtest_func);
 	g_test_add_func ("/umockdev-run/integration/input-touchpad", _t_input_touchpad_gtest_func);
 	g_test_add_func ("/umockdev-run/integration/input-evtest", _t_input_evtest_gtest_func);
+	g_test_add_func ("/umockdev-run/integration/input-evtest-evemu", _t_input_evtest_evemu_gtest_func);
 	_tmp6_ = g_test_run ();
 	result = _tmp6_;
 	_g_free0 (top_srcdir);

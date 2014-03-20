@@ -31,6 +31,8 @@ extern gchar** opt_script;
 gchar** opt_script = NULL;
 extern gchar** opt_unix_stream;
 gchar** opt_unix_stream = NULL;
+extern gchar** opt_evemu_events;
+gchar** opt_evemu_events = NULL;
 extern gchar** opt_program;
 gchar** opt_program = NULL;
 extern gboolean opt_version;
@@ -45,11 +47,12 @@ static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNoti
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static gint _vala_array_length (gpointer array);
 
-const GOptionEntry options[7] = {{"device", 'd', 0, G_OPTION_ARG_FILENAME_ARRAY, &opt_device, "Load an umockdev-record device description into the testbed. Can be sp" \
+const GOptionEntry options[8] = {{"device", 'd', 0, G_OPTION_ARG_FILENAME_ARRAY, &opt_device, "Load an umockdev-record device description into the testbed. Can be sp" \
 "ecified multiple times.", "filename"}, {"ioctl", 'i', 0, G_OPTION_ARG_FILENAME_ARRAY, &opt_ioctl, "Load an umockdev-record ioctl dump into the testbed. Can be specified " \
 "multiple times.", "devname=ioctlfilename"}, {"script", 's', 0, G_OPTION_ARG_FILENAME_ARRAY, &opt_script, "Load an umockdev-record script into the testbed. Can be specified mult" \
 "iple times.", "devname=scriptfilename"}, {"unix-stream", 'u', 0, G_OPTION_ARG_FILENAME_ARRAY, &opt_unix_stream, "Load an umockdev-record script for a mocked Unix stream socket. Can be" \
-" specified multiple times.", "socket_path=scriptfilename"}, {"", (gchar) 0, 0, G_OPTION_ARG_STRING_ARRAY, &opt_program, "", ""}, {"version", (gchar) 0, 0, G_OPTION_ARG_NONE, &opt_version, "Output version information and exit"}, {NULL}};
+" specified multiple times.", "socket_path=scriptfilename"}, {"evemu-events", 'e', 0, G_OPTION_ARG_FILENAME_ARRAY, &opt_evemu_events, "Load an evemu .events file into the testbed. Can be specified multiple" \
+" times.", "devname=eventsfilename"}, {"", (gchar) 0, 0, G_OPTION_ARG_STRING_ARRAY, &opt_program, "", ""}, {"version", (gchar) 0, 0, G_OPTION_ARG_NONE, &opt_version, "Output version information and exit"}, {NULL}};
 
 void child_sig_handler (gint sig) {
 	gint _tmp0_ = 0;
@@ -57,7 +60,7 @@ void child_sig_handler (gint sig) {
 	gint _tmp2_ = 0;
 	gint _tmp3_ = 0;
 	_tmp0_ = sig;
-	g_debug ("umockdev-run.vala:56: umockdev-run: caught signal %i, propagating to c" \
+	g_debug ("umockdev-run.vala:61: umockdev-run: caught signal %i, propagating to c" \
 "hild\n", _tmp0_);
 	_tmp1_ = child_pid;
 	_tmp2_ = sig;
@@ -109,28 +112,30 @@ gint _vala_main (gchar** args, int args_length1) {
 	gint _tmp73__length1 = 0;
 	gchar** _tmp92_ = NULL;
 	gint _tmp92__length1 = 0;
+	gchar** _tmp111_ = NULL;
+	gint _tmp111__length1 = 0;
 	gint status = 0;
 	struct sigaction act = {0};
-	struct sigaction _tmp100_ = {0};
-	struct sigaction _tmp101_ = {0};
-	sigset_t _tmp102_ = {0};
-	struct sigaction _tmp103_ = {0};
-	gint _tmp104_ = 0;
-	struct sigaction _tmp105_ = {0};
-	gint _tmp106_ = 0;
-	struct sigaction _tmp107_ = {0};
-	gint _tmp108_ = 0;
-	struct sigaction _tmp109_ = {0};
-	gint _tmp110_ = 0;
-	struct sigaction _tmp111_ = {0};
-	gint _tmp112_ = 0;
-	GPid _tmp113_ = 0;
-	gint _tmp114_ = 0;
-	GPid _tmp115_ = 0;
-	gint _tmp116_ = 0;
-	gboolean _tmp117_ = FALSE;
-	gint _tmp120_ = 0;
-	gboolean _tmp121_ = FALSE;
+	struct sigaction _tmp119_ = {0};
+	struct sigaction _tmp120_ = {0};
+	sigset_t _tmp121_ = {0};
+	struct sigaction _tmp122_ = {0};
+	gint _tmp123_ = 0;
+	struct sigaction _tmp124_ = {0};
+	gint _tmp125_ = 0;
+	struct sigaction _tmp126_ = {0};
+	gint _tmp127_ = 0;
+	struct sigaction _tmp128_ = {0};
+	gint _tmp129_ = 0;
+	struct sigaction _tmp130_ = {0};
+	gint _tmp131_ = 0;
+	GPid _tmp132_ = 0;
+	gint _tmp133_ = 0;
+	GPid _tmp134_ = 0;
+	gint _tmp135_ = 0;
+	gboolean _tmp136_ = FALSE;
+	gint _tmp139_ = 0;
+	gboolean _tmp140_ = FALSE;
 	GError * _inner_error_ = NULL;
 	_tmp0_ = g_option_context_new ("-- program [args..]");
 	oc = _tmp0_;
@@ -658,12 +663,124 @@ gint _vala_main (gchar** args, int args_length1) {
 			}
 		}
 	}
-	_tmp92_ = opt_program;
-	_tmp92__length1 = _vala_array_length (opt_program);
-	if (_tmp92__length1 == 0) {
-		FILE* _tmp93_ = NULL;
-		_tmp93_ = stderr;
-		fprintf (_tmp93_, "No program specified. See --help for how to use umockdev-run\n");
+	_tmp92_ = opt_evemu_events;
+	_tmp92__length1 = _vala_array_length (opt_evemu_events);
+	{
+		gchar** i_collection = NULL;
+		gint i_collection_length1 = 0;
+		gint _i_collection_size_ = 0;
+		gint i_it = 0;
+		i_collection = _tmp92_;
+		i_collection_length1 = _tmp92__length1;
+		for (i_it = 0; i_it < _tmp92__length1; i_it = i_it + 1) {
+			gchar* _tmp93_ = NULL;
+			gchar* i = NULL;
+			_tmp93_ = g_strdup (i_collection[i_it]);
+			i = _tmp93_;
+			{
+				gchar** parts = NULL;
+				const gchar* _tmp94_ = NULL;
+				gchar** _tmp95_ = NULL;
+				gchar** _tmp96_ = NULL;
+				gint parts_length1 = 0;
+				gint _parts_size_ = 0;
+				gchar** _tmp97_ = NULL;
+				gint _tmp97__length1 = 0;
+				_tmp94_ = i;
+				_tmp96_ = _tmp95_ = g_strsplit (_tmp94_, "=", 2);
+				parts = _tmp96_;
+				parts_length1 = _vala_array_length (_tmp95_);
+				_parts_size_ = parts_length1;
+				_tmp97_ = parts;
+				_tmp97__length1 = parts_length1;
+				if (_tmp97__length1 != 2) {
+					FILE* _tmp98_ = NULL;
+					_tmp98_ = stderr;
+					fprintf (_tmp98_, "Error: --evemu-events argument must be devname=filename\n");
+					result = 1;
+					parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
+					_g_free0 (i);
+					_g_object_unref0 (testbed);
+					_g_free0 (preload);
+					_g_option_context_free0 (oc);
+					return result;
+				}
+				{
+					UMockdevTestbed* _tmp99_ = NULL;
+					gchar** _tmp100_ = NULL;
+					gint _tmp100__length1 = 0;
+					const gchar* _tmp101_ = NULL;
+					gchar** _tmp102_ = NULL;
+					gint _tmp102__length1 = 0;
+					const gchar* _tmp103_ = NULL;
+					_tmp99_ = testbed;
+					_tmp100_ = parts;
+					_tmp100__length1 = parts_length1;
+					_tmp101_ = _tmp100_[0];
+					_tmp102_ = parts;
+					_tmp102__length1 = parts_length1;
+					_tmp103_ = _tmp102_[1];
+					umockdev_testbed_load_evemu_events (_tmp99_, _tmp101_, _tmp103_, &_inner_error_);
+					if (_inner_error_ != NULL) {
+						goto __catch6_g_error;
+					}
+				}
+				goto __finally6;
+				__catch6_g_error:
+				{
+					GError* e = NULL;
+					FILE* _tmp104_ = NULL;
+					gchar** _tmp105_ = NULL;
+					gint _tmp105__length1 = 0;
+					const gchar* _tmp106_ = NULL;
+					gchar** _tmp107_ = NULL;
+					gint _tmp107__length1 = 0;
+					const gchar* _tmp108_ = NULL;
+					GError* _tmp109_ = NULL;
+					const gchar* _tmp110_ = NULL;
+					e = _inner_error_;
+					_inner_error_ = NULL;
+					_tmp104_ = stderr;
+					_tmp105_ = parts;
+					_tmp105__length1 = parts_length1;
+					_tmp106_ = _tmp105_[1];
+					_tmp107_ = parts;
+					_tmp107__length1 = parts_length1;
+					_tmp108_ = _tmp107_[0];
+					_tmp109_ = e;
+					_tmp110_ = _tmp109_->message;
+					fprintf (_tmp104_, "Error: Cannot install %s for device %s: %s\n", _tmp106_, _tmp108_, _tmp110_);
+					result = 1;
+					_g_error_free0 (e);
+					parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
+					_g_free0 (i);
+					_g_object_unref0 (testbed);
+					_g_free0 (preload);
+					_g_option_context_free0 (oc);
+					return result;
+				}
+				__finally6:
+				if (_inner_error_ != NULL) {
+					parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
+					_g_free0 (i);
+					_g_object_unref0 (testbed);
+					_g_free0 (preload);
+					_g_option_context_free0 (oc);
+					g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+					g_clear_error (&_inner_error_);
+					return 0;
+				}
+				parts = (_vala_array_free (parts, parts_length1, (GDestroyNotify) g_free), NULL);
+				_g_free0 (i);
+			}
+		}
+	}
+	_tmp111_ = opt_program;
+	_tmp111__length1 = _vala_array_length (opt_program);
+	if (_tmp111__length1 == 0) {
+		FILE* _tmp112_ = NULL;
+		_tmp112_ = stderr;
+		fprintf (_tmp112_, "No program specified. See --help for how to use umockdev-run\n");
 		result = 1;
 		_g_object_unref0 (testbed);
 		_g_free0 (preload);
@@ -671,38 +788,38 @@ gint _vala_main (gchar** args, int args_length1) {
 		return result;
 	}
 	{
-		gchar** _tmp94_ = NULL;
-		gint _tmp94__length1 = 0;
-		GPid _tmp95_ = 0;
-		_tmp94_ = opt_program;
-		_tmp94__length1 = _vala_array_length (opt_program);
-		g_spawn_async (NULL, _tmp94_, NULL, (G_SPAWN_SEARCH_PATH | G_SPAWN_CHILD_INHERITS_STDIN) | G_SPAWN_DO_NOT_REAP_CHILD, NULL, NULL, &_tmp95_, &_inner_error_);
-		child_pid = _tmp95_;
+		gchar** _tmp113_ = NULL;
+		gint _tmp113__length1 = 0;
+		GPid _tmp114_ = 0;
+		_tmp113_ = opt_program;
+		_tmp113__length1 = _vala_array_length (opt_program);
+		g_spawn_async (NULL, _tmp113_, NULL, (G_SPAWN_SEARCH_PATH | G_SPAWN_CHILD_INHERITS_STDIN) | G_SPAWN_DO_NOT_REAP_CHILD, NULL, NULL, &_tmp114_, &_inner_error_);
+		child_pid = _tmp114_;
 		if (_inner_error_ != NULL) {
-			goto __catch6_g_error;
+			goto __catch7_g_error;
 		}
 	}
-	goto __finally6;
-	__catch6_g_error:
+	goto __finally7;
+	__catch7_g_error:
 	{
 		GError* e = NULL;
-		FILE* _tmp96_ = NULL;
-		gchar** _tmp97_ = NULL;
-		gint _tmp97__length1 = 0;
-		const gchar* _tmp98_ = NULL;
-		const gchar* _tmp99_ = NULL;
+		FILE* _tmp115_ = NULL;
+		gchar** _tmp116_ = NULL;
+		gint _tmp116__length1 = 0;
+		const gchar* _tmp117_ = NULL;
+		const gchar* _tmp118_ = NULL;
 		e = _inner_error_;
 		_inner_error_ = NULL;
-		_tmp96_ = stderr;
-		_tmp97_ = opt_program;
-		_tmp97__length1 = _vala_array_length (opt_program);
-		_tmp98_ = _tmp97_[0];
-		_tmp99_ = e->message;
-		fprintf (_tmp96_, "Cannot run %s: %s\n", _tmp98_, _tmp99_);
+		_tmp115_ = stderr;
+		_tmp116_ = opt_program;
+		_tmp116__length1 = _vala_array_length (opt_program);
+		_tmp117_ = _tmp116_[0];
+		_tmp118_ = e->message;
+		fprintf (_tmp115_, "Cannot run %s: %s\n", _tmp117_, _tmp118_);
 		exit (1);
 		_g_error_free0 (e);
 	}
-	__finally6:
+	__finally7:
 	if (_inner_error_ != NULL) {
 		_g_object_unref0 (testbed);
 		_g_free0 (preload);
@@ -711,56 +828,56 @@ gint _vala_main (gchar** args, int args_length1) {
 		g_clear_error (&_inner_error_);
 		return 0;
 	}
-	memset (&_tmp100_, 0, sizeof (struct sigaction));
-	_tmp100_.sa_handler = _child_sig_handler_sighandler_t;
-	_tmp100_.sa_flags = SA_RESETHAND;
-	act = _tmp100_;
-	_tmp101_ = act;
-	_tmp102_ = _tmp101_.sa_mask;
-	sigemptyset (&_tmp102_);
-	_tmp103_ = act;
-	_tmp104_ = sigaction (SIGTERM, &_tmp103_, NULL);
-	_vala_assert (_tmp104_ == 0, "Posix.sigaction (Posix.SIGTERM, act, null) == 0");
-	_tmp105_ = act;
-	_tmp106_ = sigaction (SIGHUP, &_tmp105_, NULL);
-	_vala_assert (_tmp106_ == 0, "Posix.sigaction (Posix.SIGHUP, act, null) == 0");
-	_tmp107_ = act;
-	_tmp108_ = sigaction (SIGINT, &_tmp107_, NULL);
-	_vala_assert (_tmp108_ == 0, "Posix.sigaction (Posix.SIGINT, act, null) == 0");
-	_tmp109_ = act;
-	_tmp110_ = sigaction (SIGQUIT, &_tmp109_, NULL);
-	_vala_assert (_tmp110_ == 0, "Posix.sigaction (Posix.SIGQUIT, act, null) == 0");
-	_tmp111_ = act;
-	_tmp112_ = sigaction (SIGABRT, &_tmp111_, NULL);
-	_vala_assert (_tmp112_ == 0, "Posix.sigaction (Posix.SIGABRT, act, null) == 0");
-	_tmp113_ = child_pid;
-	waitpid ((pid_t) _tmp113_, &_tmp114_, 0);
-	status = _tmp114_;
-	_tmp115_ = child_pid;
-	g_spawn_close_pid (_tmp115_);
+	memset (&_tmp119_, 0, sizeof (struct sigaction));
+	_tmp119_.sa_handler = _child_sig_handler_sighandler_t;
+	_tmp119_.sa_flags = SA_RESETHAND;
+	act = _tmp119_;
+	_tmp120_ = act;
+	_tmp121_ = _tmp120_.sa_mask;
+	sigemptyset (&_tmp121_);
+	_tmp122_ = act;
+	_tmp123_ = sigaction (SIGTERM, &_tmp122_, NULL);
+	_vala_assert (_tmp123_ == 0, "Posix.sigaction (Posix.SIGTERM, act, null) == 0");
+	_tmp124_ = act;
+	_tmp125_ = sigaction (SIGHUP, &_tmp124_, NULL);
+	_vala_assert (_tmp125_ == 0, "Posix.sigaction (Posix.SIGHUP, act, null) == 0");
+	_tmp126_ = act;
+	_tmp127_ = sigaction (SIGINT, &_tmp126_, NULL);
+	_vala_assert (_tmp127_ == 0, "Posix.sigaction (Posix.SIGINT, act, null) == 0");
+	_tmp128_ = act;
+	_tmp129_ = sigaction (SIGQUIT, &_tmp128_, NULL);
+	_vala_assert (_tmp129_ == 0, "Posix.sigaction (Posix.SIGQUIT, act, null) == 0");
+	_tmp130_ = act;
+	_tmp131_ = sigaction (SIGABRT, &_tmp130_, NULL);
+	_vala_assert (_tmp131_ == 0, "Posix.sigaction (Posix.SIGABRT, act, null) == 0");
+	_tmp132_ = child_pid;
+	waitpid ((pid_t) _tmp132_, &_tmp133_, 0);
+	status = _tmp133_;
+	_tmp134_ = child_pid;
+	g_spawn_close_pid (_tmp134_);
 	_g_object_unref0 (testbed);
 	testbed = NULL;
-	_tmp116_ = status;
-	_tmp117_ = WIFEXITED (_tmp116_);
-	if (_tmp117_) {
-		gint _tmp118_ = 0;
-		gint _tmp119_ = 0;
-		_tmp118_ = status;
-		_tmp119_ = WEXITSTATUS (_tmp118_);
-		result = _tmp119_;
+	_tmp135_ = status;
+	_tmp136_ = WIFEXITED (_tmp135_);
+	if (_tmp136_) {
+		gint _tmp137_ = 0;
+		gint _tmp138_ = 0;
+		_tmp137_ = status;
+		_tmp138_ = WEXITSTATUS (_tmp137_);
+		result = _tmp138_;
 		_g_object_unref0 (testbed);
 		_g_free0 (preload);
 		_g_option_context_free0 (oc);
 		return result;
 	}
-	_tmp120_ = status;
-	_tmp121_ = WIFSIGNALED (_tmp120_);
-	if (_tmp121_) {
-		gint _tmp122_ = 0;
-		int _tmp123_ = 0;
-		_tmp122_ = status;
-		_tmp123_ = WTERMSIG (_tmp122_);
-		raise (_tmp123_);
+	_tmp139_ = status;
+	_tmp140_ = WIFSIGNALED (_tmp139_);
+	if (_tmp140_) {
+		gint _tmp141_ = 0;
+		int _tmp142_ = 0;
+		_tmp141_ = status;
+		_tmp142_ = WTERMSIG (_tmp141_);
+		raise (_tmp142_);
 	}
 	result = status;
 	_g_object_unref0 (testbed);

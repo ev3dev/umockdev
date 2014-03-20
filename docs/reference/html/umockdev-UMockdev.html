@@ -7,7 +7,7 @@
 <link rel="home" href="index.html" title="umockdev Reference Manual">
 <link rel="up" href="ch01.html" title="API reference">
 <link rel="prev" href="ch01.html" title="API reference">
-<link rel="next" href="umockdev-umockdev-errors.html" title="umockdev errors">
+<link rel="next" href="umockdev-global-functions.html" title="global functions">
 <meta name="generator" content="GTK-Doc V1.20 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
@@ -21,7 +21,7 @@
 <td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
 <td><a accesskey="u" href="ch01.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
 <td><a accesskey="p" href="ch01.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
-<td><a accesskey="n" href="umockdev-umockdev-errors.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+<td><a accesskey="n" href="umockdev-global-functions.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
 </tr></table>
 <div class="refentry">
 <a name="umockdev-UMockdev"></a><div class="titlepage"></div>
@@ -199,6 +199,14 @@ hardware devices.</p>
 </td>
 <td class="function_name">
 <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-load-socket-script" title="umockdev_testbed_load_socket_script ()">umockdev_testbed_load_socket_script</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-load-evemu-events" title="umockdev_testbed_load_evemu_events ()">umockdev_testbed_load_evemu_events</a> <span class="c_punctuation">()</span>
 </td>
 </tr>
 <tr>
@@ -1184,6 +1192,65 @@ invalid and an error occurred.</p>
 </div>
 <hr>
 <div class="refsect2">
+<a name="umockdev-testbed-load-evemu-events"></a><h3>umockdev_testbed_load_evemu_events ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+umockdev_testbed_load_evemu_events (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                                    <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dev</code></em>,
+                                    <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *eventsfile</code></em>,
+                                    <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Load an evemu event file for a particular device into the testbed. These
+have a very simple line-based format with 4 fields that represent the
+data in a struct input_event:</p>
+<p> E: sec.usec evtype(hex) evcode(hex) evvalue</p>
+<p>The timestamps in those are absolute, and are usually as they were at
+record time. When loading them into umockdev they are interpreted
+relatively: the first event happens immediately, and the time to the
+next event is the difference between the corresponding timestamps in the
+.event file.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.22.7"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>dev</p></td>
+<td class="parameter_description"><p>Device path (/dev/...) for which to load the evemu events.
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> is valid; in this case the events are associated with
+the device node it was recorded from.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>eventsfile</p></td>
+<td class="parameter_description"><p>Path of the evemu events file.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a GError, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.2.2.8.22.8"></a><h4>Returns</h4>
+<p> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if <em class="parameter"><code>eventsfile</code></em>
+is invalid and an error
+occurred.</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
 <a name="umockdev-testbed-get-dev-fd"></a><h3>umockdev_testbed_get_dev_fd ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>
 umockdev_testbed_get_dev_fd (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
@@ -1197,7 +1264,7 @@ which is just openening the device specified by <em class="parameter"><code>devn
 /dev/ttyUSB2. Once that happened, your test can directly communicate
 with the tested program over that descriptor.</p>
 <div class="refsect3">
-<a name="id-1.2.2.8.22.5"></a><h4>Parameters</h4>
+<a name="id-1.2.2.8.23.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1219,7 +1286,7 @@ with the tested program over that descriptor.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.2.8.22.6"></a><h4>Returns</h4>
+<a name="id-1.2.2.8.23.6"></a><h4>Returns</h4>
 <p> File descriptor for communicating with clients that connect to
 <em class="parameter"><code>devnode</code></em>
 , or -1 if <em class="parameter"><code>devnode</code></em>
@@ -1237,7 +1304,7 @@ umockdev_testbed_clear (<em class="parameter"><code><a class="link" href="umockd
 umockdev root directory will be in the same state as directly after the
 constructor.</p>
 <div class="refsect3">
-<a name="id-1.2.2.8.23.5"></a><h4>Parameters</h4>
+<a name="id-1.2.2.8.24.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1263,7 +1330,7 @@ and the <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span clas
  to
 re-enable the testbed.</p>
 <div class="refsect3">
-<a name="id-1.2.2.8.24.5"></a><h4>Parameters</h4>
+<a name="id-1.2.2.8.25.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1286,7 +1353,7 @@ umockdev_testbed_enable (<em class="parameter"><code><a class="link" href="umock
 <p>Re-enable the testbed after @<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#umockdev-testbed-disable" title="umockdev_testbed_disable ()"><code class="function">umockdev_testbed_disable()</code></a></code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.2.2.8.25.5"></a><h4>Parameters</h4>
+<a name="id-1.2.2.8.26.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
