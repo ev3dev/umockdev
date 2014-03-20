@@ -1,3 +1,9 @@
+umockdev (0.8-1) UNRELEASED; urgency=medium
+
+  * New upstream release.
+
+ -- Martin Pitt <martin.pitt@ubuntu.com>  Thu, 20 Mar 2014 14:42:39 +0100
+
 umockdev (0.7-1) unstable; urgency=medium
 
   * New upstream release.
