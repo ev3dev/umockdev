@@ -1,8 +1,8 @@
-umockdev (0.8.1-1) UNRELEASED; urgency=medium
+umockdev (0.8.1-1) unstable; urgency=medium
 
   * New upstream bug fix release.
 
- -- Martin Pitt <mpitt@debian.org>  Mon, 31 Mar 2014 09:10:45 +0200
+ -- Martin Pitt <mpitt@debian.org>  Mon, 31 Mar 2014 09:11:36 +0200
 
 umockdev (0.8-1) unstable; urgency=medium
 
