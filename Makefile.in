@@ -120,10 +120,10 @@ DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	tests/test-umockdev-vala.c $(top_srcdir)/build-aux/depcomp \
 	$(srcdir)/tests_test_umockdev_record_vala.stamp \
 	$(srcdir)/tests_test_umockdev_run_vala.stamp \
-	$(srcdir)/src_umockdev_record_vala.stamp \
+	$(srcdir)/src_umockdev_run_vala.stamp \
 	$(srcdir)/tests_test_umockdev_vala_vala.stamp \
-	$(srcdir)/src_umockdev_run_vala.stamp $(srcdir)/src/umockdev.h \
-	$(srcdir)/libumockdev_la_vala.stamp \
+	$(srcdir)/src_umockdev_record_vala.stamp \
+	$(srcdir)/src/umockdev.h $(srcdir)/libumockdev_la_vala.stamp \
 	$(libumockdev_include_HEADERS) COPYING NEWS build-aux/ar-lib \
 	build-aux/compile build-aux/config.guess build-aux/config.sub \
 	build-aux/depcomp build-aux/install-sh build-aux/missing \
@@ -1358,14 +1358,14 @@ $(srcdir)/tests_test_umockdev_run_vala.stamp: tests/test-umockdev-run.vala tests
 	$(AM_V_at)rm -f $@ && echo stamp > $@-t
 	$(AM_V_VALAC)$(am__cd) $(srcdir) && $(VALAC) $(tests_test_umockdev_run_VALAFLAGS) $(VALAFLAGS) -C tests/test-umockdev-run.vala tests/assertions.vapi src/config.vapi
 	$(AM_V_at)mv -f $@-t $@
-$(srcdir)/src/umockdev-record.c: $(srcdir)/src_umockdev_record_vala.stamp
-	@if test -f $@; then :; else rm -f $(srcdir)/src_umockdev_record_vala.stamp; fi
+$(srcdir)/src/umockdev-run.c: $(srcdir)/src_umockdev_run_vala.stamp
+	@if test -f $@; then :; else rm -f $(srcdir)/src_umockdev_run_vala.stamp; fi
 	@if test -f $@; then :; else \
-	  $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/src_umockdev_record_vala.stamp; \
+	  $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/src_umockdev_run_vala.stamp; \
 	fi
-$(srcdir)/src_umockdev_record_vala.stamp: src/umockdev-record.vala src/posix_extra.vapi src/config.vapi
+$(srcdir)/src_umockdev_run_vala.stamp: src/umockdev-run.vala src/posix_extra.vapi src/config.vapi
 	$(AM_V_at)rm -f $@ && echo stamp > $@-t
-	$(AM_V_VALAC)$(am__cd) $(srcdir) && $(VALAC) $(src_umockdev_record_VALAFLAGS) $(VALAFLAGS) -C src/umockdev-record.vala src/posix_extra.vapi src/config.vapi
+	$(AM_V_VALAC)$(am__cd) $(srcdir) && $(VALAC) $(src_umockdev_run_VALAFLAGS) $(VALAFLAGS) -C src/umockdev-run.vala src/posix_extra.vapi src/config.vapi
 	$(AM_V_at)mv -f $@-t $@
 $(srcdir)/tests/test-umockdev-vala.c: $(srcdir)/tests_test_umockdev_vala_vala.stamp
 	@if test -f $@; then :; else rm -f $(srcdir)/tests_test_umockdev_vala_vala.stamp; fi
@@ -1376,14 +1376,14 @@ $(srcdir)/tests_test_umockdev_vala_vala.stamp: tests/test-umockdev-vala.vala tes
 	$(AM_V_at)rm -f $@ && echo stamp > $@-t
 	$(AM_V_VALAC)$(am__cd) $(srcdir) && $(VALAC) $(tests_test_umockdev_vala_VALAFLAGS) $(VALAFLAGS) -C tests/test-umockdev-vala.vala tests/assertions.vapi tests/ioctl.vapi src/posix_extra.vapi
 	$(AM_V_at)mv -f $@-t $@
-$(srcdir)/src/umockdev-run.c: $(srcdir)/src_umockdev_run_vala.stamp
-	@if test -f $@; then :; else rm -f $(srcdir)/src_umockdev_run_vala.stamp; fi
+$(srcdir)/src/umockdev-record.c: $(srcdir)/src_umockdev_record_vala.stamp
+	@if test -f $@; then :; else rm -f $(srcdir)/src_umockdev_record_vala.stamp; fi
 	@if test -f $@; then :; else \
-	  $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/src_umockdev_run_vala.stamp; \
+	  $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/src_umockdev_record_vala.stamp; \
 	fi
-$(srcdir)/src_umockdev_run_vala.stamp: src/umockdev-run.vala src/posix_extra.vapi src/config.vapi
+$(srcdir)/src_umockdev_record_vala.stamp: src/umockdev-record.vala src/posix_extra.vapi src/config.vapi
 	$(AM_V_at)rm -f $@ && echo stamp > $@-t
-	$(AM_V_VALAC)$(am__cd) $(srcdir) && $(VALAC) $(src_umockdev_run_VALAFLAGS) $(VALAFLAGS) -C src/umockdev-run.vala src/posix_extra.vapi src/config.vapi
+	$(AM_V_VALAC)$(am__cd) $(srcdir) && $(VALAC) $(src_umockdev_record_VALAFLAGS) $(VALAFLAGS) -C src/umockdev-record.vala src/posix_extra.vapi src/config.vapi
 	$(AM_V_at)mv -f $@-t $@
 $(srcdir)/src/umockdev.c: $(srcdir)/libumockdev_la_vala.stamp
 	@if test -f $@; then :; else rm -f $(srcdir)/libumockdev_la_vala.stamp; fi
