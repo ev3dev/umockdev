@@ -1,3 +1,12 @@
+0.8.2 (2014-05-15)
+------------------
+- Fix ioctl recording of multiple device open/close cycles. This regressed in
+  0.6 to only keep the data of the last cycle.
+- Update devices/cameras/canon-powershot-sx200.ioctl with ioctls from
+  libgphoto2 2.5.4, to make the /umockdev-run/integration/gphoto-* tests work
+  with that version.
+- On ioctl recording, also record the device name on close().
+
 0.8.1 (2014-03-31)
 ------------------
 - Fix eternal hang due to negative delays when playing back evemu scripts with
