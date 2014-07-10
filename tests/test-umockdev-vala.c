@@ -456,57 +456,79 @@ void t_testbed_gudev_query_list (void) {
 void t_usbfs_ioctl_static (void) {
 	UMockdevTestbed* tb = NULL;
 	UMockdevTestbed* _tmp0_ = NULL;
+	UMockdevTestbed* _tmp1_ = NULL;
 	gint fd = 0;
-	gint _tmp1_ = 0;
-	gint i = 0;
 	gint _tmp2_ = 0;
 	gint _tmp3_ = 0;
+	gint i = 0;
 	gint _tmp4_ = 0;
 	gint _tmp5_ = 0;
-	struct usbdevfs_connectinfo ci = {0};
 	gint _tmp6_ = 0;
 	gint _tmp7_ = 0;
 	gint _tmp8_ = 0;
 	gint _tmp9_ = 0;
-	gint fd2 = 0;
+	struct usbdevfs_connectinfo ci = {0};
 	gint _tmp10_ = 0;
 	gint _tmp11_ = 0;
 	gint _tmp12_ = 0;
+	gint _tmp13_ = 0;
+	gint _tmp14_ = 0;
+	gint _tmp15_ = 0;
+	gint fd2 = 0;
+	gint _tmp16_ = 0;
+	gint _tmp17_ = 0;
+	gint _tmp22_ = 0;
 	_tmp0_ = umockdev_testbed_new ();
 	tb = _tmp0_;
-	tb_add_from_string (tb, "P: /devices/mycam\nN: 001\nE: SUBSYSTEM=usb\n");
-	_tmp1_ = open ("/dev/001", O_RDWR, (mode_t) 0);
-	fd = _tmp1_;
-	g_assert_cmpint (fd, >=, 0);
+	_tmp1_ = tb;
+	tb_add_from_string (_tmp1_, "P: /devices/mycam\nN: 001\nE: SUBSYSTEM=usb\n");
+	_tmp2_ = open ("/dev/001", O_RDWR, (mode_t) 0);
+	fd = _tmp2_;
+	_tmp3_ = fd;
+	g_assert_cmpint (_tmp3_, >=, 0);
 	i = 1;
-	_tmp2_ = ioctl (fd, USBDEVFS_CLAIMINTERFACE, &i);
-	g_assert_cmpint (_tmp2_, ==, 0);
-	_tmp3_ = errno;
-	g_assert_cmpint (_tmp3_, ==, 0);
-	_tmp4_ = ioctl (fd, USBDEVFS_GETDRIVER, &i);
-	g_assert_cmpint (_tmp4_, ==, -1);
-	_tmp5_ = errno;
-	g_assert_cmpint (_tmp5_, ==, ENODATA);
-	errno = 0;
-	memset (&ci, 0, sizeof (struct usbdevfs_connectinfo));
-	_tmp6_ = ioctl (fd, USBDEVFS_CONNECTINFO, &ci);
-	g_assert_cmpint (_tmp6_, ==, -1);
-	_tmp7_ = errno;
-	g_assert_cmpint (_tmp7_, >=, 22);
-	errno = 0;
-	_tmp8_ = ioctl (fd, TIOCSBRK, 0);
+	_tmp4_ = fd;
+	_tmp5_ = ioctl (_tmp4_, USBDEVFS_CLAIMINTERFACE, &i);
+	g_assert_cmpint (_tmp5_, ==, 0);
+	_tmp6_ = errno;
+	g_assert_cmpint (_tmp6_, ==, 0);
+	_tmp7_ = fd;
+	_tmp8_ = ioctl (_tmp7_, USBDEVFS_GETDRIVER, &i);
 	g_assert_cmpint (_tmp8_, ==, -1);
 	_tmp9_ = errno;
-	g_assert_cmpint (_tmp9_, ==, ENOTTY);
+	g_assert_cmpint (_tmp9_, ==, ENODATA);
 	errno = 0;
-	_tmp10_ = open ("/dev/tty", O_RDWR, (mode_t) 0);
-	fd2 = _tmp10_;
-	_tmp11_ = ioctl (fd2, TIOCSBRK, 0);
-	g_assert_cmpint (_tmp11_, ==, 0);
+	memset (&ci, 0, sizeof (struct usbdevfs_connectinfo));
+	_tmp10_ = fd;
+	_tmp11_ = ioctl (_tmp10_, USBDEVFS_CONNECTINFO, &ci);
+	g_assert_cmpint (_tmp11_, ==, -1);
 	_tmp12_ = errno;
-	g_assert_cmpint (_tmp12_, ==, 0);
-	close (fd2);
-	close (fd);
+	g_assert_cmpint (_tmp12_, >=, 22);
+	errno = 0;
+	_tmp13_ = fd;
+	_tmp14_ = ioctl (_tmp13_, TIOCSBRK, 0);
+	g_assert_cmpint (_tmp14_, ==, -1);
+	_tmp15_ = errno;
+	g_assert_cmpint (_tmp15_, ==, ENOTTY);
+	errno = 0;
+	_tmp16_ = open ("/dev/tty", O_RDWR, (mode_t) 0);
+	fd2 = _tmp16_;
+	_tmp17_ = fd2;
+	if (_tmp17_ > 0) {
+		gint _tmp18_ = 0;
+		gint _tmp19_ = 0;
+		gint _tmp20_ = 0;
+		gint _tmp21_ = 0;
+		_tmp18_ = fd2;
+		_tmp19_ = ioctl (_tmp18_, TIOCSBRK, 0);
+		g_assert_cmpint (_tmp19_, ==, 0);
+		_tmp20_ = errno;
+		g_assert_cmpint (_tmp20_, ==, 0);
+		_tmp21_ = fd2;
+		close (_tmp21_);
+	}
+	_tmp22_ = fd;
+	close (_tmp22_);
 	_g_object_unref0 (tb);
 }
 
@@ -1680,7 +1702,7 @@ void* attribute_counter_thread_run (AttributeCounterThread* self) {
 				_tmp8_ = self->priv->count;
 				_tmp9_ = attr_path;
 				_tmp10_ = e->message;
-				g_error ("test-umockdev-vala.vala:550: (count %u) failed to read %s: %s", _tmp8_, _tmp9_, _tmp10_);
+				g_error ("test-umockdev-vala.vala:552: (count %u) failed to read %s: %s", _tmp8_, _tmp9_, _tmp10_);
 				_g_error_free0 (e);
 			}
 			__finally11:
@@ -2089,7 +2111,7 @@ void t_mt_parallel_attr_distinct (void) {
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		_tmp50_ = e->message;
-		g_error ("test-umockdev-vala.vala:593: failed to read attribute: %s", _tmp50_);
+		g_error ("test-umockdev-vala.vala:595: failed to read attribute: %s", _tmp50_);
 		_g_error_free0 (e);
 	}
 	__finally12:
@@ -2195,7 +2217,7 @@ static void* __lambda4_ (Block1Data* _data1_) {
 			e = _inner_error_;
 			_inner_error_ = NULL;
 			_tmp2_ = e->message;
-			g_error ("test-umockdev-vala.vala:628: (#changes: %u) Error opening attribute fi" \
+			g_error ("test-umockdev-vala.vala:630: (#changes: %u) Error opening attribute fi" \
 "le: %s", _data1_->change_count, _tmp2_);
 			_g_error_free0 (e);
 		}
