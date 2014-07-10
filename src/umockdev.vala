@@ -207,6 +207,43 @@ public class Testbed: GLib.Object {
     }
 
     /**
+     * umockdev_testbed_get_property:
+     * @self: A #UMockdevTestbed.
+     * @devpath: The full device path, as returned by #umockdev_testbed_add_device()
+     * @name: Property name
+     *
+     * Get a string udev property for a device. Note that this is mostly for
+     * testing umockdev itself; for real application testing, use
+     * libudev/gudev.
+     *
+     * Returns: property value, or %NULL if it does not exist
+     */
+    public new string? get_property(string devpath, string name)
+    {
+        var uevent_path = Path.build_filename(this.root_dir, devpath, "uevent");
+        string? ret = null;
+
+        File f = File.new_for_path(uevent_path);
+        string prefix = name + "=";
+        try {
+            var inp = new DataInputStream(f.read());
+            string line;
+            size_t len;
+            while ((line = inp.read_line(out len)) != null) {
+                if (line.has_prefix(prefix)) {
+                    ret = line.substring(prefix.length);
+                    break;
+                }
+            }
+            inp.close();
+        } catch (GLib.Error e) {
+            error("Cannot read uevent file: %s", e.message);
+        }
+
+        return ret;
+    }
+
+    /**
      * umockdev_testbed_set_property:
      * @self: A #UMockdevTestbed.
      * @devpath: The full device path, as returned by #umockdev_testbed_add_device()
@@ -882,6 +919,7 @@ public class Testbed: GLib.Object {
         string? val;
         string? devpath = null;
         string? subsystem = null;
+        string? majmin = null;
         string cur_data = data;
         string? devnode_path = null;
         uint8[] devnode_contents = {};
@@ -914,7 +952,10 @@ public class Testbed: GLib.Object {
 
                 case 'A':
                     attrs += key;
-                    attrs += val.compress();
+                    val = val.compress();
+                    attrs += val;
+                    if (key == "dev")
+                        majmin = val;
                     break;
 
                 case 'L':
@@ -970,7 +1011,7 @@ public class Testbed: GLib.Object {
 
         /* create fake device node */
         if (devnode_path != null)
-            this.create_node_for_device(subsystem, devnode_path, devnode_contents);
+            this.create_node_for_device(subsystem, devnode_path, devnode_contents, majmin);
 
         /* skip over multiple blank lines */
         while (cur_data[0] != '\0' && cur_data[0] == '\n')
@@ -980,7 +1021,7 @@ public class Testbed: GLib.Object {
     }
 
     private void
-    create_node_for_device (string subsystem, string node_path, uint8[] node_contents)
+    create_node_for_device (string subsystem, string node_path, uint8[] node_contents, string? majmin)
         throws UMockdev.Error
     {
         assert (DirUtils.create_with_parents(Path.get_dirname(node_path), 0755) == 0);
@@ -1020,6 +1061,16 @@ public class Testbed: GLib.Object {
         assert (Posix.tcsetattr (ptym, Posix.TCSANOW, ios) == 0);
 
         assert (FileUtils.symlink (ptyname, node_path) == 0);
+
+        // store link from pty name to emulated device major/minor, so that
+        // we can map from an fd -> ttyname -> device we emulate
+        if (majmin != null) {
+            string mapdir = Path.build_filename (this.root_dir, "dev", ".ptymap");
+            DirUtils.create_with_parents (mapdir, 0755);
+            string dest = Path.build_filename (mapdir, ptyname.replace("/", "_"));
+            debug ("create_node_for_device: creating ptymap symlink %s", dest);
+            assert (FileUtils.symlink(majmin, dest) == 0);
+        }
 
         // store ptym for controlling the master end
         string devname = node_path.substring (this.root_dir.length);

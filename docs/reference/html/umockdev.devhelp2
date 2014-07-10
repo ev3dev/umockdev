@@ -27,6 +27,7 @@
     <keyword type="function" name="umockdev_testbed_set_property ()" link="umockdev-UMockdev.html#umockdev-testbed-set-property"/>
     <keyword type="function" name="umockdev_testbed_set_property_int ()" link="umockdev-UMockdev.html#umockdev-testbed-set-property-int"/>
     <keyword type="function" name="umockdev_testbed_set_property_hex ()" link="umockdev-UMockdev.html#umockdev-testbed-set-property-hex"/>
+    <keyword type="function" name="umockdev_testbed_get_property ()" link="umockdev-UMockdev.html#umockdev-testbed-get-property"/>
     <keyword type="function" name="umockdev_testbed_uevent ()" link="umockdev-UMockdev.html#umockdev-testbed-uevent"/>
     <keyword type="function" name="umockdev_testbed_add_from_string ()" link="umockdev-UMockdev.html#umockdev-testbed-add-from-string"/>
     <keyword type="function" name="umockdev_testbed_add_from_file ()" link="umockdev-UMockdev.html#umockdev-testbed-add-from-file"/>

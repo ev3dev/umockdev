@@ -36,14 +36,64 @@
 #include <unistd.h>
 #include <glib/gstdio.h>
 #include <sys/stat.h>
+#include <gobject/gvaluecollector.h>
 
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
 #define _g_object_unref0(var) ((var == NULL) ? NULL : (var = (g_object_unref (var), NULL)))
 #define __g_list_free__g_object_unref0_0(var) ((var == NULL) ? NULL : (var = (_g_list_free__g_object_unref0_ (var), NULL)))
 #define _g_free0(var) (var = (g_free (var), NULL))
+
+#define TYPE_ATTRIBUTE_COUNTER_THREAD (attribute_counter_thread_get_type ())
+#define ATTRIBUTE_COUNTER_THREAD(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_ATTRIBUTE_COUNTER_THREAD, AttributeCounterThread))
+#define ATTRIBUTE_COUNTER_THREAD_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_ATTRIBUTE_COUNTER_THREAD, AttributeCounterThreadClass))
+#define IS_ATTRIBUTE_COUNTER_THREAD(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_ATTRIBUTE_COUNTER_THREAD))
+#define IS_ATTRIBUTE_COUNTER_THREAD_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_ATTRIBUTE_COUNTER_THREAD))
+#define ATTRIBUTE_COUNTER_THREAD_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_ATTRIBUTE_COUNTER_THREAD, AttributeCounterThreadClass))
+
+typedef struct _AttributeCounterThread AttributeCounterThread;
+typedef struct _AttributeCounterThreadClass AttributeCounterThreadClass;
+typedef struct _AttributeCounterThreadPrivate AttributeCounterThreadPrivate;
+typedef struct _ParamSpecAttributeCounterThread ParamSpecAttributeCounterThread;
+#define _g_thread_unref0(var) ((var == NULL) ? NULL : (var = (g_thread_unref (var), NULL)))
+#define _attribute_counter_thread_unref0(var) ((var == NULL) ? NULL : (var = (attribute_counter_thread_unref (var), NULL)))
+typedef struct _Block1Data Block1Data;
+#define _g_main_loop_unref0(var) ((var == NULL) ? NULL : (var = (g_main_loop_unref (var), NULL)))
 #define _vala_assert(expr, msg) if G_LIKELY (expr) ; else g_assertion_message_expr (G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC, msg);
 
+struct _AttributeCounterThread {
+	GTypeInstance parent_instance;
+	volatile int ref_count;
+	AttributeCounterThreadPrivate * priv;
+};
 
+struct _AttributeCounterThreadClass {
+	GTypeClass parent_class;
+	void (*finalize) (AttributeCounterThread *self);
+};
+
+struct _AttributeCounterThreadPrivate {
+	UMockdevTestbed* tb;
+	gchar* name;
+	gchar* syspath;
+	guint count;
+};
+
+struct _ParamSpecAttributeCounterThread {
+	GParamSpec parent_instance;
+};
+
+struct _Block1Data {
+	int _ref_count_;
+	UMockdevTestbed* tb;
+	GMainLoop* ml;
+	guint add_count;
+	guint change_count;
+	guint num_changes;
+	gchar* syspath;
+};
+
+
+static gpointer attribute_counter_thread_parent_class = NULL;
 
 void tb_add_from_string (UMockdevTestbed* tb, const gchar* s);
 void t_testbed_empty (void);
@@ -62,6 +112,34 @@ void t_tty_data (void);
 void t_detects_running_in_testbed (void);
 void t_detects_not_running_in_testbed (void);
 gint is_test_inside_testbed (gint pipefd);
+gpointer attribute_counter_thread_ref (gpointer instance);
+void attribute_counter_thread_unref (gpointer instance);
+GParamSpec* param_spec_attribute_counter_thread (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
+void value_set_attribute_counter_thread (GValue* value, gpointer v_object);
+void value_take_attribute_counter_thread (GValue* value, gpointer v_object);
+gpointer value_get_attribute_counter_thread (const GValue* value);
+GType attribute_counter_thread_get_type (void) G_GNUC_CONST;
+#define ATTRIBUTE_COUNTER_THREAD_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_ATTRIBUTE_COUNTER_THREAD, AttributeCounterThreadPrivate))
+enum  {
+	ATTRIBUTE_COUNTER_THREAD_DUMMY_PROPERTY
+};
+AttributeCounterThread* attribute_counter_thread_new (UMockdevTestbed* tb, const gchar* syspath, const gchar* name, guint max);
+AttributeCounterThread* attribute_counter_thread_construct (GType object_type, UMockdevTestbed* tb, const gchar* syspath, const gchar* name, guint max);
+void* attribute_counter_thread_run (AttributeCounterThread* self);
+static void attribute_counter_thread_finalize (AttributeCounterThread* obj);
+void t_mt_parallel_attr_distinct (void);
+static gpointer _attribute_counter_thread_run_gthread_func (gpointer self);
+void t_mt_uevent (void);
+static Block1Data* block1_data_ref (Block1Data* _data1_);
+static void block1_data_unref (void * _userdata_);
+static void __lambda3_ (Block1Data* _data1_, GUdevClient* client, const gchar* action, GUdevDevice* device);
+static void ___lambda3__g_udev_client_uevent (GUdevClient* _sender, const gchar* action, GUdevDevice* device, gpointer self);
+static void* __lambda4_ (Block1Data* _data1_);
+static gpointer ___lambda4__gthread_func (gpointer self);
+static void* __lambda5_ (Block1Data* _data1_);
+static gpointer ___lambda5__gthread_func (gpointer self);
+static gboolean __lambda6_ (Block1Data* _data1_);
+static gboolean ___lambda6__gsource_func (gpointer self);
 gint _vala_main (gchar** args, int args_length1);
 static void _t_testbed_empty_gtest_func (void);
 static void _t_testbed_add_device_gtest_func (void);
@@ -75,6 +153,8 @@ static void _t_tty_stty_gtest_func (void);
 static void _t_tty_data_gtest_func (void);
 static void _t_detects_running_in_testbed_gtest_func (void);
 static void _t_detects_not_running_in_testbed_gtest_func (void);
+static void _t_mt_parallel_attr_distinct_gtest_func (void);
+static void _t_mt_uevent_gtest_func (void);
 static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
 
@@ -386,6 +466,12 @@ void t_usbfs_ioctl_static (void) {
 	struct usbdevfs_connectinfo ci = {0};
 	gint _tmp6_ = 0;
 	gint _tmp7_ = 0;
+	gint _tmp8_ = 0;
+	gint _tmp9_ = 0;
+	gint fd2 = 0;
+	gint _tmp10_ = 0;
+	gint _tmp11_ = 0;
+	gint _tmp12_ = 0;
 	_tmp0_ = umockdev_testbed_new ();
 	tb = _tmp0_;
 	tb_add_from_string (tb, "P: /devices/mycam\nN: 001\nE: SUBSYSTEM=usb\n");
@@ -408,6 +494,18 @@ void t_usbfs_ioctl_static (void) {
 	_tmp7_ = errno;
 	g_assert_cmpint (_tmp7_, >=, 22);
 	errno = 0;
+	_tmp8_ = ioctl (fd, TIOCSBRK, 0);
+	g_assert_cmpint (_tmp8_, ==, -1);
+	_tmp9_ = errno;
+	g_assert_cmpint (_tmp9_, ==, ENOTTY);
+	errno = 0;
+	_tmp10_ = open ("/dev/tty", O_RDWR, (mode_t) 0);
+	fd2 = _tmp10_;
+	_tmp11_ = ioctl (fd2, TIOCSBRK, 0);
+	g_assert_cmpint (_tmp11_, ==, 0);
+	_tmp12_ = errno;
+	g_assert_cmpint (_tmp12_, ==, 0);
+	close (fd2);
 	close (fd);
 	_g_object_unref0 (tb);
 }
@@ -1483,6 +1581,788 @@ gint is_test_inside_testbed (gint pipefd) {
 }
 
 
+AttributeCounterThread* attribute_counter_thread_construct (GType object_type, UMockdevTestbed* tb, const gchar* syspath, const gchar* name, guint max) {
+	AttributeCounterThread* self = NULL;
+	UMockdevTestbed* _tmp0_ = NULL;
+	UMockdevTestbed* _tmp1_ = NULL;
+	const gchar* _tmp2_ = NULL;
+	gchar* _tmp3_ = NULL;
+	const gchar* _tmp4_ = NULL;
+	gchar* _tmp5_ = NULL;
+	guint _tmp6_ = 0U;
+	g_return_val_if_fail (tb != NULL, NULL);
+	g_return_val_if_fail (syspath != NULL, NULL);
+	g_return_val_if_fail (name != NULL, NULL);
+	self = (AttributeCounterThread*) g_type_create_instance (object_type);
+	_tmp0_ = tb;
+	_tmp1_ = _g_object_ref0 (_tmp0_);
+	_g_object_unref0 (self->priv->tb);
+	self->priv->tb = _tmp1_;
+	_tmp2_ = syspath;
+	_tmp3_ = g_strdup (_tmp2_);
+	_g_free0 (self->priv->syspath);
+	self->priv->syspath = _tmp3_;
+	_tmp4_ = name;
+	_tmp5_ = g_strdup (_tmp4_);
+	_g_free0 (self->priv->name);
+	self->priv->name = _tmp5_;
+	_tmp6_ = max;
+	self->priv->count = _tmp6_;
+	return self;
+}
+
+
+AttributeCounterThread* attribute_counter_thread_new (UMockdevTestbed* tb, const gchar* syspath, const gchar* name, guint max) {
+	return attribute_counter_thread_construct (TYPE_ATTRIBUTE_COUNTER_THREAD, tb, syspath, name, max);
+}
+
+
+void* attribute_counter_thread_run (AttributeCounterThread* self) {
+	void* result = NULL;
+	gchar* attr_path = NULL;
+	const gchar* _tmp0_ = NULL;
+	const gchar* _tmp1_ = NULL;
+	gchar* _tmp2_ = NULL;
+	GError * _inner_error_ = NULL;
+	g_return_val_if_fail (self != NULL, NULL);
+	_tmp0_ = self->priv->syspath;
+	_tmp1_ = self->priv->name;
+	_tmp2_ = g_build_filename (_tmp0_, _tmp1_, NULL);
+	attr_path = _tmp2_;
+	{
+		gboolean _tmp3_ = FALSE;
+		_tmp3_ = TRUE;
+		while (TRUE) {
+			guint _tmp5_ = 0U;
+			gchar* cur_value = NULL;
+			UMockdevTestbed* _tmp11_ = NULL;
+			const gchar* _tmp12_ = NULL;
+			const gchar* _tmp13_ = NULL;
+			const gchar* _tmp14_ = NULL;
+			gint _tmp15_ = 0;
+			if (!_tmp3_) {
+				guint _tmp4_ = 0U;
+				_tmp4_ = self->priv->count;
+				self->priv->count = _tmp4_ - 1;
+			}
+			_tmp3_ = FALSE;
+			_tmp5_ = self->priv->count;
+			if (!(_tmp5_ > ((guint) 0))) {
+				break;
+			}
+			{
+				const gchar* _tmp6_ = NULL;
+				gchar* _tmp7_ = NULL;
+				_tmp6_ = attr_path;
+				g_file_get_contents (_tmp6_, &_tmp7_, NULL, &_inner_error_);
+				_g_free0 (cur_value);
+				cur_value = _tmp7_;
+				if (_inner_error_ != NULL) {
+					if (_inner_error_->domain == G_FILE_ERROR) {
+						goto __catch11_g_file_error;
+					}
+					_g_free0 (cur_value);
+					_g_free0 (attr_path);
+					g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+					g_clear_error (&_inner_error_);
+					return NULL;
+				}
+			}
+			goto __finally11;
+			__catch11_g_file_error:
+			{
+				GError* e = NULL;
+				guint _tmp8_ = 0U;
+				const gchar* _tmp9_ = NULL;
+				const gchar* _tmp10_ = NULL;
+				e = _inner_error_;
+				_inner_error_ = NULL;
+				_tmp8_ = self->priv->count;
+				_tmp9_ = attr_path;
+				_tmp10_ = e->message;
+				g_error ("test-umockdev-vala.vala:550: (count %u) failed to read %s: %s", _tmp8_, _tmp9_, _tmp10_);
+				_g_error_free0 (e);
+			}
+			__finally11:
+			if (_inner_error_ != NULL) {
+				_g_free0 (cur_value);
+				_g_free0 (attr_path);
+				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+				g_clear_error (&_inner_error_);
+				return NULL;
+			}
+			_tmp11_ = self->priv->tb;
+			_tmp12_ = self->priv->syspath;
+			_tmp13_ = self->priv->name;
+			_tmp14_ = cur_value;
+			_tmp15_ = atoi (_tmp14_);
+			umockdev_testbed_set_attribute_int (_tmp11_, _tmp12_, _tmp13_, _tmp15_ + 1);
+			_g_free0 (cur_value);
+		}
+	}
+	result = NULL;
+	_g_free0 (attr_path);
+	return result;
+}
+
+
+static void value_attribute_counter_thread_init (GValue* value) {
+	value->data[0].v_pointer = NULL;
+}
+
+
+static void value_attribute_counter_thread_free_value (GValue* value) {
+	if (value->data[0].v_pointer) {
+		attribute_counter_thread_unref (value->data[0].v_pointer);
+	}
+}
+
+
+static void value_attribute_counter_thread_copy_value (const GValue* src_value, GValue* dest_value) {
+	if (src_value->data[0].v_pointer) {
+		dest_value->data[0].v_pointer = attribute_counter_thread_ref (src_value->data[0].v_pointer);
+	} else {
+		dest_value->data[0].v_pointer = NULL;
+	}
+}
+
+
+static gpointer value_attribute_counter_thread_peek_pointer (const GValue* value) {
+	return value->data[0].v_pointer;
+}
+
+
+static gchar* value_attribute_counter_thread_collect_value (GValue* value, guint n_collect_values, GTypeCValue* collect_values, guint collect_flags) {
+	if (collect_values[0].v_pointer) {
+		AttributeCounterThread* object;
+		object = collect_values[0].v_pointer;
+		if (object->parent_instance.g_class == NULL) {
+			return g_strconcat ("invalid unclassed object pointer for value type `", G_VALUE_TYPE_NAME (value), "'", NULL);
+		} else if (!g_value_type_compatible (G_TYPE_FROM_INSTANCE (object), G_VALUE_TYPE (value))) {
+			return g_strconcat ("invalid object type `", g_type_name (G_TYPE_FROM_INSTANCE (object)), "' for value type `", G_VALUE_TYPE_NAME (value), "'", NULL);
+		}
+		value->data[0].v_pointer = attribute_counter_thread_ref (object);
+	} else {
+		value->data[0].v_pointer = NULL;
+	}
+	return NULL;
+}
+
+
+static gchar* value_attribute_counter_thread_lcopy_value (const GValue* value, guint n_collect_values, GTypeCValue* collect_values, guint collect_flags) {
+	AttributeCounterThread** object_p;
+	object_p = collect_values[0].v_pointer;
+	if (!object_p) {
+		return g_strdup_printf ("value location for `%s' passed as NULL", G_VALUE_TYPE_NAME (value));
+	}
+	if (!value->data[0].v_pointer) {
+		*object_p = NULL;
+	} else if (collect_flags & G_VALUE_NOCOPY_CONTENTS) {
+		*object_p = value->data[0].v_pointer;
+	} else {
+		*object_p = attribute_counter_thread_ref (value->data[0].v_pointer);
+	}
+	return NULL;
+}
+
+
+GParamSpec* param_spec_attribute_counter_thread (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags) {
+	ParamSpecAttributeCounterThread* spec;
+	g_return_val_if_fail (g_type_is_a (object_type, TYPE_ATTRIBUTE_COUNTER_THREAD), NULL);
+	spec = g_param_spec_internal (G_TYPE_PARAM_OBJECT, name, nick, blurb, flags);
+	G_PARAM_SPEC (spec)->value_type = object_type;
+	return G_PARAM_SPEC (spec);
+}
+
+
+gpointer value_get_attribute_counter_thread (const GValue* value) {
+	g_return_val_if_fail (G_TYPE_CHECK_VALUE_TYPE (value, TYPE_ATTRIBUTE_COUNTER_THREAD), NULL);
+	return value->data[0].v_pointer;
+}
+
+
+void value_set_attribute_counter_thread (GValue* value, gpointer v_object) {
+	AttributeCounterThread* old;
+	g_return_if_fail (G_TYPE_CHECK_VALUE_TYPE (value, TYPE_ATTRIBUTE_COUNTER_THREAD));
+	old = value->data[0].v_pointer;
+	if (v_object) {
+		g_return_if_fail (G_TYPE_CHECK_INSTANCE_TYPE (v_object, TYPE_ATTRIBUTE_COUNTER_THREAD));
+		g_return_if_fail (g_value_type_compatible (G_TYPE_FROM_INSTANCE (v_object), G_VALUE_TYPE (value)));
+		value->data[0].v_pointer = v_object;
+		attribute_counter_thread_ref (value->data[0].v_pointer);
+	} else {
+		value->data[0].v_pointer = NULL;
+	}
+	if (old) {
+		attribute_counter_thread_unref (old);
+	}
+}
+
+
+void value_take_attribute_counter_thread (GValue* value, gpointer v_object) {
+	AttributeCounterThread* old;
+	g_return_if_fail (G_TYPE_CHECK_VALUE_TYPE (value, TYPE_ATTRIBUTE_COUNTER_THREAD));
+	old = value->data[0].v_pointer;
+	if (v_object) {
+		g_return_if_fail (G_TYPE_CHECK_INSTANCE_TYPE (v_object, TYPE_ATTRIBUTE_COUNTER_THREAD));
+		g_return_if_fail (g_value_type_compatible (G_TYPE_FROM_INSTANCE (v_object), G_VALUE_TYPE (value)));
+		value->data[0].v_pointer = v_object;
+	} else {
+		value->data[0].v_pointer = NULL;
+	}
+	if (old) {
+		attribute_counter_thread_unref (old);
+	}
+}
+
+
+static void attribute_counter_thread_class_init (AttributeCounterThreadClass * klass) {
+	attribute_counter_thread_parent_class = g_type_class_peek_parent (klass);
+	ATTRIBUTE_COUNTER_THREAD_CLASS (klass)->finalize = attribute_counter_thread_finalize;
+	g_type_class_add_private (klass, sizeof (AttributeCounterThreadPrivate));
+}
+
+
+static void attribute_counter_thread_instance_init (AttributeCounterThread * self) {
+	self->priv = ATTRIBUTE_COUNTER_THREAD_GET_PRIVATE (self);
+	self->ref_count = 1;
+}
+
+
+static void attribute_counter_thread_finalize (AttributeCounterThread* obj) {
+	AttributeCounterThread * self;
+	self = G_TYPE_CHECK_INSTANCE_CAST (obj, TYPE_ATTRIBUTE_COUNTER_THREAD, AttributeCounterThread);
+	_g_object_unref0 (self->priv->tb);
+	_g_free0 (self->priv->name);
+	_g_free0 (self->priv->syspath);
+}
+
+
+GType attribute_counter_thread_get_type (void) {
+	static volatile gsize attribute_counter_thread_type_id__volatile = 0;
+	if (g_once_init_enter (&attribute_counter_thread_type_id__volatile)) {
+		static const GTypeValueTable g_define_type_value_table = { value_attribute_counter_thread_init, value_attribute_counter_thread_free_value, value_attribute_counter_thread_copy_value, value_attribute_counter_thread_peek_pointer, "p", value_attribute_counter_thread_collect_value, "p", value_attribute_counter_thread_lcopy_value };
+		static const GTypeInfo g_define_type_info = { sizeof (AttributeCounterThreadClass), (GBaseInitFunc) NULL, (GBaseFinalizeFunc) NULL, (GClassInitFunc) attribute_counter_thread_class_init, (GClassFinalizeFunc) NULL, NULL, sizeof (AttributeCounterThread), 0, (GInstanceInitFunc) attribute_counter_thread_instance_init, &g_define_type_value_table };
+		static const GTypeFundamentalInfo g_define_type_fundamental_info = { (G_TYPE_FLAG_CLASSED | G_TYPE_FLAG_INSTANTIATABLE | G_TYPE_FLAG_DERIVABLE | G_TYPE_FLAG_DEEP_DERIVABLE) };
+		GType attribute_counter_thread_type_id;
+		attribute_counter_thread_type_id = g_type_register_fundamental (g_type_fundamental_next (), "AttributeCounterThread", &g_define_type_info, &g_define_type_fundamental_info, 0);
+		g_once_init_leave (&attribute_counter_thread_type_id__volatile, attribute_counter_thread_type_id);
+	}
+	return attribute_counter_thread_type_id__volatile;
+}
+
+
+gpointer attribute_counter_thread_ref (gpointer instance) {
+	AttributeCounterThread* self;
+	self = instance;
+	g_atomic_int_inc (&self->ref_count);
+	return instance;
+}
+
+
+void attribute_counter_thread_unref (gpointer instance) {
+	AttributeCounterThread* self;
+	self = instance;
+	if (g_atomic_int_dec_and_test (&self->ref_count)) {
+		ATTRIBUTE_COUNTER_THREAD_GET_CLASS (self)->finalize (self);
+		g_type_free_instance ((GTypeInstance *) self);
+	}
+}
+
+
+static gpointer _attribute_counter_thread_run_gthread_func (gpointer self) {
+	gpointer result;
+	result = attribute_counter_thread_run ((AttributeCounterThread*) self);
+	return result;
+}
+
+
+static gpointer _g_thread_ref0 (gpointer self) {
+	return self ? g_thread_ref (self) : NULL;
+}
+
+
+void t_mt_parallel_attr_distinct (void) {
+	UMockdevTestbed* tb = NULL;
+	UMockdevTestbed* _tmp0_ = NULL;
+	gchar* syspath = NULL;
+	UMockdevTestbed* _tmp1_ = NULL;
+	gchar* _tmp2_ = NULL;
+	gchar* _tmp3_ = NULL;
+	gchar* _tmp4_ = NULL;
+	gchar* _tmp5_ = NULL;
+	gchar* _tmp6_ = NULL;
+	gchar* _tmp7_ = NULL;
+	gchar** _tmp8_ = NULL;
+	gchar** _tmp9_ = NULL;
+	gint _tmp9__length1 = 0;
+	gchar** _tmp10_ = NULL;
+	gchar** _tmp11_ = NULL;
+	gint _tmp11__length1 = 0;
+	gchar* _tmp12_ = NULL;
+	gchar* _tmp13_ = NULL;
+	AttributeCounterThread* t1d = NULL;
+	UMockdevTestbed* _tmp14_ = NULL;
+	const gchar* _tmp15_ = NULL;
+	AttributeCounterThread* _tmp16_ = NULL;
+	AttributeCounterThread* t2d = NULL;
+	UMockdevTestbed* _tmp17_ = NULL;
+	const gchar* _tmp18_ = NULL;
+	AttributeCounterThread* _tmp19_ = NULL;
+	AttributeCounterThread* t3d = NULL;
+	UMockdevTestbed* _tmp20_ = NULL;
+	const gchar* _tmp21_ = NULL;
+	AttributeCounterThread* _tmp22_ = NULL;
+	GThread* t1 = NULL;
+	AttributeCounterThread* _tmp23_ = NULL;
+	GThread* _tmp24_ = NULL;
+	GThread* t2 = NULL;
+	AttributeCounterThread* _tmp25_ = NULL;
+	GThread* _tmp26_ = NULL;
+	GThread* t3 = NULL;
+	AttributeCounterThread* _tmp27_ = NULL;
+	GThread* _tmp28_ = NULL;
+	GThread* _tmp29_ = NULL;
+	GThread* _tmp30_ = NULL;
+	GThread* _tmp31_ = NULL;
+	GThread* _tmp32_ = NULL;
+	GThread* _tmp33_ = NULL;
+	GThread* _tmp34_ = NULL;
+	gchar* val = NULL;
+	GError * _inner_error_ = NULL;
+	_tmp0_ = umockdev_testbed_new ();
+	tb = _tmp0_;
+	_tmp1_ = tb;
+	_tmp2_ = g_strdup ("c1");
+	_tmp3_ = g_strdup ("0");
+	_tmp4_ = g_strdup ("c2");
+	_tmp5_ = g_strdup ("0");
+	_tmp6_ = g_strdup ("c3");
+	_tmp7_ = g_strdup ("0");
+	_tmp8_ = g_new0 (gchar*, 6 + 1);
+	_tmp8_[0] = _tmp2_;
+	_tmp8_[1] = _tmp3_;
+	_tmp8_[2] = _tmp4_;
+	_tmp8_[3] = _tmp5_;
+	_tmp8_[4] = _tmp6_;
+	_tmp8_[5] = _tmp7_;
+	_tmp9_ = _tmp8_;
+	_tmp9__length1 = 6;
+	_tmp10_ = g_new0 (gchar*, 0 + 1);
+	_tmp11_ = _tmp10_;
+	_tmp11__length1 = 0;
+	_tmp12_ = umockdev_testbed_add_devicev (_tmp1_, "changelings", "rapid", NULL, _tmp9_, _tmp11_);
+	_tmp13_ = _tmp12_;
+	_tmp11_ = (_vala_array_free (_tmp11_, _tmp11__length1, (GDestroyNotify) g_free), NULL);
+	_tmp9_ = (_vala_array_free (_tmp9_, _tmp9__length1, (GDestroyNotify) g_free), NULL);
+	syspath = _tmp13_;
+	_tmp14_ = tb;
+	_tmp15_ = syspath;
+	_tmp16_ = attribute_counter_thread_new (_tmp14_, _tmp15_, "c1", (guint) 100);
+	t1d = _tmp16_;
+	_tmp17_ = tb;
+	_tmp18_ = syspath;
+	_tmp19_ = attribute_counter_thread_new (_tmp17_, _tmp18_, "c2", (guint) 100);
+	t2d = _tmp19_;
+	_tmp20_ = tb;
+	_tmp21_ = syspath;
+	_tmp22_ = attribute_counter_thread_new (_tmp20_, _tmp21_, "c3", (guint) 100);
+	t3d = _tmp22_;
+	_tmp23_ = t1d;
+	_tmp24_ = g_thread_new ("t_c1", _attribute_counter_thread_run_gthread_func, attribute_counter_thread_ref (_tmp23_));
+	t1 = _tmp24_;
+	_tmp25_ = t2d;
+	_tmp26_ = g_thread_new ("t_c2", _attribute_counter_thread_run_gthread_func, attribute_counter_thread_ref (_tmp25_));
+	t2 = _tmp26_;
+	_tmp27_ = t3d;
+	_tmp28_ = g_thread_new ("t_c3", _attribute_counter_thread_run_gthread_func, attribute_counter_thread_ref (_tmp27_));
+	t3 = _tmp28_;
+	_tmp29_ = t1;
+	_tmp30_ = _g_thread_ref0 (_tmp29_);
+	g_thread_join (_tmp30_);
+	_tmp31_ = t2;
+	_tmp32_ = _g_thread_ref0 (_tmp31_);
+	g_thread_join (_tmp32_);
+	_tmp33_ = t3;
+	_tmp34_ = _g_thread_ref0 (_tmp33_);
+	g_thread_join (_tmp34_);
+	{
+		const gchar* _tmp35_ = NULL;
+		gchar* _tmp36_ = NULL;
+		gchar* _tmp37_ = NULL;
+		gchar* _tmp38_ = NULL;
+		const gchar* _tmp39_ = NULL;
+		const gchar* _tmp40_ = NULL;
+		gchar* _tmp41_ = NULL;
+		gchar* _tmp42_ = NULL;
+		gchar* _tmp43_ = NULL;
+		const gchar* _tmp44_ = NULL;
+		const gchar* _tmp45_ = NULL;
+		gchar* _tmp46_ = NULL;
+		gchar* _tmp47_ = NULL;
+		gchar* _tmp48_ = NULL;
+		const gchar* _tmp49_ = NULL;
+		_tmp35_ = syspath;
+		_tmp36_ = g_build_filename (_tmp35_, "c1", NULL);
+		_tmp37_ = _tmp36_;
+		g_file_get_contents (_tmp37_, &_tmp38_, NULL, &_inner_error_);
+		_g_free0 (val);
+		val = _tmp38_;
+		_g_free0 (_tmp37_);
+		if (_inner_error_ != NULL) {
+			if (_inner_error_->domain == G_FILE_ERROR) {
+				goto __catch12_g_file_error;
+			}
+			_g_free0 (val);
+			_g_thread_unref0 (t3);
+			_g_thread_unref0 (t2);
+			_g_thread_unref0 (t1);
+			_attribute_counter_thread_unref0 (t3d);
+			_attribute_counter_thread_unref0 (t2d);
+			_attribute_counter_thread_unref0 (t1d);
+			_g_free0 (syspath);
+			_g_object_unref0 (tb);
+			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return;
+		}
+		_tmp39_ = val;
+		g_assert_cmpstr (_tmp39_, ==, "100");
+		_tmp40_ = syspath;
+		_tmp41_ = g_build_filename (_tmp40_, "c2", NULL);
+		_tmp42_ = _tmp41_;
+		g_file_get_contents (_tmp42_, &_tmp43_, NULL, &_inner_error_);
+		_g_free0 (val);
+		val = _tmp43_;
+		_g_free0 (_tmp42_);
+		if (_inner_error_ != NULL) {
+			if (_inner_error_->domain == G_FILE_ERROR) {
+				goto __catch12_g_file_error;
+			}
+			_g_free0 (val);
+			_g_thread_unref0 (t3);
+			_g_thread_unref0 (t2);
+			_g_thread_unref0 (t1);
+			_attribute_counter_thread_unref0 (t3d);
+			_attribute_counter_thread_unref0 (t2d);
+			_attribute_counter_thread_unref0 (t1d);
+			_g_free0 (syspath);
+			_g_object_unref0 (tb);
+			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return;
+		}
+		_tmp44_ = val;
+		g_assert_cmpstr (_tmp44_, ==, "100");
+		_tmp45_ = syspath;
+		_tmp46_ = g_build_filename (_tmp45_, "c3", NULL);
+		_tmp47_ = _tmp46_;
+		g_file_get_contents (_tmp47_, &_tmp48_, NULL, &_inner_error_);
+		_g_free0 (val);
+		val = _tmp48_;
+		_g_free0 (_tmp47_);
+		if (_inner_error_ != NULL) {
+			if (_inner_error_->domain == G_FILE_ERROR) {
+				goto __catch12_g_file_error;
+			}
+			_g_free0 (val);
+			_g_thread_unref0 (t3);
+			_g_thread_unref0 (t2);
+			_g_thread_unref0 (t1);
+			_attribute_counter_thread_unref0 (t3d);
+			_attribute_counter_thread_unref0 (t2d);
+			_attribute_counter_thread_unref0 (t1d);
+			_g_free0 (syspath);
+			_g_object_unref0 (tb);
+			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return;
+		}
+		_tmp49_ = val;
+		g_assert_cmpstr (_tmp49_, ==, "100");
+	}
+	goto __finally12;
+	__catch12_g_file_error:
+	{
+		GError* e = NULL;
+		const gchar* _tmp50_ = NULL;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		_tmp50_ = e->message;
+		g_error ("test-umockdev-vala.vala:593: failed to read attribute: %s", _tmp50_);
+		_g_error_free0 (e);
+	}
+	__finally12:
+	if (_inner_error_ != NULL) {
+		_g_free0 (val);
+		_g_thread_unref0 (t3);
+		_g_thread_unref0 (t2);
+		_g_thread_unref0 (t1);
+		_attribute_counter_thread_unref0 (t3d);
+		_attribute_counter_thread_unref0 (t2d);
+		_attribute_counter_thread_unref0 (t1d);
+		_g_free0 (syspath);
+		_g_object_unref0 (tb);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+	_g_free0 (val);
+	_g_thread_unref0 (t3);
+	_g_thread_unref0 (t2);
+	_g_thread_unref0 (t1);
+	_attribute_counter_thread_unref0 (t3d);
+	_attribute_counter_thread_unref0 (t2d);
+	_attribute_counter_thread_unref0 (t1d);
+	_g_free0 (syspath);
+	_g_object_unref0 (tb);
+}
+
+
+static Block1Data* block1_data_ref (Block1Data* _data1_) {
+	g_atomic_int_inc (&_data1_->_ref_count_);
+	return _data1_;
+}
+
+
+static void block1_data_unref (void * _userdata_) {
+	Block1Data* _data1_;
+	_data1_ = (Block1Data*) _userdata_;
+	if (g_atomic_int_dec_and_test (&_data1_->_ref_count_)) {
+		_g_free0 (_data1_->syspath);
+		_g_main_loop_unref0 (_data1_->ml);
+		_g_object_unref0 (_data1_->tb);
+		g_slice_free (Block1Data, _data1_);
+	}
+}
+
+
+static void __lambda3_ (Block1Data* _data1_, GUdevClient* client, const gchar* action, GUdevDevice* device) {
+	const gchar* _tmp0_ = NULL;
+	g_return_if_fail (client != NULL);
+	g_return_if_fail (action != NULL);
+	g_return_if_fail (device != NULL);
+	_tmp0_ = action;
+	if (g_strcmp0 (_tmp0_, "add") == 0) {
+		guint _tmp1_ = 0U;
+		_tmp1_ = _data1_->add_count;
+		_data1_->add_count = _tmp1_ + 1;
+	} else {
+		_data1_->change_count = _data1_->change_count + 1;
+		if (_data1_->change_count == _data1_->num_changes) {
+			g_main_loop_quit (_data1_->ml);
+		}
+	}
+}
+
+
+static void ___lambda3__g_udev_client_uevent (GUdevClient* _sender, const gchar* action, GUdevDevice* device, gpointer self) {
+	__lambda3_ (self, _sender, action, device);
+}
+
+
+static void* __lambda4_ (Block1Data* _data1_) {
+	void* result = NULL;
+	gchar* contents = NULL;
+	GError * _inner_error_ = NULL;
+	while (TRUE) {
+		gboolean _tmp0_ = FALSE;
+		const gchar* _tmp3_ = NULL;
+		_tmp0_ = g_main_loop_is_running (_data1_->ml);
+		if (!_tmp0_) {
+			break;
+		}
+		{
+			gchar* _tmp1_ = NULL;
+			g_file_get_contents ("/sys/devices/dev1/a", &_tmp1_, NULL, &_inner_error_);
+			_g_free0 (contents);
+			contents = _tmp1_;
+			if (_inner_error_ != NULL) {
+				if (_inner_error_->domain == G_FILE_ERROR) {
+					goto __catch13_g_file_error;
+				}
+				_g_free0 (contents);
+				g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+				g_clear_error (&_inner_error_);
+				return NULL;
+			}
+		}
+		goto __finally13;
+		__catch13_g_file_error:
+		{
+			GError* e = NULL;
+			const gchar* _tmp2_ = NULL;
+			e = _inner_error_;
+			_inner_error_ = NULL;
+			_tmp2_ = e->message;
+			g_error ("test-umockdev-vala.vala:628: (#changes: %u) Error opening attribute fi" \
+"le: %s", _data1_->change_count, _tmp2_);
+			_g_error_free0 (e);
+		}
+		__finally13:
+		if (_inner_error_ != NULL) {
+			_g_free0 (contents);
+			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return NULL;
+		}
+		_tmp3_ = contents;
+		g_assert_cmpstr (_tmp3_, ==, "1");
+		umockdev_testbed_set_property (_data1_->tb, _data1_->syspath, "ID_FOO", "1");
+	}
+	result = NULL;
+	_g_free0 (contents);
+	return result;
+}
+
+
+static gpointer ___lambda4__gthread_func (gpointer self) {
+	gpointer result;
+	result = __lambda4_ (self);
+	block1_data_unref (self);
+	return result;
+}
+
+
+static void* __lambda5_ (Block1Data* _data1_) {
+	void* result = NULL;
+	{
+		guint i = 0U;
+		i = (guint) 0;
+		{
+			gboolean _tmp0_ = FALSE;
+			_tmp0_ = TRUE;
+			while (TRUE) {
+				guint _tmp2_ = 0U;
+				if (!_tmp0_) {
+					guint _tmp1_ = 0U;
+					_tmp1_ = i;
+					i = _tmp1_ + 1;
+				}
+				_tmp0_ = FALSE;
+				_tmp2_ = i;
+				if (!(_tmp2_ < _data1_->num_changes)) {
+					break;
+				}
+				umockdev_testbed_uevent (_data1_->tb, _data1_->syspath, "change");
+			}
+		}
+	}
+	result = NULL;
+	return result;
+}
+
+
+static gpointer ___lambda5__gthread_func (gpointer self) {
+	gpointer result;
+	result = __lambda5_ (self);
+	block1_data_unref (self);
+	return result;
+}
+
+
+static gboolean __lambda6_ (Block1Data* _data1_) {
+	gboolean result = FALSE;
+	g_main_loop_quit (_data1_->ml);
+	result = FALSE;
+	return result;
+}
+
+
+static gboolean ___lambda6__gsource_func (gpointer self) {
+	gboolean result;
+	result = __lambda6_ (self);
+	return result;
+}
+
+
+void t_mt_uevent (void) {
+	Block1Data* _data1_;
+	UMockdevTestbed* _tmp0_ = NULL;
+	GUdevClient* gudev = NULL;
+	gchar* _tmp1_ = NULL;
+	gchar** _tmp2_ = NULL;
+	gchar** _tmp3_ = NULL;
+	gint _tmp3__length1 = 0;
+	GUdevClient* _tmp4_ = NULL;
+	GUdevClient* _tmp5_ = NULL;
+	GMainLoop* _tmp6_ = NULL;
+	gchar* _tmp7_ = NULL;
+	gchar* _tmp8_ = NULL;
+	gchar** _tmp9_ = NULL;
+	gchar** _tmp10_ = NULL;
+	gint _tmp10__length1 = 0;
+	gchar* _tmp11_ = NULL;
+	gchar* _tmp12_ = NULL;
+	gchar** _tmp13_ = NULL;
+	gchar** _tmp14_ = NULL;
+	gint _tmp14__length1 = 0;
+	gchar* _tmp15_ = NULL;
+	gchar* _tmp16_ = NULL;
+	GThread* t_noise = NULL;
+	GThread* _tmp17_ = NULL;
+	GThread* t_emitter = NULL;
+	GThread* _tmp18_ = NULL;
+	GThread* _tmp19_ = NULL;
+	GThread* _tmp20_ = NULL;
+	_data1_ = g_slice_new0 (Block1Data);
+	_data1_->_ref_count_ = 1;
+	_tmp0_ = umockdev_testbed_new ();
+	_data1_->tb = _tmp0_;
+	_tmp1_ = g_strdup ("pci");
+	_tmp2_ = g_new0 (gchar*, 1 + 1);
+	_tmp2_[0] = _tmp1_;
+	_tmp3_ = _tmp2_;
+	_tmp3__length1 = 1;
+	_tmp4_ = g_udev_client_new (_tmp3_);
+	_tmp5_ = _tmp4_;
+	_tmp3_ = (_vala_array_free (_tmp3_, _tmp3__length1, (GDestroyNotify) g_free), NULL);
+	gudev = _tmp5_;
+	_tmp6_ = g_main_loop_new (NULL, FALSE);
+	_data1_->ml = _tmp6_;
+	_data1_->add_count = (guint) 0;
+	_data1_->change_count = (guint) 0;
+	_data1_->num_changes = (guint) 20;
+	g_signal_connect_data (gudev, "uevent", (GCallback) ___lambda3__g_udev_client_uevent, block1_data_ref (_data1_), (GClosureNotify) block1_data_unref, 0);
+	_tmp7_ = g_strdup ("a");
+	_tmp8_ = g_strdup ("1");
+	_tmp9_ = g_new0 (gchar*, 2 + 1);
+	_tmp9_[0] = _tmp7_;
+	_tmp9_[1] = _tmp8_;
+	_tmp10_ = _tmp9_;
+	_tmp10__length1 = 2;
+	_tmp11_ = g_strdup ("DEVTYPE");
+	_tmp12_ = g_strdup ("fancy");
+	_tmp13_ = g_new0 (gchar*, 2 + 1);
+	_tmp13_[0] = _tmp11_;
+	_tmp13_[1] = _tmp12_;
+	_tmp14_ = _tmp13_;
+	_tmp14__length1 = 2;
+	_tmp15_ = umockdev_testbed_add_devicev (_data1_->tb, "pci", "dev1", NULL, _tmp10_, _tmp14_);
+	_tmp16_ = _tmp15_;
+	_tmp14_ = (_vala_array_free (_tmp14_, _tmp14__length1, (GDestroyNotify) g_free), NULL);
+	_tmp10_ = (_vala_array_free (_tmp10_, _tmp10__length1, (GDestroyNotify) g_free), NULL);
+	_data1_->syspath = _tmp16_;
+	_tmp17_ = g_thread_new ("noise", ___lambda4__gthread_func, block1_data_ref (_data1_));
+	t_noise = _tmp17_;
+	_tmp18_ = g_thread_new ("emitter", ___lambda5__gthread_func, block1_data_ref (_data1_));
+	t_emitter = _tmp18_;
+	g_timeout_add_full (G_PRIORITY_DEFAULT, (guint) 3000, ___lambda6__gsource_func, block1_data_ref (_data1_), block1_data_unref);
+	g_main_loop_run (_data1_->ml);
+	_tmp19_ = _g_thread_ref0 (t_emitter);
+	g_thread_join (_tmp19_);
+	_tmp20_ = _g_thread_ref0 (t_noise);
+	g_thread_join (_tmp20_);
+	g_assert_cmpuint (_data1_->add_count, ==, (guint) 1);
+	g_assert_cmpuint (_data1_->change_count, ==, _data1_->num_changes);
+	_g_thread_unref0 (t_emitter);
+	_g_thread_unref0 (t_noise);
+	_g_object_unref0 (gudev);
+	block1_data_unref (_data1_);
+	_data1_ = NULL;
+}
+
+
 static void _t_testbed_empty_gtest_func (void) {
 	t_testbed_empty ();
 }
@@ -1540,6 +2420,16 @@ static void _t_detects_running_in_testbed_gtest_func (void) {
 
 static void _t_detects_not_running_in_testbed_gtest_func (void) {
 	t_detects_not_running_in_testbed ();
+}
+
+
+static void _t_mt_parallel_attr_distinct_gtest_func (void) {
+	t_mt_parallel_attr_distinct ();
+}
+
+
+static void _t_mt_uevent_gtest_func (void) {
+	t_mt_uevent ();
 }
 
 
@@ -1608,6 +2498,8 @@ gint _vala_main (gchar** args, int args_length1) {
 	g_test_add_func ("/umockdev-testbed-vala/tty_data", _t_tty_data_gtest_func);
 	g_test_add_func ("/umockdev-testbed-vala/detects_running_in_testbed", _t_detects_running_in_testbed_gtest_func);
 	g_test_add_func ("/umockdev-testbed-vala/detects_running_outside_testbed", _t_detects_not_running_in_testbed_gtest_func);
+	g_test_add_func ("/umockdev-testbed-vala/mt_parallel_attr_distinct", _t_mt_parallel_attr_distinct_gtest_func);
+	g_test_add_func ("/umockdev-testbed-vala/mt_uevent", _t_mt_uevent_gtest_func);
 	_tmp12_ = g_test_run ();
 	result = _tmp12_;
 	return result;

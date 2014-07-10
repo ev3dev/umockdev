@@ -117,6 +117,19 @@
 				</parameter>
 			</parameters>
 		</method>
+		<method name="get_property" c:identifier="umockdev_testbed_get_property">
+			<return-value transfer-ownership="full" allow-none="1">
+				<type name="utf8" c:type="gchar*"/>
+			</return-value>
+			<parameters>
+				<parameter name="devpath" transfer-ownership="none">
+					<type name="utf8" c:type="const gchar*"/>
+				</parameter>
+				<parameter name="name" transfer-ownership="none">
+					<type name="utf8" c:type="const gchar*"/>
+				</parameter>
+			</parameters>
+		</method>
 		<method name="set_property" c:identifier="umockdev_testbed_set_property">
 			<return-value transfer-ownership="full">
 				<type name="none"/>

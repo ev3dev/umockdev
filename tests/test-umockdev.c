@@ -465,9 +465,13 @@ t_testbed_set_property(UMockdevTestbedFixture * fixture, gconstpointer data)
 					  "ID_INPUT", "1", NULL);
 
     /* change an existing property */
+    g_assert_cmpstr(umockdev_testbed_get_property(fixture->testbed, syspath, "ID_INPUT"), ==, "1");
     umockdev_testbed_set_property(fixture->testbed, syspath, "ID_INPUT", "0");
+    g_assert_cmpstr(umockdev_testbed_get_property(fixture->testbed, syspath, "ID_INPUT"), ==, "0");
     /* add a new one */
+    g_assert(umockdev_testbed_get_property(fixture->testbed, syspath, "ID_COLOR") == NULL);
     umockdev_testbed_set_property(fixture->testbed, syspath, "ID_COLOR", "green");
+    g_assert_cmpstr(umockdev_testbed_get_property(fixture->testbed, syspath, "ID_COLOR"), ==, "green");
     /* int properties */
     umockdev_testbed_set_property_int(fixture->testbed, syspath, "COUNT", 1000);
     umockdev_testbed_set_property_hex(fixture->testbed, syspath, "ADDR", 0x1a01);
@@ -565,6 +569,62 @@ t_testbed_uevent_libudev(UMockdevTestbedFixture * fixture, gconstpointer data)
 
     udev_monitor_unref(udev_mon);
     udev_monitor_unref(kernel_mon);
+    udev_unref(udev);
+}
+
+static void
+t_testbed_uevent_libudev_filter(UMockdevTestbedFixture * fixture, gconstpointer data)
+{
+    gchar *syspath;
+    struct udev *udev;
+    struct udev_monitor *mon;
+    struct udev_device *device;
+    const int num_events = 10;
+    int i;
+
+    /* set up monitor */
+    udev = udev_new();
+    g_assert(udev != NULL);
+    mon = udev_monitor_new_from_netlink(udev, "udev");
+    g_assert(mon != NULL);
+    g_assert_cmpint(udev_monitor_get_fd(mon), >, 0);
+    g_assert_cmpint(udev_monitor_filter_add_match_subsystem_devtype(mon, "pci", "fancy"), ==, 0);
+    g_assert_cmpint(udev_monitor_filter_update(mon), ==, 0);
+    g_assert_cmpint(udev_monitor_enable_receiving(mon), ==, 0);
+
+    syspath = umockdev_testbed_add_device(fixture->testbed, "pci", "mydev", NULL,
+					  /* attributes */
+					  "idVendor", "0815", NULL,
+					  /* properties */
+					  "ID_INPUT", "1", "DEVTYPE", "fancy", NULL);
+    g_assert(syspath);
+
+    /* queue a bunch of events */
+    for (i = 0; i < num_events; ++i)
+        umockdev_testbed_uevent(fixture->testbed, syspath, "change");
+
+    /* check that they are on the monitors */
+    /* first, the add event from add_device() */
+    device = udev_monitor_receive_device(mon);
+    g_assert(device != NULL);
+    g_assert_cmpstr(udev_device_get_syspath(device), ==, syspath);
+    g_assert_cmpstr(udev_device_get_action(device), ==, "add");
+    g_assert_cmpstr(udev_device_get_subsystem(device), ==, "pci");
+    g_assert_cmpstr(udev_device_get_devtype(device), ==, "fancy");
+    udev_device_unref(device);
+    /* now the change events */
+    for (i = 0; i < num_events; ++i) {
+        device = udev_monitor_receive_device(mon);
+        g_assert(device != NULL);
+        g_assert_cmpstr(udev_device_get_syspath(device), ==, syspath);
+        g_assert_cmpstr(udev_device_get_action(device), ==, "change");
+        g_assert_cmpstr(udev_device_get_subsystem(device), ==, "pci");
+        g_assert_cmpstr(udev_device_get_devtype(device), ==, "fancy");
+        udev_device_unref(device);
+    }
+    g_assert(udev_monitor_receive_device(mon) == NULL);
+
+    udev_monitor_unref(mon);
     udev_unref(udev);
 }
 
@@ -911,6 +971,7 @@ t_testbed_dev_access(UMockdevTestbedFixture * fixture, gconstpointer data)
     g_assert(S_ISCHR(st.st_mode));
     fd = g_open("/dev/zero", O_RDONLY, 0);
     g_assert_cmpint(fd, >, 0);
+    g_assert(!isatty(fd));
     g_assert_cmpint(read(fd, buf, 20), ==, 20);
     close(fd);
     g_assert_cmpint(buf[0], ==, 0);
@@ -932,6 +993,7 @@ t_testbed_dev_access(UMockdevTestbedFixture * fixture, gconstpointer data)
     g_assert_cmpint(st.st_rdev, ==, 0);	/* we did not set anything */
     fd = g_open("/dev/zero", O_RDONLY, 0);
     g_assert_cmpint(fd, >, 0);
+    g_assert(!isatty(fd));
     g_assert_cmpint(read(fd, buf, 20), ==, 12);
     close(fd);
     g_assert_cmpint(buf[0], ==, 'z');
@@ -959,6 +1021,12 @@ t_testbed_dev_access(UMockdevTestbedFixture * fixture, gconstpointer data)
     g_free(devpath);
     g_assert_cmpint(g_lstat("/dev/usb", &st), ==, 0);
     g_assert(S_ISDIR(st.st_mode));
+
+    /* real TTY devices */
+    fd = g_open("/dev/tty", O_RDONLY, 0);
+    g_assert_cmpint(fd, >, 0);
+    g_assert(isatty(fd));
+    close(fd);
 
     g_free(devdir);
 }
@@ -1110,6 +1178,7 @@ t_testbed_script_replay_evdev_event_framing(UMockdevTestbedFixture * fixture, gc
 
   umockdev_testbed_add_from_string(fixture->testbed,
           "P: /devices/event1\nN: input/event1\n"
+          "A: dev=13:65\n"
           "E: DEVNAME=/dev/input/event1\nE: SUBSYSTEM=input\n", &error);
   g_assert_no_error(error);
 
@@ -1139,6 +1208,9 @@ t_testbed_script_replay_evdev_event_framing(UMockdevTestbedFixture * fixture, gc
   /* start communication */
   fd = g_open("/dev/input/event1", O_RDWR | O_NONBLOCK, 0);
   g_assert_cmpint(fd, >=, 0);
+
+  /* don't pretend that this is a tty, even though the mocked one is */
+  g_assert(!isatty(fd));
 
   /* Evdev guarantees that we only read whole events
    * We should do the same
@@ -1210,6 +1282,7 @@ r 0 ^@^^^`^@a\n";
   /* start communication */
   fd = g_open("/dev/greeter", O_RDWR | O_NONBLOCK, 0);
   g_assert_cmpint(fd, >=, 0);
+  g_assert(isatty(fd));
 
   /* should get initial greeting after 200 ms */
   ASSERT_EOF;
@@ -1797,6 +1870,8 @@ main(int argc, char **argv)
     /* tests for mocking uevents */
     g_test_add("/umockdev-testbed/uevent/libudev", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
 	       t_testbed_uevent_libudev, t_testbed_fixture_teardown);
+    g_test_add("/umockdev-testbed/uevent/libudev-filter", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
+	       t_testbed_uevent_libudev_filter, t_testbed_fixture_teardown);
     g_test_add("/umockdev-testbed/uevent/gudev", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
 	       t_testbed_uevent_gudev, t_testbed_fixture_teardown);
     g_test_add("/umockdev-testbed/uevent/no_listener", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
