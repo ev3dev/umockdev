@@ -46,16 +46,11 @@
 #include <linux/netlink.h>
 #include <linux/input.h>
 #include <unistd.h>
+#include <pthread.h>
 
+#include "debug.h"
 #include "ioctl_tree.h"
 
-#ifdef DEBUG
-#    define DBG(...) fprintf(stderr, __VA_ARGS__)
-#    define IFDBG(x) x
-#else
-#    define DBG(...) {}
-#    define IFDBG(x) {}
-#endif
 
 /********************************
  *
@@ -111,12 +106,19 @@ static inline int
 path_exists(const char *path)
 {
     int orig_errno, res;
+    libc_func(access, int, const char*, int);
 
     orig_errno = errno;
-    res = access(path, F_OK);
+    res = _access(path, F_OK);
     errno = orig_errno;
     return res;
 }
+
+/* multi-thread locking for trap_path users */
+pthread_mutex_t trap_path_lock = PTHREAD_MUTEX_INITIALIZER;
+
+#define TRAP_PATH_LOCK pthread_mutex_lock (&trap_path_lock)
+#define TRAP_PATH_UNLOCK pthread_mutex_unlock (&trap_path_lock)
 
 static const char *
 trap_path(const char *path)
@@ -180,16 +182,16 @@ get_rdev(const char *nodename)
     /* read major:minor */
     orig_errno = errno;
     if (readlink(buf, link, sizeof(link)) < 0) {
-	DBG("get_rdev %s: cannot read link %s: %m\n", nodename, buf);
+	DBG(DBG_PATH, "get_rdev %s: cannot read link %s: %m\n", nodename, buf);
 	errno = orig_errno;
 	return (dev_t) 0;
     }
     errno = orig_errno;
     if (sscanf(link, "%i:%i", &major, &minor) != 2) {
-	DBG("get_rdev %s: cannot decode major/minor from '%s'\n", nodename, link);
+	DBG(DBG_PATH, "get_rdev %s: cannot decode major/minor from '%s'\n", nodename, link);
 	return (dev_t) 0;
     }
-    DBG("get_rdev %s: got major/minor %i:%i\n", nodename, major, minor);
+    DBG(DBG_PATH, "get_rdev %s: got major/minor %i:%i\n", nodename, major, minor);
     return makedev(major, minor);
 }
 
@@ -293,7 +295,7 @@ static void
 netlink_close(int fd)
 {
     if (fd_map_get(&wrapped_netlink_sockets, fd, NULL)) {
-	DBG("netlink_close(): closing netlink socket fd %i\n", fd);
+	DBG(DBG_NETLINK, "netlink_close(): closing netlink socket fd %i\n", fd);
 	fd_map_remove(&wrapped_netlink_sockets, fd);
     }
 }
@@ -308,7 +310,7 @@ netlink_socket(int domain, int type, int protocol)
     if (domain == AF_NETLINK && protocol == NETLINK_KOBJECT_UEVENT && path != NULL) {
 	fd = _socket(AF_UNIX, type, 0);
 	fd_map_add(&wrapped_netlink_sockets, fd, NULL);
-	DBG("testbed wrapped socket: intercepting netlink, fd %i\n", fd);
+	DBG(DBG_NETLINK, "testbed wrapped socket: intercepting netlink, fd %i\n", fd);
 	return fd;
     }
 
@@ -324,7 +326,7 @@ netlink_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
     const char *path = getenv("UMOCKDEV_DIR");
 
     if (fd_map_get(&wrapped_netlink_sockets, sockfd, NULL) && path != NULL) {
-	DBG("testbed wrapped bind: intercepting netlink socket fd %i\n", sockfd);
+	DBG(DBG_NETLINK, "testbed wrapped bind: intercepting netlink socket fd %i\n", sockfd);
 
 	/* we create one socket per fd, and send emulated uevents to all of
 	 * them; poor man's multicast; this can become more elegant if/when
@@ -346,7 +348,7 @@ netlink_recvmsg(int sockfd, struct msghdr * msg, int flags, ssize_t ret)
     struct sockaddr_nl *sender;
 
     if (fd_map_get(&wrapped_netlink_sockets, sockfd, NULL) && ret > 0) {
-	DBG("testbed wrapped recvmsg: netlink socket fd %i, got %zi bytes\n", sockfd, ret);
+	DBG(DBG_NETLINK, "testbed wrapped recvmsg: netlink socket fd %i, got %zi bytes\n", sockfd, ret);
 
 	/* fake sender to be netlink */
 	sender = (struct sockaddr_nl *)msg->msg_name;
@@ -451,7 +453,7 @@ ioctl_record_open(int fd)
 	     */
 	    char *existing_device_path;
 	    char c;
-	    DBG("ioctl_record_open: Updating existing record for path %s\n", path);
+	    DBG(DBG_IOCTL, "ioctl_record_open: Updating existing record for path %s\n", path);
 	    fseek(ioctl_record_log, 0, SEEK_SET);
 
 	    /* Start by skipping any leading comments */
@@ -463,7 +465,7 @@ ioctl_record_open(int fd)
 	    if (fscanf(ioctl_record_log, "@DEV %ms\n", &existing_device_path) == 1)
 	    {
 		/* We have an existing "@DEV /dev/something" directive, check it matches */
-		DBG("ioctl_record_open: recording %s, existing device spec in record %s\n", device_path, existing_device_path);
+		DBG(DBG_IOCTL, "ioctl_record_open: recording %s, existing device spec in record %s\n", device_path, existing_device_path);
 		if (strcmp(device_path, existing_device_path) != 0) {
 		    fprintf(stderr, "umockdev: attempt to record two different devices to the same ioctl recording\n");
 		    exit(1);
@@ -476,7 +478,7 @@ ioctl_record_open(int fd)
 	    ioctl_record = ioctl_tree_read(ioctl_record_log);
 	} else {
 	    /* New log, add devnode header */
-	    DBG("ioctl_record_open: Starting new record %s\n", path);
+	    DBG(DBG_IOCTL, "ioctl_record_open: Starting new record %s\n", path);
 	    fprintf(ioctl_record_log, "@DEV %s\n", device_path);
 	}
 
@@ -486,9 +488,9 @@ ioctl_record_open(int fd)
 	act_int.sa_flags = 0;
 	assert(sigaction(SIGINT, &act_int, &orig_actint) == 0);
 
-	DBG("ioctl_record_open: starting ioctl recording of fd %i into %s\n", fd, path);
+	DBG(DBG_IOCTL, "ioctl_record_open: starting ioctl recording of fd %i into %s\n", fd, path);
     } else {
-	DBG("ioctl_record_open: ioctl recording is already ongoing, continuing on new fd %i\n", fd);
+	DBG(DBG_IOCTL, "ioctl_record_open: ioctl recording is already ongoing, continuing on new fd %i\n", fd);
     }
 }
 
@@ -498,7 +500,7 @@ ioctl_record_close(int fd)
     if (fd < 0 || fd != ioctl_record_fd)
 	return;
 
-    DBG("ioctl_record_close: stopping ioctl recording on fd %i\n", fd);
+    DBG(DBG_IOCTL, "ioctl_record_close: stopping ioctl recording on fd %i\n", fd);
     ioctl_record_fd = -1;
 
     /* recorded anything? */
@@ -513,7 +515,7 @@ ioctl_record_close(int fd)
 
 static void ioctl_record_sigint_handler(int signum)
 {
-    DBG("ioctl_record_sigint_handler: got signal %i, flushing record\n", signum);
+    DBG(DBG_IOCTL, "ioctl_record_sigint_handler: got signal %i, flushing record\n", signum);
     ioctl_record_close(ioctl_record_fd);
     assert(sigaction(SIGINT, &orig_actint, NULL) == 0);
     raise(signum);
@@ -578,7 +580,7 @@ ioctl_emulate_open(int fd, const char *dev_path)
 		dev_path);
 	exit(1);
     }
-    DBG("ioctl_emulate_open fd %i (%s): loaded ioctl tree\n", fd, dev_path);
+    DBG(DBG_IOCTL, "ioctl_emulate_open fd %i (%s): loaded ioctl tree\n", fd, dev_path);
 }
 
 static void
@@ -587,7 +589,7 @@ ioctl_emulate_close(int fd)
     struct ioctl_fd_info *fdinfo;
 
     if (fd_map_get(&ioctl_wrapped_fds, fd, (const void **)&fdinfo)) {
-	DBG("ioctl_emulate_close: closing ioctl socket fd %i\n", fd);
+	DBG(DBG_IOCTL, "ioctl_emulate_close: closing ioctl socket fd %i\n", fd);
 	fd_map_remove(&ioctl_wrapped_fds, fd);
 	ioctl_tree_free(fdinfo->tree);
 	free(fdinfo);
@@ -598,17 +600,33 @@ static int
 ioctl_emulate(int fd, unsigned long request, void *arg)
 {
     ioctl_tree *ret;
-    int ioctl_result = -2;
+    int ioctl_result = -1;
+    int orig_errno;
     struct ioctl_fd_info *fdinfo;
 
     if (fd_map_get(&ioctl_wrapped_fds, fd, (const void **)&fdinfo)) {
+	/* we default to erroring and an appropriate error code before
+	 * tree_execute, as handlers might change errno; if they succeed, we
+	 * reset errno */
+	orig_errno = errno;
+	/* evdev ioctls default to ENOENT; FIXME: record that instead of
+	 * hardcoding, and handle in ioctl_tree */
+	if (_IOC_TYPE(request) == 'E')
+	    errno = ENOENT;
+	else
+	    errno = ENOTTY;
+
 	/* check our ioctl tree */
 	ret = ioctl_tree_execute(fdinfo->tree, fdinfo->last, request, arg, &ioctl_result);
+	DBG(DBG_IOCTL, "ioctl_emulate: tree execute ret %p, result %i, errno %i (%m); orig errno: %i\n", ret, ioctl_result, errno, orig_errno);
 	if (ret != NULL)
 	    fdinfo->last = ret;
+	if (ioctl_result != -1 && errno != 0)
+	    errno = orig_errno;
+    } else {
+	ioctl_result = UNHANDLED;
     }
 
-    /* -2 means "unhandled" */
     return ioctl_result;
 }
 
@@ -677,7 +695,7 @@ init_script_dev_logfile_map(void)
 		fprintf(stderr, "umockdev: $%s not set\n", varname);
 		exit(1);
 	    }
-	    DBG("init_script_dev_logfile_map: will record script of device %i:%i into %s\n", major(dev), minor(dev),
+	    DBG(DBG_SCRIPT, "init_script_dev_logfile_map: will record script of device %i:%i into %s\n", major(dev), minor(dev),
 	    logname);
 	    fd_map_add(&script_dev_logfile_map, dev, logname);
 	    fd_map_add(&script_dev_devpath_map, dev, devpath);
@@ -698,7 +716,7 @@ init_script_dev_logfile_map(void)
 
 	    /* if it's a path, then we record a socket */
 	    if (script_socket_logfile_len < MAX_SCRIPT_SOCKET_LOGFILE) {
-		DBG("init_script_dev_logfile_map: will record script of socket %s into %s\n", devname, logname);
+		DBG(DBG_SCRIPT, "init_script_dev_logfile_map: will record script of socket %s into %s\n", devname, logname);
 		script_socket_logfile[2*script_socket_logfile_len] = devname;
 		script_socket_logfile[2*script_socket_logfile_len+1] = logname;
 		script_socket_logfile_len++;
@@ -730,7 +748,7 @@ script_start_record(int fd, const char *logname, const char *recording_path, enu
     /* if we have a previous record... */
     fseek(log, 0, SEEK_END);
     if (ftell(log) > 0) {
-	DBG("script_start_record: Appending to existing record of format %i for path %s\n", fmt, recording_path);
+	DBG(DBG_SCRIPT, "script_start_record: Appending to existing record of format %i for path %s\n", fmt, recording_path);
 	/* ...and we're going to record the device name... */
 	if (recording_path) {
 	    /* ... ensure we're recording the same device... */
@@ -747,7 +765,7 @@ script_start_record(int fd, const char *logname, const char *recording_path, enu
 			    continue;
 			if (sscanf(line, "d 0 %ms\n", &existing_device_path) == 1)
 			{
-			    DBG("script_start_record: recording %s, existing device spec in record %s\n", recording_path, existing_device_path);
+			    DBG(DBG_SCRIPT, "script_start_record: recording %s, existing device spec in record %s\n", recording_path, existing_device_path);
 			    /* We have an existing "d /dev/something" directive, check it matches */
 			    if (strcmp(recording_path, existing_device_path) != 0) {
 				fprintf(stderr, "umockdev: attempt to record two different devices to the same script recording\n");
@@ -762,7 +780,7 @@ script_start_record(int fd, const char *logname, const char *recording_path, enu
 			if (strncmp(line, "E: ", 3) == 0)
 			    break;
 			if (sscanf(line, "# device %ms\n", &existing_device_path) == 1) {
-			    DBG("script_start_record evemu format: recording %s, existing device spec in record %s\n", recording_path, existing_device_path);
+			    DBG(DBG_SCRIPT, "script_start_record evemu format: recording %s, existing device spec in record %s\n", recording_path, existing_device_path);
 			    /* We have an existing "/dev/something" directive, check it matches */
 			    if (strcmp(recording_path, existing_device_path) != 0) {
 				fprintf(stderr, "umockdev: attempt to record two different devices to the same evemu recording\n");
@@ -784,7 +802,7 @@ script_start_record(int fd, const char *logname, const char *recording_path, enu
 	/* ...finally, make sure that we start a new line */
 	putc('\n', log);
     } else if (recording_path) { /* this is a new record, start by recording the device path */
-	DBG("script_start_record: Starting new record of format %i\n", fmt);
+	DBG(DBG_SCRIPT, "script_start_record: Starting new record of format %i\n", fmt);
 	switch (fmt) {
 	    case FMT_DEFAULT:
 		fprintf(log, "d 0 %s\n", recording_path);
@@ -822,14 +840,14 @@ script_record_open(int fd)
     /* check if the opened device is one we want to record */
     fd_dev = dev_of_fd(fd);
     if (!fd_map_get(&script_dev_logfile_map, fd_dev, (const void **)&logname)) {
-	DBG("script_record_open: fd %i on device %i:%i is not recorded\n", fd, major(fd_dev), minor(fd_dev));
+	DBG(DBG_SCRIPT, "script_record_open: fd %i on device %i:%i is not recorded\n", fd, major(fd_dev), minor(fd_dev));
 	return;
     }
     assert (fd_map_get(&script_dev_devpath_map, fd_dev, (const void **)&recording_path));
     assert (fd_map_get(&script_dev_format_map, fd_dev, &data));
     fmt = (enum script_record_format) data;
 
-    DBG("script_record_open: start recording fd %i on device %i:%i into %s (format %i)\n",
+    DBG(DBG_SCRIPT, "script_record_open: start recording fd %i on device %i:%i into %s (format %i)\n",
 	fd, major(fd_dev), minor(fd_dev), logname, fmt);
     script_start_record(fd, logname, recording_path, fmt);
 }
@@ -848,7 +866,7 @@ script_record_connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen
 	    init_script_dev_logfile_map();
 	for (i = 0; i < script_socket_logfile_len; ++i) {
 	    if (strcmp(script_socket_logfile[2*i], sock_path) == 0) {
-		DBG("script_record_connect: starting recording of unix socket %s on fd %i\n", sock_path, sockfd);
+		DBG(DBG_SCRIPT, "script_record_connect: starting recording of unix socket %s on fd %i\n", sock_path, sockfd);
 		script_start_record(sockfd, script_socket_logfile[2*i+1], NULL, FMT_DEFAULT);
 	    }
 	}
@@ -864,7 +882,7 @@ script_record_close(int fd)
 
     if (!fd_map_get(&script_recorded_fds, fd, (const void **)&srinfo))
 	return;
-    DBG("script_record_close: stop recording fd %i\n", fd);
+    DBG(DBG_SCRIPT, "script_record_close: stop recording fd %i\n", fd);
     _fclose(srinfo->log);
     free(srinfo);
     fd_map_remove(&script_recorded_fds, fd);
@@ -897,12 +915,12 @@ script_record_op(char op, int fd, const void *buf, ssize_t size)
 	return;
     if (size <= 0)
 	return;
-    DBG("script_record_op %c: got %zi bytes on fd %i (format %i)\n", op, size, fd, srinfo->fmt);
+    DBG(DBG_SCRIPT, "script_record_op %c: got %zi bytes on fd %i (format %i)\n", op, size, fd, srinfo->fmt);
 
     switch (srinfo->fmt) {
 	case FMT_DEFAULT:
 	    delta = update_msec(&srinfo->time);
-	    DBG("  %lu ms since last operation %c\n", delta, srinfo->op);
+	    DBG(DBG_SCRIPT, "  %lu ms since last operation %c\n", delta, srinfo->op);
 
 	    /* for negligible time deltas, append to the previous stanza, otherwise
 	     * create a new record */
@@ -972,10 +990,15 @@ rettype name(const char *path)		    \
 { \
     const char *p;			    \
     libc_func(name, rettype, const char*);  \
+    rettype r;				    \
+    TRAP_PATH_LOCK;			    \
     p = trap_path(path);		    \
     if (p == NULL)			    \
-	return failret;			    \
-    return (*_ ## name)(p);		    \
+	r = failret;			    \
+    else				    \
+	r = (*_ ## name)(p);		    \
+    TRAP_PATH_UNLOCK;			    \
+    return r;				    \
 }
 
 /* wrapper template for a function with "const char* path" and another argument */
@@ -984,22 +1007,32 @@ rettype name(const char *path, arg2t arg2) \
 { \
     const char *p;					\
     libc_func(name, rettype, const char*, arg2t);	\
+    rettype r;						\
+    TRAP_PATH_LOCK;					\
     p = trap_path(path);				\
     if (p == NULL)					\
-	return failret;					\
-    return (*_ ## name)(p, arg2);			\
+	r = failret;					\
+    else						\
+	r = (*_ ## name)(p, arg2);			\
+    TRAP_PATH_UNLOCK;					\
+    return r;						\
 }
 
 /* wrapper template for a function with "const char* path" and two other arguments */
 #define WRAP_3ARGS(rettype, failret, name, arg2t, arg3t) \
 rettype name(const char *path, arg2t arg2, arg3t arg3) \
 { \
-    const char *p;						    \
-    libc_func(name, rettype, const char*, arg2t, arg3t);	    \
-    p = trap_path(path);					    \
-    if (p == NULL)						    \
-	return failret;						    \
-    return (*_ ## name)(p, arg2, arg3);				    \
+    const char *p;						\
+    libc_func(name, rettype, const char*, arg2t, arg3t);	\
+    rettype r;							\
+    TRAP_PATH_LOCK;						\
+    p = trap_path(path);					\
+    if (p == NULL)						\
+	r = failret;						\
+    else							\
+	r = (*_ ## name)(p, arg2, arg3);			\
+    TRAP_PATH_UNLOCK;						\
+    return r;							\
 }
 
 /* wrapper template for __xstat family; note that we abuse the sticky bit in
@@ -1011,20 +1044,24 @@ int prefix ## stat ## suffix (int ver, const char *path, struct stat ## suffix *
     const char *p;								\
     libc_func(prefix ## stat ## suffix, int, int, const char*, struct stat ## suffix *); \
     int ret;									\
+    TRAP_PATH_LOCK;								\
     p = trap_path(path);							\
-    if (p == NULL)								\
+    if (p == NULL) {								\
+	TRAP_PATH_UNLOCK;							\
 	return -1;								\
-    DBG("testbed wrapped " #prefix "stat" #suffix "(%s) -> %s\n", path, p);	\
+    }										\
+    DBG(DBG_PATH, "testbed wrapped " #prefix "stat" #suffix "(%s) -> %s\n", path, p);	\
     ret = _ ## prefix ## stat ## suffix(ver, p, st);				\
+    TRAP_PATH_UNLOCK;								\
     if (ret == 0 && p != path && strncmp(path, "/dev/", 5) == 0			\
 	&& is_emulated_device(p, st->st_mode)) {				\
 	st->st_mode &= ~S_IFREG;						\
 	if (st->st_mode &  S_ISVTX) {						\
 	    st->st_mode &= ~S_ISVTX; st->st_mode |= S_IFBLK;			\
-	    DBG("  %s is an emulated block device\n", path);			\
+	    DBG(DBG_PATH, "  %s is an emulated block device\n", path);		\
 	} else {								\
 	    st->st_mode |= S_IFCHR;						\
-	    DBG("  %s is an emulated char device\n", path);			\
+	    DBG(DBG_PATH, "  %s is an emulated char device\n", path);		\
 	}									\
 	st->st_rdev = get_rdev(path + 5);					\
     }										\
@@ -1038,10 +1075,13 @@ int prefix ## open ## suffix (const char *path, int flags, ...)	    \
     const char *p;						    \
     libc_func(prefix ## open ## suffix, int, const char*, int, ...);\
     int ret;							    \
+    TRAP_PATH_LOCK;						    \
     p = trap_path(path);					    \
-    if (p == NULL)						    \
+    if (p == NULL) {						    \
+	TRAP_PATH_UNLOCK;					    \
 	return -1;						    \
-    DBG("testbed wrapped " #prefix "open" #suffix "(%s) -> %s\n", path, p); \
+    }								    \
+    DBG(DBG_PATH, "testbed wrapped " #prefix "open" #suffix "(%s) -> %s\n", path, p); \
     if (flags & O_CREAT) {					    \
 	mode_t mode;						    \
 	va_list ap;						    \
@@ -1051,13 +1091,14 @@ int prefix ## open ## suffix (const char *path, int flags, ...)	    \
 	ret = _ ## prefix ## open ## suffix(p, flags, mode);   	    \
     } else							    \
 	ret =  _ ## prefix ## open ## suffix(p, flags);		    \
+    TRAP_PATH_UNLOCK;						    \
     if (path != p)						    \
 	ioctl_emulate_open(ret, path);				    \
     else {							    \
 	ioctl_record_open(ret);					    \
 	script_record_open(ret);				    \
     }								    \
-    return ret;						    	    \
+    return ret;							    \
 }
 
 #define WRAP_OPEN2(prefix, suffix) \
@@ -1066,11 +1107,15 @@ int prefix ## open ## suffix (const char *path, int flags)	    \
     const char *p;						    \
     libc_func(prefix ## open ## suffix, int, const char*, int);	    \
     int ret;							    \
+    TRAP_PATH_LOCK;						    \
     p = trap_path(path);					    \
-    if (p == NULL)						    \
+    if (p == NULL) {						    \
+	TRAP_PATH_UNLOCK;					    \
 	return -1;						    \
-    DBG("testbed wrapped " #prefix "open" #suffix "(%s) -> %s\n", path, p); \
+    }								    \
+    DBG(DBG_PATH, "testbed wrapped " #prefix "open" #suffix "(%s) -> %s\n", path, p); \
     ret =  _ ## prefix ## open ## suffix(p, flags);		    \
+    TRAP_PATH_UNLOCK;						    \
     if (path != p)						    \
 	ioctl_emulate_open(ret, path);				    \
     else {							    \
@@ -1112,12 +1157,16 @@ inotify_add_watch(int fd, const char *path, uint32_t mask)
 {
     const char *p;
     libc_func(inotify_add_watch, int, int, const char*, uint32_t);
+    int r;
 
+    TRAP_PATH_LOCK;
     p = trap_path(path);
     if (p == NULL)
-    return -1;
-
-    return _inotify_add_watch(fd, p, mask);
+	r = -1;
+    else
+	r = _inotify_add_watch(fd, p, mask);
+    TRAP_PATH_UNLOCK;
+    return r;
 }
 
 ssize_t
@@ -1247,15 +1296,17 @@ connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
     /* playback */
     if (addr->sa_family == AF_UNIX) {
 	const char *sock_path = ((struct sockaddr_un *) addr)->sun_path;
+	TRAP_PATH_LOCK;
 	const char *p = trap_path(sock_path);
 	struct sockaddr_un trapped_addr;
 
 	if (p != sock_path) {
-	    DBG("testbed wrapped connect: redirecting Unix socket %s to %s\n", sock_path, p);
+	    DBG(DBG_NETLINK, "testbed wrapped connect: redirecting Unix socket %s to %s\n", sock_path, p);
 	    trapped_addr.sun_family = AF_UNIX;
 	    strncpy(trapped_addr.sun_path, p, sizeof(trapped_addr.sun_path));
 	    addr = (struct sockaddr*) &trapped_addr;
 	}
+	TRAP_PATH_UNLOCK;
     }
 
     res = _connect(sockfd, addr, addrlen);
@@ -1310,18 +1361,67 @@ ioctl(int d, unsigned long request, ...)
     va_end(ap);
 
     result = ioctl_emulate(d, request, arg);
-    if (result != -2) {
-	DBG("ioctl fd %i request %lX: emulated, result %i\n", d, request, result);
+    if (result != UNHANDLED) {
+	DBG(DBG_IOCTL, "ioctl fd %i request %lX: emulated, result %i\n", d, request, result);
 	return result;
     }
 
     /* call original ioctl */
     result = _ioctl(d, request, arg);
-    DBG("ioctl fd %i request %lX: original, result %i\n", d, request, result);
+    DBG(DBG_IOCTL, "ioctl fd %i request %lX: original, result %i\n", d, request, result);
 
     if (result != -1 && ioctl_record_fd == d)
 	record_ioctl(request, arg, result);
 
+    return result;
+}
+
+int
+isatty(int fd)
+{
+    libc_func(isatty, int, int);
+    libc_func(readlink, ssize_t, const char*, char*, size_t);
+    int result = _isatty(fd);
+    char ttyname[1024];
+    char ptymap[PATH_MAX];
+    char majmin[20];
+    char *cp;
+    int orig_errno, r;
+
+    if (result != 1) {
+	DBG(DBG_PATH, "isatty(%i): real function result: %i, returning that\n", fd, result);
+	return result;
+    }
+
+    /* isatty() succeeds for our emulated devices, but they should not
+     * necessarily appear as TTY; so map the tty name to a major/minor, and
+     * only return 1 if it is major 4. */
+    orig_errno = errno;
+    if (ttyname_r(fd, ttyname, sizeof(ttyname)) != 0) {
+	DBG(DBG_PATH, "isatty(%i): is a terminal, but ttyname() failed! %m\n", fd);
+	/* *shrug*, what can we do; return original result */
+	goto out;
+    }
+
+    DBG(DBG_PATH, "isatty(%i): is a terminal, ttyname %s\n", fd, ttyname);
+    for (cp = ttyname; *cp; ++cp)
+	if (*cp == '/')
+	    *cp = '_';
+    snprintf(ptymap, sizeof(ptymap), "%s/dev/.ptymap/%s", getenv("UMOCKDEV_DIR"), ttyname);
+    r = _readlink(ptymap, majmin, sizeof(majmin));
+    if (r < 0) {
+	/* failure here is normal for non-emulated devices */
+	DBG(DBG_PATH, "isatty(%i): readlink(%s) failed: %m\n", fd, ptymap);
+	goto out;
+    }
+    majmin[r] = '\0';
+    if (majmin[0] != '4' || majmin[1] != ':') {
+	DBG(DBG_PATH, "isatty(%i): major/minor is %s which is not a tty; returning 0\n", fd, majmin);
+	result = 0;
+    }
+
+out:
+    errno = orig_errno;
     return result;
 }
 

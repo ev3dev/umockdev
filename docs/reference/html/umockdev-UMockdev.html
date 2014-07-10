@@ -155,6 +155,14 @@ hardware devices.</p>
 </tr>
 <tr>
 <td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-get-property" title="umockdev_testbed_get_property ()">umockdev_testbed_get_property</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
 <span class="returnvalue">void</span>
 </td>
 <td class="function_name">
@@ -869,6 +877,49 @@ value to "1f".</p>
 </div>
 <hr>
 <div class="refsect2">
+<a name="umockdev-testbed-get-property"></a><h3>umockdev_testbed_get_property ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+umockdev_testbed_get_property (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
+                               <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devpath</code></em>,
+                               <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);</pre>
+<p>Get a string udev property for a device. Note that this is mostly for
+testing umockdev itself; for real application testing, use
+libudev/gudev.</p>
+<div class="refsect3">
+<a name="id-1.2.2.8.16.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>A <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>devpath</p></td>
+<td class="parameter_description"><p>The full device path, as returned by <a class="link" href="umockdev-UMockdev.html#umockdev-testbed-add-device" title="umockdev_testbed_add_device ()"><code class="function">umockdev_testbed_add_device()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>Property name</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.2.2.8.16.6"></a><h4>Returns</h4>
+<p> property value, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if it does not exist</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
 <a name="umockdev-testbed-uevent"></a><h3>umockdev_testbed_uevent ()</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>
 umockdev_testbed_uevent (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>,
@@ -876,7 +927,7 @@ umockdev_testbed_uevent (<em class="parameter"><code><a class="link" href="umock
                          <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action</code></em>);</pre>
 <p>Generate an uevent for a device.</p>
 <div class="refsect3">
-<a name="id-1.2.2.8.16.5"></a><h4>Parameters</h4>
+<a name="id-1.2.2.8.17.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -946,7 +997,7 @@ Available type tags are:</p>
             now.</li>
 </ul></div>
 <div class="refsect3">
-<a name="id-1.2.2.8.17.7"></a><h4>Parameters</h4>
+<a name="id-1.2.2.8.18.7"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -973,7 +1024,7 @@ Available type tags are:</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.2.8.17.8"></a><h4>Returns</h4>
+<a name="id-1.2.2.8.18.8"></a><h4>Returns</h4>
 <p> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the data is invalid and an error
 occurred.</p>
 <p></p>
@@ -992,7 +1043,7 @@ is mostly a convenience wrapper around
 <em class="parameter"><code>umockdev_testbed_add_from_string</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.2.2.8.18.5"></a><h4>Parameters</h4>
+<a name="id-1.2.2.8.19.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1019,7 +1070,7 @@ is mostly a convenience wrapper around
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.2.8.18.6"></a><h4>Returns</h4>
+<a name="id-1.2.2.8.19.6"></a><h4>Returns</h4>
 <p> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the <em class="parameter"><code>path</code></em>
 cannot be read or thhe
 data is invalid and an error occurred.</p>
@@ -1039,7 +1090,7 @@ ioctl records can be created with umockdev-record --ioctl.
 They can optionally be xz compressed to save space (but then are
 required to have an .xz file name suffix).</p>
 <div class="refsect3">
-<a name="id-1.2.2.8.19.5"></a><h4>Parameters</h4>
+<a name="id-1.2.2.8.20.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1073,7 +1124,7 @@ the device node it was recorded from.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.2.8.19.6"></a><h4>Returns</h4>
+<a name="id-1.2.2.8.20.6"></a><h4>Returns</h4>
 <p> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the data is invalid and an error
 occurred.</p>
 <p></p>
@@ -1090,7 +1141,7 @@ umockdev_testbed_load_script (<em class="parameter"><code><a class="link" href="
 <p>Load a script record file for a particular device into the testbed.
 script records can be created with umockdev-record --script.</p>
 <div class="refsect3">
-<a name="id-1.2.2.8.20.5"></a><h4>Parameters</h4>
+<a name="id-1.2.2.8.21.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1124,7 +1175,7 @@ the device node it was recorded from.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.2.8.20.6"></a><h4>Returns</h4>
+<a name="id-1.2.2.8.21.6"></a><h4>Returns</h4>
 <p> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if <em class="parameter"><code>recordfile</code></em>
 is invalid and an error
 occurred.</p>
@@ -1145,7 +1196,7 @@ Clients can connect to the socket using <em class="parameter"><code>path</code><
  (i. e. without the testbed
 prefix).</p>
 <div class="refsect3">
-<a name="id-1.2.2.8.21.5"></a><h4>Parameters</h4>
+<a name="id-1.2.2.8.22.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1182,7 +1233,7 @@ prefix).</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.2.8.21.6"></a><h4>Returns</h4>
+<a name="id-1.2.2.8.22.6"></a><h4>Returns</h4>
 <p> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the <em class="parameter"><code>path</code></em>
 or <em class="parameter"><code>type</code></em>
 are
@@ -1208,7 +1259,7 @@ relatively: the first event happens immediately, and the time to the
 next event is the difference between the corresponding timestamps in the
 .event file.</p>
 <div class="refsect3">
-<a name="id-1.2.2.8.22.7"></a><h4>Parameters</h4>
+<a name="id-1.2.2.8.23.7"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1242,7 +1293,7 @@ the device node it was recorded from.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.2.8.22.8"></a><h4>Returns</h4>
+<a name="id-1.2.2.8.23.8"></a><h4>Returns</h4>
 <p> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if <em class="parameter"><code>eventsfile</code></em>
 is invalid and an error
 occurred.</p>
@@ -1264,7 +1315,7 @@ which is just openening the device specified by <em class="parameter"><code>devn
 /dev/ttyUSB2. Once that happened, your test can directly communicate
 with the tested program over that descriptor.</p>
 <div class="refsect3">
-<a name="id-1.2.2.8.23.5"></a><h4>Parameters</h4>
+<a name="id-1.2.2.8.24.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1286,7 +1337,7 @@ with the tested program over that descriptor.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.2.8.23.6"></a><h4>Returns</h4>
+<a name="id-1.2.2.8.24.6"></a><h4>Returns</h4>
 <p> File descriptor for communicating with clients that connect to
 <em class="parameter"><code>devnode</code></em>
 , or -1 if <em class="parameter"><code>devnode</code></em>
@@ -1304,7 +1355,7 @@ umockdev_testbed_clear (<em class="parameter"><code><a class="link" href="umockd
 umockdev root directory will be in the same state as directly after the
 constructor.</p>
 <div class="refsect3">
-<a name="id-1.2.2.8.24.5"></a><h4>Parameters</h4>
+<a name="id-1.2.2.8.25.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1330,7 +1381,7 @@ and the <a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span clas
  to
 re-enable the testbed.</p>
 <div class="refsect3">
-<a name="id-1.2.2.8.25.5"></a><h4>Parameters</h4>
+<a name="id-1.2.2.8.26.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1353,7 +1404,7 @@ umockdev_testbed_enable (<em class="parameter"><code><a class="link" href="umock
 <p>Re-enable the testbed after @<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#umockdev-testbed-disable" title="umockdev_testbed_disable ()"><code class="function">umockdev_testbed_disable()</code></a></code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.2.2.8.26.5"></a><h4>Parameters</h4>
+<a name="id-1.2.2.8.27.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">

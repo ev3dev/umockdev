@@ -12,6 +12,7 @@ namespace UMockdev {
 		public void disable ();
 		public void enable ();
 		public int get_dev_fd (string devnode);
+		public new string? get_property (string devpath, string name);
 		public string get_root_dir ();
 		public string get_sys_dir ();
 		public bool load_evemu_events (string? dev, string eventsfile) throws GLib.Error, GLib.FileError, GLib.IOError, GLib.RegexError;

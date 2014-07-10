@@ -49,6 +49,7 @@ void umockdev_testbed_set_attribute_binary (UMockdevTestbed* self, const gchar* 
 void umockdev_testbed_set_attribute_int (UMockdevTestbed* self, const gchar* devpath, const gchar* name, gint value);
 void umockdev_testbed_set_attribute_hex (UMockdevTestbed* self, const gchar* devpath, const gchar* name, guint value);
 void umockdev_testbed_set_attribute_link (UMockdevTestbed* self, const gchar* devpath, const gchar* name, const gchar* value);
+gchar* umockdev_testbed_get_property (UMockdevTestbed* self, const gchar* devpath, const gchar* name);
 void umockdev_testbed_set_property (UMockdevTestbed* self, const gchar* devpath, const gchar* name, const gchar* value);
 void umockdev_testbed_set_property_int (UMockdevTestbed* self, const gchar* devpath, const gchar* name, gint value);
 void umockdev_testbed_set_property_hex (UMockdevTestbed* self, const gchar* devpath, const gchar* name, guint value);
