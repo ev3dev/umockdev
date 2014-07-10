@@ -10,6 +10,7 @@ libumockdev.so.0 libumockdev0 #MINVER#
  umockdev_testbed_disable@Base 0.2.9
  umockdev_testbed_enable@Base 0.2.9
  umockdev_testbed_get_dev_fd@Base 0.3
+ umockdev_testbed_get_property@Base 0.8.3
  umockdev_testbed_get_root_dir@Base 0.0.0
  umockdev_testbed_get_sys_dir@Base 0.0.0
  umockdev_testbed_get_type@Base 0.0.0
