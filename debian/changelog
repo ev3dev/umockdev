@@ -1,3 +1,10 @@
+umockdev (0.8.3-1) UNRELEASED; urgency=medium
+
+  * New upstream release:
+    - Path redirection is now thread safe. (LP: #1336671)
+
+ -- Martin Pitt <mpitt@debian.org>  Thu, 10 Jul 2014 14:01:37 +0200
+
 umockdev (0.8.2-1) unstable; urgency=medium
 
   * New upstream bug fix release.
