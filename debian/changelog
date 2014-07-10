@@ -1,4 +1,4 @@
-umockdev (0.8.3-1) UNRELEASED; urgency=medium
+umockdev (0.8.4-1) UNRELEASED; urgency=medium
 
   * New upstream release:
     - Path redirection is now thread safe. (LP: #1336671)
