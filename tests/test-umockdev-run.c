@@ -1304,38 +1304,40 @@ void t_gphoto_download (void) {
 
 void t_input_touchpad (void) {
 	gboolean _tmp1_ = FALSE;
+	glong _tmp3_ = 0L;
+	gint64 _tmp4_ = 0LL;
 	GPid xorg_pid = 0;
 	gchar* logfile = NULL;
 	gint timeout = 0;
-	gint _tmp34_ = 0;
+	gint _tmp37_ = 0;
 	gchar* xinput_out = NULL;
 	gchar* xinput_err = NULL;
 	gint xinput_exit = 0;
-	gchar* _tmp37_ = NULL;
-	gchar* _tmp38_ = NULL;
-	gint _tmp39_ = 0;
-	gchar* props_out = NULL;
-	gchar* props_err = NULL;
-	gint props_exit = 0;
 	gchar* _tmp40_ = NULL;
 	gchar* _tmp41_ = NULL;
 	gint _tmp42_ = 0;
-	GPid _tmp43_ = 0;
-	gint status = 0;
-	GPid _tmp44_ = 0;
+	gchar* props_out = NULL;
+	gchar* props_err = NULL;
+	gint props_exit = 0;
+	gchar* _tmp43_ = NULL;
+	gchar* _tmp44_ = NULL;
 	gint _tmp45_ = 0;
 	GPid _tmp46_ = 0;
-	const gchar* _tmp47_ = NULL;
-	const gchar* _tmp48_ = NULL;
-	gchar* _tmp49_ = NULL;
-	gchar* _tmp50_ = NULL;
+	gint status = 0;
+	GPid _tmp47_ = 0;
+	gint _tmp48_ = 0;
+	GPid _tmp49_ = 0;
+	const gchar* _tmp50_ = NULL;
 	const gchar* _tmp51_ = NULL;
-	gint _tmp52_ = 0;
-	const gchar* _tmp53_ = NULL;
+	gchar* _tmp52_ = NULL;
+	gchar* _tmp53_ = NULL;
 	const gchar* _tmp54_ = NULL;
 	gint _tmp55_ = 0;
 	const gchar* _tmp56_ = NULL;
 	const gchar* _tmp57_ = NULL;
+	gint _tmp58_ = 0;
+	const gchar* _tmp59_ = NULL;
+	const gchar* _tmp60_ = NULL;
 	GError * _inner_error_ = NULL;
 	if (G_BYTE_ORDER == G_BIG_ENDIAN) {
 		FILE* _tmp0_ = NULL;
@@ -1350,15 +1352,23 @@ void t_input_touchpad (void) {
 		fprintf (_tmp2_, "[SKIP: Xorg not installed] ");
 		return;
 	}
+	_tmp3_ = G_MAXLONG;
+	_tmp4_ = G_MAXINT64;
+	if (((gint64) _tmp3_) != _tmp4_) {
+		FILE* _tmp5_ = NULL;
+		_tmp5_ = stdout;
+		fprintf (_tmp5_, "[SKIP: test only works on 64 bit architectures] ");
+		return;
+	}
 	{
 		gint fd = 0;
-		gchar* _tmp3_ = NULL;
-		gint _tmp4_ = 0;
-		gint _tmp5_ = 0;
-		_tmp4_ = g_file_open_tmp ("Xorg.log.XXXXXX", &_tmp3_, &_inner_error_);
+		gchar* _tmp6_ = NULL;
+		gint _tmp7_ = 0;
+		gint _tmp8_ = 0;
+		_tmp7_ = g_file_open_tmp ("Xorg.log.XXXXXX", &_tmp6_, &_inner_error_);
 		_g_free0 (logfile);
-		logfile = _tmp3_;
-		fd = _tmp4_;
+		logfile = _tmp6_;
+		fd = _tmp7_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_FILE_ERROR) {
 				goto __catch5_g_file_error;
@@ -1368,20 +1378,20 @@ void t_input_touchpad (void) {
 			g_clear_error (&_inner_error_);
 			return;
 		}
-		_tmp5_ = fd;
-		close (_tmp5_);
+		_tmp8_ = fd;
+		close (_tmp8_);
 	}
 	goto __finally5;
 	__catch5_g_file_error:
 	{
 		GError* e = NULL;
-		FILE* _tmp6_ = NULL;
-		const gchar* _tmp7_ = NULL;
+		FILE* _tmp9_ = NULL;
+		const gchar* _tmp10_ = NULL;
 		e = _inner_error_;
 		_inner_error_ = NULL;
-		_tmp6_ = stderr;
-		_tmp7_ = e->message;
-		fprintf (_tmp6_, "cannot create temporary file: %s\n", _tmp7_);
+		_tmp9_ = stderr;
+		_tmp10_ = e->message;
+		fprintf (_tmp9_, "cannot create temporary file: %s\n", _tmp10_);
 		abort ();
 		_g_error_free0 (e);
 	}
@@ -1393,65 +1403,65 @@ void t_input_touchpad (void) {
 		return;
 	}
 	{
-		gchar* _tmp8_ = NULL;
-		gchar* _tmp9_ = NULL;
-		const gchar* _tmp10_ = NULL;
 		gchar* _tmp11_ = NULL;
 		gchar* _tmp12_ = NULL;
 		const gchar* _tmp13_ = NULL;
 		gchar* _tmp14_ = NULL;
 		gchar* _tmp15_ = NULL;
-		gchar* _tmp16_ = NULL;
+		const gchar* _tmp16_ = NULL;
 		gchar* _tmp17_ = NULL;
 		gchar* _tmp18_ = NULL;
 		gchar* _tmp19_ = NULL;
-		const gchar* _tmp20_ = NULL;
+		gchar* _tmp20_ = NULL;
 		gchar* _tmp21_ = NULL;
 		gchar* _tmp22_ = NULL;
 		const gchar* _tmp23_ = NULL;
 		gchar* _tmp24_ = NULL;
 		gchar* _tmp25_ = NULL;
-		gchar** _tmp26_ = NULL;
-		gchar** _tmp27_ = NULL;
-		gint _tmp27__length1 = 0;
-		GPid _tmp28_ = 0;
-		_tmp8_ = g_strdup ("umockdev-run");
-		_tmp9_ = g_strdup ("-d");
-		_tmp10_ = rootdir;
-		_tmp11_ = g_strconcat (_tmp10_, "/devices/input/synaptics-touchpad.umockdev", NULL);
-		_tmp12_ = g_strdup ("-i");
+		const gchar* _tmp26_ = NULL;
+		gchar* _tmp27_ = NULL;
+		gchar* _tmp28_ = NULL;
+		gchar** _tmp29_ = NULL;
+		gchar** _tmp30_ = NULL;
+		gint _tmp30__length1 = 0;
+		GPid _tmp31_ = 0;
+		_tmp11_ = g_strdup ("umockdev-run");
+		_tmp12_ = g_strdup ("-d");
 		_tmp13_ = rootdir;
-		_tmp14_ = g_strconcat ("/dev/input/event12=", _tmp13_, NULL);
-		_tmp15_ = _tmp14_;
-		_tmp16_ = g_strconcat (_tmp15_, "/devices/input/synaptics-touchpad.ioctl", NULL);
-		_tmp17_ = g_strdup ("--");
-		_tmp18_ = g_strdup ("Xorg");
-		_tmp19_ = g_strdup ("-config");
-		_tmp20_ = rootdir;
-		_tmp21_ = g_strconcat (_tmp20_, "/tests/xorg-dummy.conf", NULL);
-		_tmp22_ = g_strdup ("-logfile");
-		_tmp23_ = logfile;
-		_tmp24_ = g_strdup (_tmp23_);
-		_tmp25_ = g_strdup (":5");
-		_tmp26_ = g_new0 (gchar*, 12 + 1);
-		_tmp26_[0] = _tmp8_;
-		_tmp26_[1] = _tmp9_;
-		_tmp26_[2] = _tmp11_;
-		_tmp26_[3] = _tmp12_;
-		_tmp26_[4] = _tmp16_;
-		_tmp26_[5] = _tmp17_;
-		_tmp26_[6] = _tmp18_;
-		_tmp26_[7] = _tmp19_;
-		_tmp26_[8] = _tmp21_;
-		_tmp26_[9] = _tmp22_;
-		_tmp26_[10] = _tmp24_;
-		_tmp26_[11] = _tmp25_;
-		_tmp27_ = _tmp26_;
-		_tmp27__length1 = 12;
-		g_spawn_async (NULL, _tmp27_, NULL, G_SPAWN_SEARCH_PATH | G_SPAWN_STDERR_TO_DEV_NULL, NULL, NULL, &_tmp28_, &_inner_error_);
-		xorg_pid = _tmp28_;
-		_tmp27_ = (_vala_array_free (_tmp27_, _tmp27__length1, (GDestroyNotify) g_free), NULL);
-		_g_free0 (_tmp15_);
+		_tmp14_ = g_strconcat (_tmp13_, "/devices/input/synaptics-touchpad.umockdev", NULL);
+		_tmp15_ = g_strdup ("-i");
+		_tmp16_ = rootdir;
+		_tmp17_ = g_strconcat ("/dev/input/event12=", _tmp16_, NULL);
+		_tmp18_ = _tmp17_;
+		_tmp19_ = g_strconcat (_tmp18_, "/devices/input/synaptics-touchpad.ioctl", NULL);
+		_tmp20_ = g_strdup ("--");
+		_tmp21_ = g_strdup ("Xorg");
+		_tmp22_ = g_strdup ("-config");
+		_tmp23_ = rootdir;
+		_tmp24_ = g_strconcat (_tmp23_, "/tests/xorg-dummy.conf", NULL);
+		_tmp25_ = g_strdup ("-logfile");
+		_tmp26_ = logfile;
+		_tmp27_ = g_strdup (_tmp26_);
+		_tmp28_ = g_strdup (":5");
+		_tmp29_ = g_new0 (gchar*, 12 + 1);
+		_tmp29_[0] = _tmp11_;
+		_tmp29_[1] = _tmp12_;
+		_tmp29_[2] = _tmp14_;
+		_tmp29_[3] = _tmp15_;
+		_tmp29_[4] = _tmp19_;
+		_tmp29_[5] = _tmp20_;
+		_tmp29_[6] = _tmp21_;
+		_tmp29_[7] = _tmp22_;
+		_tmp29_[8] = _tmp24_;
+		_tmp29_[9] = _tmp25_;
+		_tmp29_[10] = _tmp27_;
+		_tmp29_[11] = _tmp28_;
+		_tmp30_ = _tmp29_;
+		_tmp30__length1 = 12;
+		g_spawn_async (NULL, _tmp30_, NULL, G_SPAWN_SEARCH_PATH | G_SPAWN_STDERR_TO_DEV_NULL, NULL, NULL, &_tmp31_, &_inner_error_);
+		xorg_pid = _tmp31_;
+		_tmp30_ = (_vala_array_free (_tmp30_, _tmp30__length1, (GDestroyNotify) g_free), NULL);
+		_g_free0 (_tmp18_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_SPAWN_ERROR) {
 				goto __catch6_g_spawn_error;
@@ -1466,13 +1476,13 @@ void t_input_touchpad (void) {
 	__catch6_g_spawn_error:
 	{
 		GError* e = NULL;
-		FILE* _tmp29_ = NULL;
-		const gchar* _tmp30_ = NULL;
+		FILE* _tmp32_ = NULL;
+		const gchar* _tmp33_ = NULL;
 		e = _inner_error_;
 		_inner_error_ = NULL;
-		_tmp29_ = stderr;
-		_tmp30_ = e->message;
-		fprintf (_tmp29_, "cannot call Xorg: %s\n", _tmp30_);
+		_tmp32_ = stderr;
+		_tmp33_ = e->message;
+		fprintf (_tmp32_, "cannot call Xorg: %s\n", _tmp33_);
 		abort ();
 		_g_error_free0 (e);
 	}
@@ -1485,71 +1495,71 @@ void t_input_touchpad (void) {
 	}
 	timeout = 50;
 	while (TRUE) {
-		gint _tmp31_ = 0;
-		gint _tmp32_ = 0;
-		gboolean _tmp33_ = FALSE;
-		_tmp31_ = timeout;
-		if (!(_tmp31_ > 0)) {
+		gint _tmp34_ = 0;
+		gint _tmp35_ = 0;
+		gboolean _tmp36_ = FALSE;
+		_tmp34_ = timeout;
+		if (!(_tmp34_ > 0)) {
 			break;
 		}
-		_tmp32_ = timeout;
-		timeout = _tmp32_ - 1;
+		_tmp35_ = timeout;
+		timeout = _tmp35_ - 1;
 		usleep ((guint) 100000);
-		_tmp33_ = g_file_test ("/tmp/.X11-unix/X5", G_FILE_TEST_EXISTS);
-		if (_tmp33_) {
+		_tmp36_ = g_file_test ("/tmp/.X11-unix/X5", G_FILE_TEST_EXISTS);
+		if (_tmp36_) {
 			break;
 		}
 	}
-	_tmp34_ = timeout;
-	if (_tmp34_ <= 0) {
-		FILE* _tmp35_ = NULL;
-		const gchar* _tmp36_ = NULL;
-		_tmp35_ = stderr;
-		_tmp36_ = logfile;
-		fprintf (_tmp35_, "Xorg failed to start up; please ensure you have the X.org dummy driver" \
-" installed, and check the log file: %s\n", _tmp36_);
+	_tmp37_ = timeout;
+	if (_tmp37_ <= 0) {
+		FILE* _tmp38_ = NULL;
+		const gchar* _tmp39_ = NULL;
+		_tmp38_ = stderr;
+		_tmp39_ = logfile;
+		fprintf (_tmp38_, "Xorg failed to start up; please ensure you have the X.org dummy driver" \
+" installed, and check the log file: %s\n", _tmp39_);
 		abort ();
 	}
-	get_program_out ("xinput", "env DISPLAY=:5 xinput", &_tmp37_, &_tmp38_, &_tmp39_);
+	get_program_out ("xinput", "env DISPLAY=:5 xinput", &_tmp40_, &_tmp41_, &_tmp42_);
 	_g_free0 (xinput_out);
-	xinput_out = _tmp37_;
+	xinput_out = _tmp40_;
 	_g_free0 (xinput_err);
-	xinput_err = _tmp38_;
-	xinput_exit = _tmp39_;
-	get_program_out ("xinput", "env DISPLAY=:5 xinput --list-props 'SynPS/2 Synaptics TouchPad'", &_tmp40_, &_tmp41_, &_tmp42_);
+	xinput_err = _tmp41_;
+	xinput_exit = _tmp42_;
+	get_program_out ("xinput", "env DISPLAY=:5 xinput --list-props 'SynPS/2 Synaptics TouchPad'", &_tmp43_, &_tmp44_, &_tmp45_);
 	_g_free0 (props_out);
-	props_out = _tmp40_;
+	props_out = _tmp43_;
 	_g_free0 (props_err);
-	props_err = _tmp41_;
-	props_exit = _tmp42_;
-	_tmp43_ = xorg_pid;
-	kill ((pid_t) _tmp43_, SIGTERM);
-	_tmp44_ = xorg_pid;
-	waitpid ((pid_t) _tmp44_, &_tmp45_, 0);
-	status = _tmp45_;
+	props_err = _tmp44_;
+	props_exit = _tmp45_;
 	_tmp46_ = xorg_pid;
-	g_spawn_close_pid (_tmp46_);
-	_tmp47_ = logfile;
-	g_remove (_tmp47_);
-	_tmp48_ = logfile;
-	_tmp49_ = g_strconcat (_tmp48_, ".old", NULL);
-	_tmp50_ = _tmp49_;
+	kill ((pid_t) _tmp46_, SIGTERM);
+	_tmp47_ = xorg_pid;
+	waitpid ((pid_t) _tmp47_, &_tmp48_, 0);
+	status = _tmp48_;
+	_tmp49_ = xorg_pid;
+	g_spawn_close_pid (_tmp49_);
+	_tmp50_ = logfile;
 	g_remove (_tmp50_);
-	_g_free0 (_tmp50_);
-	_tmp51_ = xinput_err;
-	g_assert_cmpstr (_tmp51_, ==, "");
-	_tmp52_ = xinput_exit;
-	g_assert_cmpint (_tmp52_, ==, 0);
-	_tmp53_ = xinput_out;
-	assert_in ("SynPS/2 Synaptics TouchPad", _tmp53_);
-	_tmp54_ = props_err;
+	_tmp51_ = logfile;
+	_tmp52_ = g_strconcat (_tmp51_, ".old", NULL);
+	_tmp53_ = _tmp52_;
+	g_remove (_tmp53_);
+	_g_free0 (_tmp53_);
+	_tmp54_ = xinput_err;
 	g_assert_cmpstr (_tmp54_, ==, "");
-	_tmp55_ = props_exit;
+	_tmp55_ = xinput_exit;
 	g_assert_cmpint (_tmp55_, ==, 0);
-	_tmp56_ = props_out;
-	assert_in ("Synaptics Two-Finger Scrolling", _tmp56_);
-	_tmp57_ = props_out;
-	assert_in ("/dev/input/event12", _tmp57_);
+	_tmp56_ = xinput_out;
+	assert_in ("SynPS/2 Synaptics TouchPad", _tmp56_);
+	_tmp57_ = props_err;
+	g_assert_cmpstr (_tmp57_, ==, "");
+	_tmp58_ = props_exit;
+	g_assert_cmpint (_tmp58_, ==, 0);
+	_tmp59_ = props_out;
+	assert_in ("Synaptics Two-Finger Scrolling", _tmp59_);
+	_tmp60_ = props_out;
+	assert_in ("/dev/input/event12", _tmp60_);
 	_g_free0 (props_err);
 	_g_free0 (props_out);
 	_g_free0 (xinput_err);
