@@ -2344,7 +2344,7 @@ void t_mt_uevent (void) {
 	_data1_->ml = _tmp6_;
 	_data1_->add_count = (guint) 0;
 	_data1_->change_count = (guint) 0;
-	_data1_->num_changes = (guint) 20;
+	_data1_->num_changes = (guint) 10;
 	g_signal_connect_data (gudev, "uevent", (GCallback) ___lambda3__g_udev_client_uevent, block1_data_ref (_data1_), (GClosureNotify) block1_data_unref, 0);
 	_tmp7_ = g_strdup ("a");
 	_tmp8_ = g_strdup ("1");
