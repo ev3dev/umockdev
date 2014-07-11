@@ -1,3 +1,9 @@
+umockdev (0.8.5-1) UNRELEASED; urgency=medium
+
+  * New upstream release, to fix build and test on 32 bit architectures.
+
+ -- Martin Pitt <mpitt@debian.org>  Fri, 11 Jul 2014 07:32:07 +0200
+
 umockdev (0.8.4-1) unstable; urgency=medium
 
   * New upstream release:
