@@ -527,38 +527,80 @@ void umockdev_testbed_set_attribute (UMockdevTestbed* self, const gchar* devpath
      * umockdev_testbed_set_attribute_binary:
      * @self: A #UMockdevTestbed.
      * @devpath: The full device path, as returned by #umockdev_testbed_add_device()
-     * @name: Attribute name
+     * @name: Attribute name (may contain leading directories like
+     *        "queue/rotational")
      * @value: Attribute binary value
      * @value_length1: Length of @value in bytes.
      *
      * Set a binary sysfs attribute for a device.
      */
+static gboolean string_contains (const gchar* self, const gchar* needle) {
+	gboolean result = FALSE;
+	const gchar* _tmp0_ = NULL;
+	gchar* _tmp1_ = NULL;
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (needle != NULL, FALSE);
+	_tmp0_ = needle;
+	_tmp1_ = strstr ((gchar*) self, (gchar*) _tmp0_);
+	result = _tmp1_ != NULL;
+	return result;
+}
+
+
 void umockdev_testbed_set_attribute_binary (UMockdevTestbed* self, const gchar* devpath, const gchar* name, guint8* value, int value_length1) {
+	gchar* attr_path = NULL;
+	const gchar* _tmp0_ = NULL;
+	const gchar* _tmp1_ = NULL;
+	const gchar* _tmp2_ = NULL;
+	gchar* _tmp3_ = NULL;
+	const gchar* _tmp4_ = NULL;
+	gboolean _tmp5_ = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (devpath != NULL);
 	g_return_if_fail (name != NULL);
+	_tmp0_ = self->priv->root_dir;
+	_tmp1_ = devpath;
+	_tmp2_ = name;
+	_tmp3_ = g_build_filename (_tmp0_, _tmp1_, _tmp2_, NULL);
+	attr_path = _tmp3_;
+	_tmp4_ = name;
+	_tmp5_ = string_contains (_tmp4_, "/");
+	if (_tmp5_) {
+		gchar* d = NULL;
+		const gchar* _tmp6_ = NULL;
+		gchar* _tmp7_ = NULL;
+		const gchar* _tmp8_ = NULL;
+		gint _tmp9_ = 0;
+		_tmp6_ = attr_path;
+		_tmp7_ = g_path_get_dirname (_tmp6_);
+		d = _tmp7_;
+		_tmp8_ = d;
+		_tmp9_ = g_mkdir_with_parents (_tmp8_, 0755);
+		if (_tmp9_ != 0) {
+			const gchar* _tmp10_ = NULL;
+			gint _tmp11_ = 0;
+			const gchar* _tmp12_ = NULL;
+			_tmp10_ = d;
+			_tmp11_ = errno;
+			_tmp12_ = g_strerror (_tmp11_);
+			g_error ("umockdev.vala:159: cannot create attribute subdir '%s': %s", _tmp10_, _tmp12_);
+		}
+		_g_free0 (d);
+	}
 	{
-		const gchar* _tmp0_ = NULL;
-		const gchar* _tmp1_ = NULL;
-		const gchar* _tmp2_ = NULL;
-		gchar* _tmp3_ = NULL;
-		gchar* _tmp4_ = NULL;
-		guint8* _tmp5_ = NULL;
-		gint _tmp5__length1 = 0;
-		_tmp0_ = self->priv->root_dir;
-		_tmp1_ = devpath;
-		_tmp2_ = name;
-		_tmp3_ = g_build_filename (_tmp0_, _tmp1_, _tmp2_, NULL);
-		_tmp4_ = _tmp3_;
-		_tmp5_ = value;
-		_tmp5__length1 = value_length1;
-		g_file_set_contents (_tmp4_, (const char*) _tmp5_, (size_t) _tmp5__length1, &_inner_error_);
-		_g_free0 (_tmp4_);
+		const gchar* _tmp13_ = NULL;
+		guint8* _tmp14_ = NULL;
+		gint _tmp14__length1 = 0;
+		_tmp13_ = attr_path;
+		_tmp14_ = value;
+		_tmp14__length1 = value_length1;
+		g_file_set_contents (_tmp13_, (const char*) _tmp14_, (size_t) _tmp14__length1, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_FILE_ERROR) {
 				goto __catch1_g_file_error;
 			}
+			_g_free0 (attr_path);
 			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 			g_clear_error (&_inner_error_);
 			return;
@@ -568,19 +610,21 @@ void umockdev_testbed_set_attribute_binary (UMockdevTestbed* self, const gchar* 
 	__catch1_g_file_error:
 	{
 		GError* e = NULL;
-		const gchar* _tmp6_ = NULL;
+		const gchar* _tmp15_ = NULL;
 		e = _inner_error_;
 		_inner_error_ = NULL;
-		_tmp6_ = e->message;
-		g_error ("umockdev.vala:157: Cannot write attribute file: %s", _tmp6_);
+		_tmp15_ = e->message;
+		g_error ("umockdev.vala:165: Cannot write attribute file: %s", _tmp15_);
 		_g_error_free0 (e);
 	}
 	__finally1:
 	if (_inner_error_ != NULL) {
+		_g_free0 (attr_path);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
 		return;
 	}
+	_g_free0 (attr_path);
 }
 
 
@@ -588,7 +632,8 @@ void umockdev_testbed_set_attribute_binary (UMockdevTestbed* self, const gchar* 
      * umockdev_testbed_set_attribute_int:
      * @self: A #UMockdevTestbed.
      * @devpath: The full device path, as returned by #umockdev_testbed_add_device()
-     * @name: Attribute name
+     * @name: Attribute name (may contain leading directories like
+     *        "queue/rotational")
      * @value: Attribute integer value
      *
      * Set an integer sysfs attribute for a device.
@@ -658,8 +703,11 @@ void umockdev_testbed_set_attribute_link (UMockdevTestbed* self, const gchar* de
 	const gchar* _tmp1_ = NULL;
 	const gchar* _tmp2_ = NULL;
 	gchar* _tmp3_ = NULL;
-	const gchar* _tmp4_ = NULL;
+	gchar* dir = NULL;
+	gchar* _tmp4_ = NULL;
 	gint _tmp5_ = 0;
+	const gchar* _tmp8_ = NULL;
+	gint _tmp9_ = 0;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (devpath != NULL);
 	g_return_if_fail (name != NULL);
@@ -669,15 +717,26 @@ void umockdev_testbed_set_attribute_link (UMockdevTestbed* self, const gchar* de
 	_tmp2_ = name;
 	_tmp3_ = g_build_filename (_tmp0_, _tmp1_, _tmp2_, NULL);
 	path = _tmp3_;
-	_tmp4_ = value;
-	_tmp5_ = symlink (_tmp4_, path);
-	if (_tmp5_ < 0) {
+	_tmp4_ = g_path_get_dirname (path);
+	dir = _tmp4_;
+	_tmp5_ = g_mkdir_with_parents (dir, 0755);
+	if (_tmp5_ != 0) {
 		gint _tmp6_ = 0;
 		const gchar* _tmp7_ = NULL;
 		_tmp6_ = errno;
 		_tmp7_ = g_strerror (_tmp6_);
-		g_error ("umockdev.vala:205: Cannot create symlink %s: %s", path, _tmp7_);
+		g_error ("umockdev.vala:215: cannot create attribute dir '%s': %s", dir, _tmp7_);
 	}
+	_tmp8_ = value;
+	_tmp9_ = symlink (_tmp8_, path);
+	if (_tmp9_ < 0) {
+		gint _tmp10_ = 0;
+		const gchar* _tmp11_ = NULL;
+		_tmp10_ = errno;
+		_tmp11_ = g_strerror (_tmp10_);
+		g_error ("umockdev.vala:217: Cannot create symlink %s: %s", path, _tmp11_);
+	}
+	_g_free0 (dir);
 	_g_free0 (path);
 }
 
@@ -911,7 +970,7 @@ gchar* umockdev_testbed_get_property (UMockdevTestbed* self, const gchar* devpat
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		_tmp26_ = e->message;
-		g_error ("umockdev.vala:240: Cannot read uevent file: %s", _tmp26_);
+		g_error ("umockdev.vala:252: Cannot read uevent file: %s", _tmp26_);
 		_g_error_free0 (e);
 	}
 	__finally2:
@@ -1151,7 +1210,7 @@ void umockdev_testbed_set_property (UMockdevTestbed* self, const gchar* devpath,
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		_tmp56_ = e->message;
-		g_error ("umockdev.vala:293: Cannot update uevent file: %s", _tmp56_);
+		g_error ("umockdev.vala:305: Cannot update uevent file: %s", _tmp56_);
 		_g_error_free0 (e);
 	}
 	__finally3:
@@ -1361,19 +1420,6 @@ static gchar* string_replace (const gchar* self, const gchar* old, const gchar* 
 }
 
 
-static gboolean string_contains (const gchar* self, const gchar* needle) {
-	gboolean result = FALSE;
-	const gchar* _tmp0_ = NULL;
-	gchar* _tmp1_ = NULL;
-	g_return_val_if_fail (self != NULL, FALSE);
-	g_return_val_if_fail (needle != NULL, FALSE);
-	_tmp0_ = needle;
-	_tmp1_ = strstr ((gchar*) self, (gchar*) _tmp0_);
-	result = _tmp1_ != NULL;
-	return result;
-}
-
-
 gchar* umockdev_testbed_add_devicev (UMockdevTestbed* self, const gchar* subsystem, const gchar* name, const gchar* parent, gchar** attributes, gchar** properties) {
 	gchar* result = NULL;
 	gchar* dev_path = NULL;
@@ -1419,17 +1465,18 @@ gchar* umockdev_testbed_add_devicev (UMockdevTestbed* self, const gchar* subsyst
 	gchar* _tmp57_ = NULL;
 	gchar* _tmp58_ = NULL;
 	gint _tmp59_ = 0;
-	gboolean _tmp60_ = FALSE;
-	const gchar* _tmp61_ = NULL;
+	const gchar* _tmp60_ = NULL;
+	gboolean _tmp78_ = FALSE;
+	const gchar* _tmp79_ = NULL;
 	gchar* props = NULL;
-	gchar* _tmp78_ = NULL;
-	gchar** _tmp116_ = NULL;
-	gint _tmp116__length1 = 0;
-	const gchar* _tmp120_ = NULL;
-	const gchar* _tmp121_ = NULL;
-	gchar** _tmp183_ = NULL;
-	gint _tmp183__length1 = 0;
-	gboolean _tmp187_ = FALSE;
+	gchar* _tmp96_ = NULL;
+	gchar** _tmp134_ = NULL;
+	gint _tmp134__length1 = 0;
+	const gchar* _tmp138_ = NULL;
+	const gchar* _tmp139_ = NULL;
+	gchar** _tmp201_ = NULL;
+	gint _tmp201__length1 = 0;
+	gboolean _tmp205_ = FALSE;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (subsystem != NULL, NULL);
 	g_return_val_if_fail (name != NULL, NULL);
@@ -1448,7 +1495,7 @@ gchar* umockdev_testbed_add_devicev (UMockdevTestbed* self, const gchar* subsyst
 		if (!_tmp2_) {
 			const gchar* _tmp3_ = NULL;
 			_tmp3_ = parent;
-			g_critical ("umockdev.vala:368: add_devicev(): parent device %s does not start with" \
+			g_critical ("umockdev.vala:380: add_devicev(): parent device %s does not start with" \
 " /sys/", _tmp3_);
 			result = NULL;
 			_g_free0 (dev_node);
@@ -1460,7 +1507,7 @@ gchar* umockdev_testbed_add_devicev (UMockdevTestbed* self, const gchar* subsyst
 		if (!_tmp5_) {
 			const gchar* _tmp6_ = NULL;
 			_tmp6_ = parent;
-			g_critical ("umockdev.vala:372: add_devicev(): parent device %s does not exist", _tmp6_);
+			g_critical ("umockdev.vala:384: add_devicev(): parent device %s does not exist", _tmp6_);
 			result = NULL;
 			_g_free0 (dev_node);
 			_g_free0 (dev_path);
@@ -1502,7 +1549,7 @@ gchar* umockdev_testbed_add_devicev (UMockdevTestbed* self, const gchar* subsyst
 	if (_tmp15_) {
 		const gchar* _tmp22_ = NULL;
 		_tmp22_ = dev_dir;
-		g_error ("umockdev.vala:383: device %s already exists", _tmp22_);
+		g_error ("umockdev.vala:395: device %s already exists", _tmp22_);
 	}
 	_tmp23_ = dev_dir;
 	_tmp24_ = g_mkdir_with_parents (_tmp23_, 0755);
@@ -1513,7 +1560,7 @@ gchar* umockdev_testbed_add_devicev (UMockdevTestbed* self, const gchar* subsyst
 		_tmp25_ = dev_dir;
 		_tmp26_ = errno;
 		_tmp27_ = g_strerror (_tmp26_);
-		g_error ("umockdev.vala:387: cannot create dev dir '%s': %s", _tmp25_, _tmp27_);
+		g_error ("umockdev.vala:399: cannot create dev dir '%s': %s", _tmp25_, _tmp27_);
 	}
 	_tmp28_ = self->priv->sys_dir;
 	_tmp29_ = subsystem;
@@ -1528,7 +1575,7 @@ gchar* umockdev_testbed_add_devicev (UMockdevTestbed* self, const gchar* subsyst
 		_tmp33_ = class_dir;
 		_tmp34_ = errno;
 		_tmp35_ = g_strerror (_tmp34_);
-		g_error ("umockdev.vala:390: cannot create class dir '%s': %s", _tmp33_, _tmp35_);
+		g_error ("umockdev.vala:402: cannot create class dir '%s': %s", _tmp33_, _tmp35_);
 	}
 	_tmp36_ = dev_path;
 	_tmp37_ = dev_path;
@@ -1563,20 +1610,13 @@ gchar* umockdev_testbed_add_devicev (UMockdevTestbed* self, const gchar* subsyst
 	_g_free0 (_tmp58_);
 	_g_free0 (_tmp56_);
 	_g_free0 (_tmp52_);
-	_tmp61_ = subsystem;
-	if (g_strcmp0 (_tmp61_, "usb") == 0) {
-		_tmp60_ = TRUE;
-	} else {
-		const gchar* _tmp62_ = NULL;
-		_tmp62_ = subsystem;
-		_tmp60_ = g_strcmp0 (_tmp62_, "pci") == 0;
-	}
-	if (_tmp60_) {
+	_tmp60_ = subsystem;
+	if (g_strcmp0 (_tmp60_, "block") == 0) {
+		gchar* block_dir = NULL;
+		const gchar* _tmp61_ = NULL;
+		gchar* _tmp62_ = NULL;
 		const gchar* _tmp63_ = NULL;
-		const gchar* _tmp64_ = NULL;
-		gchar* _tmp65_ = NULL;
-		const gchar* _tmp66_ = NULL;
-		gint _tmp67_ = 0;
+		gint _tmp64_ = 0;
 		const gchar* _tmp68_ = NULL;
 		gchar* _tmp69_ = NULL;
 		gchar* _tmp70_ = NULL;
@@ -1587,344 +1627,398 @@ gchar* umockdev_testbed_add_devicev (UMockdevTestbed* self, const gchar* subsyst
 		gchar* _tmp75_ = NULL;
 		gchar* _tmp76_ = NULL;
 		gint _tmp77_ = 0;
-		_tmp63_ = self->priv->sys_dir;
-		_tmp64_ = subsystem;
-		_tmp65_ = g_build_filename (_tmp63_, "bus", _tmp64_, "devices", NULL);
-		_g_free0 (class_dir);
-		class_dir = _tmp65_;
-		_tmp66_ = class_dir;
-		_tmp67_ = g_mkdir_with_parents (_tmp66_, 0755);
-		_vala_assert (_tmp67_ == 0, "DirUtils.create_with_parents(class_dir, 0755) == 0");
+		_tmp61_ = self->priv->sys_dir;
+		_tmp62_ = g_build_filename (_tmp61_, "block", NULL);
+		block_dir = _tmp62_;
+		_tmp63_ = block_dir;
+		_tmp64_ = g_mkdir_with_parents (_tmp63_, 0755);
+		if (_tmp64_ != 0) {
+			const gchar* _tmp65_ = NULL;
+			gint _tmp66_ = 0;
+			const gchar* _tmp67_ = NULL;
+			_tmp65_ = block_dir;
+			_tmp66_ = errno;
+			_tmp67_ = g_strerror (_tmp66_);
+			g_error ("umockdev.vala:419: cannot create block dir '%s': %s", _tmp65_, _tmp67_);
+		}
 		_tmp68_ = dev_path_no_sys;
-		_tmp69_ = g_build_filename ("..", "..", "..", _tmp68_, NULL);
+		_tmp69_ = g_build_filename ("..", _tmp68_, NULL);
 		_tmp70_ = _tmp69_;
-		_tmp71_ = class_dir;
+		_tmp71_ = block_dir;
 		_tmp72_ = name;
 		_tmp73_ = g_path_get_basename (_tmp72_);
 		_tmp74_ = _tmp73_;
 		_tmp75_ = g_build_filename (_tmp71_, _tmp74_, NULL);
 		_tmp76_ = _tmp75_;
 		_tmp77_ = symlink (_tmp70_, _tmp76_);
-		_vala_assert (_tmp77_ == 0, "FileUtils.symlink(Path.build_filename(\"..\", \"..\", \"..\", dev_path_no_sys),                                      Path.build_filename(class_dir, Path.get_basename(name))) == 0");
+		_vala_assert (_tmp77_ == 0, "FileUtils.symlink(Path.build_filename(\"..\", dev_path_no_sys),                                      Path.build_filename(block_dir, Path.get_basename(name))) == 0");
 		_g_free0 (_tmp76_);
 		_g_free0 (_tmp74_);
 		_g_free0 (_tmp70_);
+		_g_free0 (block_dir);
 	}
-	_tmp78_ = g_strdup ("");
-	props = _tmp78_;
+	_tmp79_ = subsystem;
+	if (g_strcmp0 (_tmp79_, "usb") == 0) {
+		_tmp78_ = TRUE;
+	} else {
+		const gchar* _tmp80_ = NULL;
+		_tmp80_ = subsystem;
+		_tmp78_ = g_strcmp0 (_tmp80_, "pci") == 0;
+	}
+	if (_tmp78_) {
+		const gchar* _tmp81_ = NULL;
+		const gchar* _tmp82_ = NULL;
+		gchar* _tmp83_ = NULL;
+		const gchar* _tmp84_ = NULL;
+		gint _tmp85_ = 0;
+		const gchar* _tmp86_ = NULL;
+		gchar* _tmp87_ = NULL;
+		gchar* _tmp88_ = NULL;
+		const gchar* _tmp89_ = NULL;
+		const gchar* _tmp90_ = NULL;
+		gchar* _tmp91_ = NULL;
+		gchar* _tmp92_ = NULL;
+		gchar* _tmp93_ = NULL;
+		gchar* _tmp94_ = NULL;
+		gint _tmp95_ = 0;
+		_tmp81_ = self->priv->sys_dir;
+		_tmp82_ = subsystem;
+		_tmp83_ = g_build_filename (_tmp81_, "bus", _tmp82_, "devices", NULL);
+		_g_free0 (class_dir);
+		class_dir = _tmp83_;
+		_tmp84_ = class_dir;
+		_tmp85_ = g_mkdir_with_parents (_tmp84_, 0755);
+		_vala_assert (_tmp85_ == 0, "DirUtils.create_with_parents(class_dir, 0755) == 0");
+		_tmp86_ = dev_path_no_sys;
+		_tmp87_ = g_build_filename ("..", "..", "..", _tmp86_, NULL);
+		_tmp88_ = _tmp87_;
+		_tmp89_ = class_dir;
+		_tmp90_ = name;
+		_tmp91_ = g_path_get_basename (_tmp90_);
+		_tmp92_ = _tmp91_;
+		_tmp93_ = g_build_filename (_tmp89_, _tmp92_, NULL);
+		_tmp94_ = _tmp93_;
+		_tmp95_ = symlink (_tmp88_, _tmp94_);
+		_vala_assert (_tmp95_ == 0, "FileUtils.symlink(Path.build_filename(\"..\", \"..\", \"..\", dev_path_no_sys),                                      Path.build_filename(class_dir, Path.get_basename(name))) == 0");
+		_g_free0 (_tmp94_);
+		_g_free0 (_tmp92_);
+		_g_free0 (_tmp88_);
+	}
+	_tmp96_ = g_strdup ("");
+	props = _tmp96_;
 	{
 		gint i = 0;
 		i = 0;
 		{
-			gboolean _tmp79_ = FALSE;
-			_tmp79_ = TRUE;
+			gboolean _tmp97_ = FALSE;
+			_tmp97_ = TRUE;
 			while (TRUE) {
-				gint _tmp81_ = 0;
-				gchar** _tmp82_ = NULL;
-				gint _tmp82__length1 = 0;
-				gboolean _tmp83_ = FALSE;
-				gchar** _tmp84_ = NULL;
-				gint _tmp84__length1 = 0;
-				gint _tmp85_ = 0;
-				const gchar* _tmp86_ = NULL;
-				if (!_tmp79_) {
-					gint _tmp80_ = 0;
-					_tmp80_ = i;
-					i = _tmp80_ + 2;
+				gint _tmp99_ = 0;
+				gchar** _tmp100_ = NULL;
+				gint _tmp100__length1 = 0;
+				gboolean _tmp101_ = FALSE;
+				gchar** _tmp102_ = NULL;
+				gint _tmp102__length1 = 0;
+				gint _tmp103_ = 0;
+				const gchar* _tmp104_ = NULL;
+				if (!_tmp97_) {
+					gint _tmp98_ = 0;
+					_tmp98_ = i;
+					i = _tmp98_ + 2;
 				}
-				_tmp79_ = FALSE;
-				_tmp81_ = i;
-				_tmp82_ = properties;
-				_tmp82__length1 = _vala_array_length (properties);
-				if (!(_tmp81_ < (_tmp82__length1 - 1))) {
+				_tmp97_ = FALSE;
+				_tmp99_ = i;
+				_tmp100_ = properties;
+				_tmp100__length1 = _vala_array_length (properties);
+				if (!(_tmp99_ < (_tmp100__length1 - 1))) {
 					break;
 				}
-				_tmp84_ = properties;
-				_tmp84__length1 = _vala_array_length (properties);
-				_tmp85_ = i;
-				_tmp86_ = _tmp84_[_tmp85_];
-				if (g_strcmp0 (_tmp86_, "DEVNAME") == 0) {
-					gchar** _tmp87_ = NULL;
-					gint _tmp87__length1 = 0;
-					gint _tmp88_ = 0;
-					const gchar* _tmp89_ = NULL;
-					gboolean _tmp90_ = FALSE;
-					_tmp87_ = properties;
-					_tmp87__length1 = _vala_array_length (properties);
-					_tmp88_ = i;
-					_tmp89_ = _tmp87_[_tmp88_ + 1];
-					_tmp90_ = g_str_has_prefix (_tmp89_, "/dev/");
-					_tmp83_ = _tmp90_;
+				_tmp102_ = properties;
+				_tmp102__length1 = _vala_array_length (properties);
+				_tmp103_ = i;
+				_tmp104_ = _tmp102_[_tmp103_];
+				if (g_strcmp0 (_tmp104_, "DEVNAME") == 0) {
+					gchar** _tmp105_ = NULL;
+					gint _tmp105__length1 = 0;
+					gint _tmp106_ = 0;
+					const gchar* _tmp107_ = NULL;
+					gboolean _tmp108_ = FALSE;
+					_tmp105_ = properties;
+					_tmp105__length1 = _vala_array_length (properties);
+					_tmp106_ = i;
+					_tmp107_ = _tmp105_[_tmp106_ + 1];
+					_tmp108_ = g_str_has_prefix (_tmp107_, "/dev/");
+					_tmp101_ = _tmp108_;
 				} else {
-					_tmp83_ = FALSE;
+					_tmp101_ = FALSE;
 				}
-				if (_tmp83_) {
-					gchar** _tmp91_ = NULL;
-					gint _tmp91__length1 = 0;
-					gint _tmp92_ = 0;
-					const gchar* _tmp93_ = NULL;
-					gchar* _tmp94_ = NULL;
-					const gchar* _tmp95_ = NULL;
-					const gchar* _tmp96_ = NULL;
-					gchar* _tmp97_ = NULL;
-					gchar* _tmp98_ = NULL;
-					gchar* _tmp99_ = NULL;
-					gchar* _tmp100_ = NULL;
-					gchar* _tmp101_ = NULL;
-					_tmp91_ = properties;
-					_tmp91__length1 = _vala_array_length (properties);
-					_tmp92_ = i;
-					_tmp93_ = _tmp91_[_tmp92_ + 1];
-					_tmp94_ = string_substring (_tmp93_, (glong) 5, (glong) (-1));
-					_g_free0 (dev_node);
-					dev_node = _tmp94_;
-					_tmp95_ = props;
-					_tmp96_ = dev_node;
-					_tmp97_ = g_strconcat ("DEVNAME=", _tmp96_, NULL);
-					_tmp98_ = _tmp97_;
-					_tmp99_ = g_strconcat (_tmp98_, "\n", NULL);
-					_tmp100_ = _tmp99_;
-					_tmp101_ = g_strconcat (_tmp95_, _tmp100_, NULL);
-					_g_free0 (props);
-					props = _tmp101_;
-					_g_free0 (_tmp100_);
-					_g_free0 (_tmp98_);
-				} else {
-					const gchar* _tmp102_ = NULL;
-					gchar** _tmp103_ = NULL;
-					gint _tmp103__length1 = 0;
-					gint _tmp104_ = 0;
-					const gchar* _tmp105_ = NULL;
-					gchar* _tmp106_ = NULL;
-					gchar* _tmp107_ = NULL;
-					gchar** _tmp108_ = NULL;
-					gint _tmp108__length1 = 0;
-					gint _tmp109_ = 0;
-					const gchar* _tmp110_ = NULL;
-					gchar* _tmp111_ = NULL;
+				if (_tmp101_) {
+					gchar** _tmp109_ = NULL;
+					gint _tmp109__length1 = 0;
+					gint _tmp110_ = 0;
+					const gchar* _tmp111_ = NULL;
 					gchar* _tmp112_ = NULL;
-					gchar* _tmp113_ = NULL;
-					gchar* _tmp114_ = NULL;
+					const gchar* _tmp113_ = NULL;
+					const gchar* _tmp114_ = NULL;
 					gchar* _tmp115_ = NULL;
-					_tmp102_ = props;
-					_tmp103_ = properties;
-					_tmp103__length1 = _vala_array_length (properties);
-					_tmp104_ = i;
-					_tmp105_ = _tmp103_[_tmp104_];
-					_tmp106_ = g_strconcat (_tmp105_, "=", NULL);
-					_tmp107_ = _tmp106_;
-					_tmp108_ = properties;
-					_tmp108__length1 = _vala_array_length (properties);
-					_tmp109_ = i;
-					_tmp110_ = _tmp108_[_tmp109_ + 1];
-					_tmp111_ = g_strconcat (_tmp107_, _tmp110_, NULL);
-					_tmp112_ = _tmp111_;
-					_tmp113_ = g_strconcat (_tmp112_, "\n", NULL);
-					_tmp114_ = _tmp113_;
-					_tmp115_ = g_strconcat (_tmp102_, _tmp114_, NULL);
+					gchar* _tmp116_ = NULL;
+					gchar* _tmp117_ = NULL;
+					gchar* _tmp118_ = NULL;
+					gchar* _tmp119_ = NULL;
+					_tmp109_ = properties;
+					_tmp109__length1 = _vala_array_length (properties);
+					_tmp110_ = i;
+					_tmp111_ = _tmp109_[_tmp110_ + 1];
+					_tmp112_ = string_substring (_tmp111_, (glong) 5, (glong) (-1));
+					_g_free0 (dev_node);
+					dev_node = _tmp112_;
+					_tmp113_ = props;
+					_tmp114_ = dev_node;
+					_tmp115_ = g_strconcat ("DEVNAME=", _tmp114_, NULL);
+					_tmp116_ = _tmp115_;
+					_tmp117_ = g_strconcat (_tmp116_, "\n", NULL);
+					_tmp118_ = _tmp117_;
+					_tmp119_ = g_strconcat (_tmp113_, _tmp118_, NULL);
 					_g_free0 (props);
-					props = _tmp115_;
-					_g_free0 (_tmp114_);
-					_g_free0 (_tmp112_);
-					_g_free0 (_tmp107_);
+					props = _tmp119_;
+					_g_free0 (_tmp118_);
+					_g_free0 (_tmp116_);
+				} else {
+					const gchar* _tmp120_ = NULL;
+					gchar** _tmp121_ = NULL;
+					gint _tmp121__length1 = 0;
+					gint _tmp122_ = 0;
+					const gchar* _tmp123_ = NULL;
+					gchar* _tmp124_ = NULL;
+					gchar* _tmp125_ = NULL;
+					gchar** _tmp126_ = NULL;
+					gint _tmp126__length1 = 0;
+					gint _tmp127_ = 0;
+					const gchar* _tmp128_ = NULL;
+					gchar* _tmp129_ = NULL;
+					gchar* _tmp130_ = NULL;
+					gchar* _tmp131_ = NULL;
+					gchar* _tmp132_ = NULL;
+					gchar* _tmp133_ = NULL;
+					_tmp120_ = props;
+					_tmp121_ = properties;
+					_tmp121__length1 = _vala_array_length (properties);
+					_tmp122_ = i;
+					_tmp123_ = _tmp121_[_tmp122_];
+					_tmp124_ = g_strconcat (_tmp123_, "=", NULL);
+					_tmp125_ = _tmp124_;
+					_tmp126_ = properties;
+					_tmp126__length1 = _vala_array_length (properties);
+					_tmp127_ = i;
+					_tmp128_ = _tmp126_[_tmp127_ + 1];
+					_tmp129_ = g_strconcat (_tmp125_, _tmp128_, NULL);
+					_tmp130_ = _tmp129_;
+					_tmp131_ = g_strconcat (_tmp130_, "\n", NULL);
+					_tmp132_ = _tmp131_;
+					_tmp133_ = g_strconcat (_tmp120_, _tmp132_, NULL);
+					_g_free0 (props);
+					props = _tmp133_;
+					_g_free0 (_tmp132_);
+					_g_free0 (_tmp130_);
+					_g_free0 (_tmp125_);
 				}
 			}
 		}
 	}
-	_tmp116_ = properties;
-	_tmp116__length1 = _vala_array_length (properties);
-	if ((_tmp116__length1 % 2) != 0) {
-		gchar** _tmp117_ = NULL;
-		gint _tmp117__length1 = 0;
-		gchar** _tmp118_ = NULL;
-		gint _tmp118__length1 = 0;
-		const gchar* _tmp119_ = NULL;
-		_tmp117_ = properties;
-		_tmp117__length1 = _vala_array_length (properties);
-		_tmp118_ = properties;
-		_tmp118__length1 = _vala_array_length (properties);
-		_tmp119_ = _tmp117_[_tmp118__length1 - 1];
-		g_warning ("umockdev.vala:422: add_devicev: Ignoring property key '%s' without val" \
-"ue", _tmp119_);
+	_tmp134_ = properties;
+	_tmp134__length1 = _vala_array_length (properties);
+	if ((_tmp134__length1 % 2) != 0) {
+		gchar** _tmp135_ = NULL;
+		gint _tmp135__length1 = 0;
+		gchar** _tmp136_ = NULL;
+		gint _tmp136__length1 = 0;
+		const gchar* _tmp137_ = NULL;
+		_tmp135_ = properties;
+		_tmp135__length1 = _vala_array_length (properties);
+		_tmp136_ = properties;
+		_tmp136__length1 = _vala_array_length (properties);
+		_tmp137_ = _tmp135_[_tmp136__length1 - 1];
+		g_warning ("umockdev.vala:443: add_devicev: Ignoring property key '%s' without val" \
+"ue", _tmp137_);
 	}
-	_tmp120_ = dev_path;
-	_tmp121_ = props;
-	umockdev_testbed_set_attribute (self, _tmp120_, "uevent", _tmp121_);
+	_tmp138_ = dev_path;
+	_tmp139_ = props;
+	umockdev_testbed_set_attribute (self, _tmp138_, "uevent", _tmp139_);
 	{
 		gint i = 0;
 		i = 0;
 		{
-			gboolean _tmp122_ = FALSE;
-			_tmp122_ = TRUE;
+			gboolean _tmp140_ = FALSE;
+			_tmp140_ = TRUE;
 			while (TRUE) {
-				gint _tmp124_ = 0;
-				gchar** _tmp125_ = NULL;
-				gint _tmp125__length1 = 0;
-				const gchar* _tmp126_ = NULL;
-				gchar** _tmp127_ = NULL;
-				gint _tmp127__length1 = 0;
-				gint _tmp128_ = 0;
-				const gchar* _tmp129_ = NULL;
-				gchar** _tmp130_ = NULL;
-				gint _tmp130__length1 = 0;
-				gint _tmp131_ = 0;
-				const gchar* _tmp132_ = NULL;
-				gboolean _tmp133_ = FALSE;
-				gchar** _tmp134_ = NULL;
-				gint _tmp134__length1 = 0;
-				gint _tmp135_ = 0;
-				const gchar* _tmp136_ = NULL;
-				if (!_tmp122_) {
-					gint _tmp123_ = 0;
-					_tmp123_ = i;
-					i = _tmp123_ + 2;
+				gint _tmp142_ = 0;
+				gchar** _tmp143_ = NULL;
+				gint _tmp143__length1 = 0;
+				const gchar* _tmp144_ = NULL;
+				gchar** _tmp145_ = NULL;
+				gint _tmp145__length1 = 0;
+				gint _tmp146_ = 0;
+				const gchar* _tmp147_ = NULL;
+				gchar** _tmp148_ = NULL;
+				gint _tmp148__length1 = 0;
+				gint _tmp149_ = 0;
+				const gchar* _tmp150_ = NULL;
+				gboolean _tmp151_ = FALSE;
+				gchar** _tmp152_ = NULL;
+				gint _tmp152__length1 = 0;
+				gint _tmp153_ = 0;
+				const gchar* _tmp154_ = NULL;
+				if (!_tmp140_) {
+					gint _tmp141_ = 0;
+					_tmp141_ = i;
+					i = _tmp141_ + 2;
 				}
-				_tmp122_ = FALSE;
-				_tmp124_ = i;
-				_tmp125_ = attributes;
-				_tmp125__length1 = _vala_array_length (attributes);
-				if (!(_tmp124_ < (_tmp125__length1 - 1))) {
+				_tmp140_ = FALSE;
+				_tmp142_ = i;
+				_tmp143_ = attributes;
+				_tmp143__length1 = _vala_array_length (attributes);
+				if (!(_tmp142_ < (_tmp143__length1 - 1))) {
 					break;
 				}
-				_tmp126_ = dev_path;
-				_tmp127_ = attributes;
-				_tmp127__length1 = _vala_array_length (attributes);
-				_tmp128_ = i;
-				_tmp129_ = _tmp127_[_tmp128_];
-				_tmp130_ = attributes;
-				_tmp130__length1 = _vala_array_length (attributes);
-				_tmp131_ = i;
-				_tmp132_ = _tmp130_[_tmp131_ + 1];
-				umockdev_testbed_set_attribute (self, _tmp126_, _tmp129_, _tmp132_);
-				_tmp134_ = attributes;
-				_tmp134__length1 = _vala_array_length (attributes);
-				_tmp135_ = i;
-				_tmp136_ = _tmp134_[_tmp135_];
-				if (g_strcmp0 (_tmp136_, "dev") == 0) {
-					const gchar* _tmp137_ = NULL;
-					_tmp137_ = dev_node;
-					_tmp133_ = _tmp137_ != NULL;
+				_tmp144_ = dev_path;
+				_tmp145_ = attributes;
+				_tmp145__length1 = _vala_array_length (attributes);
+				_tmp146_ = i;
+				_tmp147_ = _tmp145_[_tmp146_];
+				_tmp148_ = attributes;
+				_tmp148__length1 = _vala_array_length (attributes);
+				_tmp149_ = i;
+				_tmp150_ = _tmp148_[_tmp149_ + 1];
+				umockdev_testbed_set_attribute (self, _tmp144_, _tmp147_, _tmp150_);
+				_tmp152_ = attributes;
+				_tmp152__length1 = _vala_array_length (attributes);
+				_tmp153_ = i;
+				_tmp154_ = _tmp152_[_tmp153_];
+				if (g_strcmp0 (_tmp154_, "dev") == 0) {
+					const gchar* _tmp155_ = NULL;
+					_tmp155_ = dev_node;
+					_tmp151_ = _tmp155_ != NULL;
 				} else {
-					_tmp133_ = FALSE;
+					_tmp151_ = FALSE;
 				}
-				if (_tmp133_) {
+				if (_tmp151_) {
 					gchar* infodir = NULL;
-					const gchar* _tmp138_ = NULL;
-					gchar* _tmp139_ = NULL;
-					const gchar* _tmp140_ = NULL;
-					gchar** _tmp141_ = NULL;
-					gint _tmp141__length1 = 0;
-					gint _tmp142_ = 0;
-					const gchar* _tmp143_ = NULL;
-					const gchar* _tmp144_ = NULL;
-					const gchar* _tmp145_ = NULL;
-					gchar* _tmp146_ = NULL;
-					gchar* _tmp147_ = NULL;
-					gchar* _tmp148_ = NULL;
-					gchar* _tmp149_ = NULL;
-					gint _tmp150_ = 0;
-					const gchar* _tmp151_ = NULL;
-					const gchar* _tmp152_ = NULL;
-					gboolean _tmp153_ = FALSE;
-					gchar* sysdev_dir = NULL;
-					const gchar* _tmp154_ = NULL;
-					gchar* _tmp155_ = NULL;
 					const gchar* _tmp156_ = NULL;
-					gint _tmp157_ = 0;
-					gchar* dest = NULL;
+					gchar* _tmp157_ = NULL;
+					const gchar* _tmp158_ = NULL;
+					gchar** _tmp159_ = NULL;
+					gint _tmp159__length1 = 0;
+					gint _tmp160_ = 0;
 					const gchar* _tmp161_ = NULL;
-					gchar** _tmp162_ = NULL;
-					gint _tmp162__length1 = 0;
-					gint _tmp163_ = 0;
-					const gchar* _tmp164_ = NULL;
+					const gchar* _tmp162_ = NULL;
+					const gchar* _tmp163_ = NULL;
+					gchar* _tmp164_ = NULL;
 					gchar* _tmp165_ = NULL;
-					const gchar* _tmp166_ = NULL;
-					gboolean _tmp167_ = FALSE;
-					_tmp138_ = self->priv->root_dir;
-					_tmp139_ = g_build_filename (_tmp138_, "dev", ".node", NULL);
-					infodir = _tmp139_;
-					_tmp140_ = infodir;
-					g_mkdir_with_parents (_tmp140_, 0755);
-					_tmp141_ = attributes;
-					_tmp141__length1 = _vala_array_length (attributes);
-					_tmp142_ = i;
-					_tmp143_ = _tmp141_[_tmp142_ + 1];
-					_tmp144_ = infodir;
-					_tmp145_ = dev_node;
-					_tmp146_ = string_replace (_tmp145_, "/", "_");
-					_tmp147_ = _tmp146_;
-					_tmp148_ = g_build_filename (_tmp144_, _tmp147_, NULL);
-					_tmp149_ = _tmp148_;
-					_tmp150_ = symlink (_tmp143_, _tmp149_);
-					_vala_assert (_tmp150_ == 0, "FileUtils.symlink(attributes[i+1],                                          Path.build_filename(infodir, dev_node.replace(\"/\", \"_\"))) == 0");
-					_g_free0 (_tmp149_);
-					_g_free0 (_tmp147_);
-					_tmp152_ = dev_path;
-					_tmp153_ = string_contains (_tmp152_, "/block/");
-					if (_tmp153_) {
-						_tmp151_ = "block";
+					gchar* _tmp166_ = NULL;
+					gchar* _tmp167_ = NULL;
+					gint _tmp168_ = 0;
+					const gchar* _tmp169_ = NULL;
+					const gchar* _tmp170_ = NULL;
+					gboolean _tmp171_ = FALSE;
+					gchar* sysdev_dir = NULL;
+					const gchar* _tmp172_ = NULL;
+					gchar* _tmp173_ = NULL;
+					const gchar* _tmp174_ = NULL;
+					gint _tmp175_ = 0;
+					gchar* dest = NULL;
+					const gchar* _tmp179_ = NULL;
+					gchar** _tmp180_ = NULL;
+					gint _tmp180__length1 = 0;
+					gint _tmp181_ = 0;
+					const gchar* _tmp182_ = NULL;
+					gchar* _tmp183_ = NULL;
+					const gchar* _tmp184_ = NULL;
+					gboolean _tmp185_ = FALSE;
+					_tmp156_ = self->priv->root_dir;
+					_tmp157_ = g_build_filename (_tmp156_, "dev", ".node", NULL);
+					infodir = _tmp157_;
+					_tmp158_ = infodir;
+					g_mkdir_with_parents (_tmp158_, 0755);
+					_tmp159_ = attributes;
+					_tmp159__length1 = _vala_array_length (attributes);
+					_tmp160_ = i;
+					_tmp161_ = _tmp159_[_tmp160_ + 1];
+					_tmp162_ = infodir;
+					_tmp163_ = dev_node;
+					_tmp164_ = string_replace (_tmp163_, "/", "_");
+					_tmp165_ = _tmp164_;
+					_tmp166_ = g_build_filename (_tmp162_, _tmp165_, NULL);
+					_tmp167_ = _tmp166_;
+					_tmp168_ = symlink (_tmp161_, _tmp167_);
+					_vala_assert (_tmp168_ == 0, "FileUtils.symlink(attributes[i+1],                                          Path.build_filename(infodir, dev_node.replace(\"/\", \"_\"))) == 0");
+					_g_free0 (_tmp167_);
+					_g_free0 (_tmp165_);
+					_tmp170_ = dev_path;
+					_tmp171_ = string_contains (_tmp170_, "/block/");
+					if (_tmp171_) {
+						_tmp169_ = "block";
 					} else {
-						_tmp151_ = "char";
+						_tmp169_ = "char";
 					}
-					_tmp154_ = self->priv->sys_dir;
-					_tmp155_ = g_build_filename (_tmp154_, "dev", _tmp151_, NULL);
-					sysdev_dir = _tmp155_;
-					_tmp156_ = sysdev_dir;
-					_tmp157_ = g_mkdir_with_parents (_tmp156_, 0755);
-					if (_tmp157_ != 0) {
-						const gchar* _tmp158_ = NULL;
-						gint _tmp159_ = 0;
-						const gchar* _tmp160_ = NULL;
-						_tmp158_ = sysdev_dir;
-						_tmp159_ = errno;
-						_tmp160_ = g_strerror (_tmp159_);
-						g_error ("umockdev.vala:439: cannot create dir '%s': %s", _tmp158_, _tmp160_);
+					_tmp172_ = self->priv->sys_dir;
+					_tmp173_ = g_build_filename (_tmp172_, "dev", _tmp169_, NULL);
+					sysdev_dir = _tmp173_;
+					_tmp174_ = sysdev_dir;
+					_tmp175_ = g_mkdir_with_parents (_tmp174_, 0755);
+					if (_tmp175_ != 0) {
+						const gchar* _tmp176_ = NULL;
+						gint _tmp177_ = 0;
+						const gchar* _tmp178_ = NULL;
+						_tmp176_ = sysdev_dir;
+						_tmp177_ = errno;
+						_tmp178_ = g_strerror (_tmp177_);
+						g_error ("umockdev.vala:460: cannot create dir '%s': %s", _tmp176_, _tmp178_);
 					}
-					_tmp161_ = sysdev_dir;
-					_tmp162_ = attributes;
-					_tmp162__length1 = _vala_array_length (attributes);
-					_tmp163_ = i;
-					_tmp164_ = _tmp162_[_tmp163_ + 1];
-					_tmp165_ = g_build_filename (_tmp161_, _tmp164_, NULL);
-					dest = _tmp165_;
-					_tmp166_ = dest;
-					_tmp167_ = g_file_test (_tmp166_, G_FILE_TEST_EXISTS);
-					if (!_tmp167_) {
-						const gchar* _tmp168_ = NULL;
-						gchar* _tmp169_ = NULL;
-						gchar* _tmp170_ = NULL;
-						gchar* _tmp171_ = NULL;
-						gchar* _tmp172_ = NULL;
-						const gchar* _tmp173_ = NULL;
-						gint _tmp174_ = 0;
-						gboolean _tmp175_ = FALSE;
-						_tmp168_ = dev_path;
-						_tmp169_ = string_substring (_tmp168_, (glong) 5, (glong) (-1));
-						_tmp170_ = _tmp169_;
-						_tmp171_ = g_strconcat ("../../", _tmp170_, NULL);
-						_tmp172_ = _tmp171_;
-						_tmp173_ = dest;
-						_tmp174_ = symlink (_tmp172_, _tmp173_);
-						_tmp175_ = _tmp174_ < 0;
-						_g_free0 (_tmp172_);
-						_g_free0 (_tmp170_);
-						if (_tmp175_) {
-							const gchar* _tmp176_ = NULL;
-							const gchar* _tmp177_ = NULL;
-							const gchar* _tmp178_ = NULL;
-							gchar* _tmp179_ = NULL;
-							gchar* _tmp180_ = NULL;
-							gint _tmp181_ = 0;
-							const gchar* _tmp182_ = NULL;
-							_tmp176_ = name;
-							_tmp177_ = dest;
-							_tmp178_ = dev_path;
-							_tmp179_ = string_substring (_tmp178_, (glong) 5, (glong) (-1));
-							_tmp180_ = _tmp179_;
-							_tmp181_ = errno;
-							_tmp182_ = g_strerror (_tmp181_);
-							g_error ("umockdev.vala:443: add_device %s: failed to symlink %s to %s: %s\n", _tmp176_, _tmp177_, _tmp180_, _tmp182_);
-							_g_free0 (_tmp180_);
+					_tmp179_ = sysdev_dir;
+					_tmp180_ = attributes;
+					_tmp180__length1 = _vala_array_length (attributes);
+					_tmp181_ = i;
+					_tmp182_ = _tmp180_[_tmp181_ + 1];
+					_tmp183_ = g_build_filename (_tmp179_, _tmp182_, NULL);
+					dest = _tmp183_;
+					_tmp184_ = dest;
+					_tmp185_ = g_file_test (_tmp184_, G_FILE_TEST_EXISTS);
+					if (!_tmp185_) {
+						const gchar* _tmp186_ = NULL;
+						gchar* _tmp187_ = NULL;
+						gchar* _tmp188_ = NULL;
+						gchar* _tmp189_ = NULL;
+						gchar* _tmp190_ = NULL;
+						const gchar* _tmp191_ = NULL;
+						gint _tmp192_ = 0;
+						gboolean _tmp193_ = FALSE;
+						_tmp186_ = dev_path;
+						_tmp187_ = string_substring (_tmp186_, (glong) 5, (glong) (-1));
+						_tmp188_ = _tmp187_;
+						_tmp189_ = g_strconcat ("../../", _tmp188_, NULL);
+						_tmp190_ = _tmp189_;
+						_tmp191_ = dest;
+						_tmp192_ = symlink (_tmp190_, _tmp191_);
+						_tmp193_ = _tmp192_ < 0;
+						_g_free0 (_tmp190_);
+						_g_free0 (_tmp188_);
+						if (_tmp193_) {
+							const gchar* _tmp194_ = NULL;
+							const gchar* _tmp195_ = NULL;
+							const gchar* _tmp196_ = NULL;
+							gchar* _tmp197_ = NULL;
+							gchar* _tmp198_ = NULL;
+							gint _tmp199_ = 0;
+							const gchar* _tmp200_ = NULL;
+							_tmp194_ = name;
+							_tmp195_ = dest;
+							_tmp196_ = dev_path;
+							_tmp197_ = string_substring (_tmp196_, (glong) 5, (glong) (-1));
+							_tmp198_ = _tmp197_;
+							_tmp199_ = errno;
+							_tmp200_ = g_strerror (_tmp199_);
+							g_error ("umockdev.vala:464: add_device %s: failed to symlink %s to %s: %s\n", _tmp194_, _tmp195_, _tmp198_, _tmp200_);
+							_g_free0 (_tmp198_);
 						}
 					}
 					_g_free0 (dest);
@@ -1934,27 +2028,27 @@ gchar* umockdev_testbed_add_devicev (UMockdevTestbed* self, const gchar* subsyst
 			}
 		}
 	}
-	_tmp183_ = attributes;
-	_tmp183__length1 = _vala_array_length (attributes);
-	if ((_tmp183__length1 % 2) != 0) {
-		gchar** _tmp184_ = NULL;
-		gint _tmp184__length1 = 0;
-		gchar** _tmp185_ = NULL;
-		gint _tmp185__length1 = 0;
-		const gchar* _tmp186_ = NULL;
-		_tmp184_ = attributes;
-		_tmp184__length1 = _vala_array_length (attributes);
-		_tmp185_ = attributes;
-		_tmp185__length1 = _vala_array_length (attributes);
-		_tmp186_ = _tmp184_[_tmp185__length1 - 1];
-		g_warning ("umockdev.vala:449: add_devicev: Ignoring attribute key '%s' without va" \
-"lue", _tmp186_);
+	_tmp201_ = attributes;
+	_tmp201__length1 = _vala_array_length (attributes);
+	if ((_tmp201__length1 % 2) != 0) {
+		gchar** _tmp202_ = NULL;
+		gint _tmp202__length1 = 0;
+		gchar** _tmp203_ = NULL;
+		gint _tmp203__length1 = 0;
+		const gchar* _tmp204_ = NULL;
+		_tmp202_ = attributes;
+		_tmp202__length1 = _vala_array_length (attributes);
+		_tmp203_ = attributes;
+		_tmp203__length1 = _vala_array_length (attributes);
+		_tmp204_ = _tmp202_[_tmp203__length1 - 1];
+		g_warning ("umockdev.vala:470: add_devicev: Ignoring attribute key '%s' without va" \
+"lue", _tmp204_);
 	}
-	_tmp187_ = umockdev_in_mock_environment ();
-	if (_tmp187_) {
-		const gchar* _tmp188_ = NULL;
-		_tmp188_ = dev_path;
-		umockdev_testbed_uevent (self, _tmp188_, "add");
+	_tmp205_ = umockdev_in_mock_environment ();
+	if (_tmp205_) {
+		const gchar* _tmp206_ = NULL;
+		_tmp206_ = dev_path;
+		umockdev_testbed_uevent (self, _tmp206_, "add");
 	}
 	result = dev_path;
 	_g_free0 (props);
@@ -2161,7 +2255,7 @@ void umockdev_testbed_remove_device (UMockdevTestbed* self, const gchar* syspath
 	if (!_tmp6_) {
 		const gchar* _tmp7_ = NULL;
 		_tmp7_ = syspath;
-		g_critical ("umockdev.vala:529: umockdev_testbed_remove_device(): device %s does no" \
+		g_critical ("umockdev.vala:550: umockdev_testbed_remove_device(): device %s does no" \
 "t exist", _tmp7_);
 		_g_free0 (devname);
 		_g_free0 (real_path);
@@ -2210,7 +2304,7 @@ void umockdev_testbed_remove_device (UMockdevTestbed* self, const gchar* syspath
 		_tmp15_ = syspath;
 		_tmp16_ = e;
 		_tmp17_ = _tmp16_->message;
-		g_critical ("umockdev.vala:539: umockdev_testbed_remove_device(): cannot determine " \
+		g_critical ("umockdev.vala:560: umockdev_testbed_remove_device(): cannot determine " \
 "subsystem of %s: %s", _tmp15_, _tmp17_);
 		_g_error_free0 (e);
 		_g_free0 (subsystem);
@@ -2542,7 +2636,7 @@ gboolean umockdev_testbed_add_from_string (UMockdevTestbed* self, const gchar* d
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		_tmp12_ = e->message;
-		g_error ("umockdev.vala:624: Internal error, cannot create regex: %s", _tmp12_);
+		g_error ("umockdev.vala:645: Internal error, cannot create regex: %s", _tmp12_);
 		_g_error_free0 (e);
 	}
 	__finally7:
@@ -2683,7 +2777,7 @@ void umockdev_testbed_uevent (UMockdevTestbed* self, const gchar* devpath, const
 		const gchar* _tmp1_ = NULL;
 		uevent_sender* _tmp2_ = NULL;
 		uevent_sender* _tmp3_ = NULL;
-		g_debug ("umockdev.vala:667: umockdev_testbed_uevent: lazily initializing uevent" \
+		g_debug ("umockdev.vala:688: umockdev_testbed_uevent: lazily initializing uevent" \
 "_sender");
 		_tmp1_ = self->priv->root_dir;
 		_tmp2_ = uevent_sender_open (_tmp1_);
@@ -2694,7 +2788,7 @@ void umockdev_testbed_uevent (UMockdevTestbed* self, const gchar* devpath, const
 	}
 	_tmp4_ = action;
 	_tmp5_ = devpath;
-	g_debug ("umockdev.vala:671: umockdev_testbed_uevent: sending uevent %s for devi" \
+	g_debug ("umockdev.vala:692: umockdev_testbed_uevent: sending uevent %s for devi" \
 "ce %s", _tmp4_, _tmp5_);
 	_tmp6_ = self->priv->ev_sender;
 	_tmp7_ = devpath;
@@ -2835,7 +2929,7 @@ gboolean umockdev_testbed_load_ioctl (UMockdevTestbed* self, const gchar* dev, c
 			_inner_error_ = NULL;
 			_tmp20_ = recordfile;
 			_tmp21_ = e->message;
-			g_error ("umockdev.vala:712: Cannot call xz to decompress %s: %s", _tmp20_, _tmp21_);
+			g_error ("umockdev.vala:733: Cannot call xz to decompress %s: %s", _tmp20_, _tmp21_);
 			_g_error_free0 (e);
 		}
 		__finally8:
@@ -2938,7 +3032,7 @@ gboolean umockdev_testbed_load_ioctl (UMockdevTestbed* self, const gchar* dev, c
 		if (_tmp40_ == NULL) {
 			const gchar* _tmp41_ = NULL;
 			_tmp41_ = recordfile;
-			g_error ("umockdev.vala:727: ioctl recording file %s has no non-comment content", _tmp41_);
+			g_error ("umockdev.vala:748: ioctl recording file %s has no non-comment content", _tmp41_);
 		}
 		_tmp43_ = g_regex_new ("^@DEV (.*)(\n|$)", 0, 0, &_inner_error_);
 		_tmp42_ = _tmp43_;
@@ -2962,7 +3056,7 @@ gboolean umockdev_testbed_load_ioctl (UMockdevTestbed* self, const gchar* dev, c
 		if (_tmp49_) {
 			const gchar* _tmp50_ = NULL;
 			_tmp50_ = recordfile;
-			g_error ("umockdev.vala:731: null passed for device node, but recording %s has n" \
+			g_error ("umockdev.vala:752: null passed for device node, but recording %s has n" \
 "o @DEV header", _tmp50_);
 		}
 		_tmp51_ = header_matcher;
@@ -3165,7 +3259,7 @@ gboolean umockdev_testbed_load_script (UMockdevTestbed* self, const gchar* dev, 
 		if (_tmp20_ == NULL) {
 			const gchar* _tmp21_ = NULL;
 			_tmp21_ = recordfile;
-			g_error ("umockdev.vala:773: script recording %s has no non-comment content", _tmp21_);
+			g_error ("umockdev.vala:794: script recording %s has no non-comment content", _tmp21_);
 		}
 		_tmp23_ = g_regex_new ("^d 0 (.*)(\n|$)", 0, 0, &_inner_error_);
 		_tmp22_ = _tmp23_;
@@ -3190,7 +3284,7 @@ gboolean umockdev_testbed_load_script (UMockdevTestbed* self, const gchar* dev, 
 		if (_tmp29_) {
 			const gchar* _tmp30_ = NULL;
 			_tmp30_ = recordfile;
-			g_error ("umockdev.vala:777: null passed for device node, but recording %s has n" \
+			g_error ("umockdev.vala:798: null passed for device node, but recording %s has n" \
 "o d 0 header", _tmp30_);
 		}
 		_tmp31_ = header_matcher;
@@ -3636,7 +3730,7 @@ gboolean umockdev_testbed_load_evemu_events (UMockdevTestbed* self, const gchar*
 				const gchar* _tmp30_ = NULL;
 				_tmp29_ = eventsfile;
 				_tmp30_ = line;
-				g_warning ("umockdev.vala:876: Ignoring invalid line in %s: %s", _tmp29_, _tmp30_);
+				g_warning ("umockdev.vala:897: Ignoring invalid line in %s: %s", _tmp29_, _tmp30_);
 			}
 			_g_free0 (_tmp11_);
 			continue;
@@ -3759,7 +3853,7 @@ gboolean umockdev_testbed_load_evemu_events (UMockdevTestbed* self, const gchar*
 		if (_tmp91_ == NULL) {
 			const gchar* _tmp92_ = NULL;
 			_tmp92_ = eventsfile;
-			g_error ("umockdev.vala:906: null passed for device node, but recording %s has n" \
+			g_error ("umockdev.vala:927: null passed for device node, but recording %s has n" \
 "o '# device' header", _tmp92_);
 		}
 		_tmp93_ = recorded_dev;
@@ -4033,7 +4127,7 @@ static gchar* umockdev_testbed_add_dev_from_string (UMockdevTestbed* self, const
 		}
 	}
 	_tmp16_ = devpath;
-	g_debug ("umockdev.vala:933: parsing device description for %s", _tmp16_);
+	g_debug ("umockdev.vala:954: parsing device description for %s", _tmp16_);
 	_tmp17_ = g_new0 (gchar*, 0 + 1);
 	attrs = _tmp17_;
 	attrs_length1 = 0;
@@ -4483,7 +4577,7 @@ static gchar* umockdev_testbed_add_dev_from_string (UMockdevTestbed* self, const
 	}
 	_tmp87_ = devpath;
 	_tmp88_ = subsystem;
-	g_debug ("umockdev.vala:999: creating device %s (subsystem %s)", _tmp87_, _tmp88_);
+	g_debug ("umockdev.vala:1020: creating device %s (subsystem %s)", _tmp87_, _tmp88_);
 	_tmp89_ = subsystem;
 	_tmp90_ = devpath;
 	_tmp91_ = string_substring (_tmp90_, (glong) 9, (glong) (-1));
@@ -4812,7 +4906,7 @@ static void umockdev_testbed_create_node_for_device (UMockdevTestbed* self, cons
 			gint _tmp11__length1 = 0;
 			const gchar* _tmp12_ = NULL;
 			_tmp9_ = node_path;
-			g_debug ("umockdev.vala:1032: create_node_for_device: creating file device %s", _tmp9_);
+			g_debug ("umockdev.vala:1053: create_node_for_device: creating file device %s", _tmp9_);
 			_tmp10_ = node_path;
 			_tmp11_ = node_contents;
 			_tmp11__length1 = node_contents_length1;
@@ -4840,7 +4934,7 @@ static void umockdev_testbed_create_node_for_device (UMockdevTestbed* self, cons
 			e = _inner_error_;
 			_inner_error_ = NULL;
 			_tmp14_ = e->message;
-			g_error ("umockdev.vala:1039: Cannot create dev node file: %s", _tmp14_);
+			g_error ("umockdev.vala:1060: Cannot create dev node file: %s", _tmp14_);
 			_g_error_free0 (e);
 		}
 		__finally9:
@@ -4872,7 +4966,7 @@ static void umockdev_testbed_create_node_for_device (UMockdevTestbed* self, cons
 	ptyname = _tmp21_;
 	_tmp22_ = node_path;
 	_tmp23_ = ptyname;
-	g_debug ("umockdev.vala:1050: create_node_for_device: creating pty device %s: go" \
+	g_debug ("umockdev.vala:1071: create_node_for_device: creating pty device %s: go" \
 "t pty %s", _tmp22_, _tmp23_);
 	_tmp24_ = ptys;
 	close (_tmp24_);
@@ -4926,7 +5020,7 @@ static void umockdev_testbed_create_node_for_device (UMockdevTestbed* self, cons
 		_g_free0 (_tmp44_);
 		dest = _tmp46_;
 		_tmp47_ = dest;
-		g_debug ("umockdev.vala:1071: create_node_for_device: creating ptymap symlink %s", _tmp47_);
+		g_debug ("umockdev.vala:1092: create_node_for_device: creating ptymap symlink %s", _tmp47_);
 		_tmp48_ = majmin;
 		_tmp49_ = dest;
 		_tmp50_ = symlink (_tmp48_, _tmp49_);
@@ -5062,7 +5156,7 @@ static gchar* umockdev_testbed_record_parse_line (UMockdevTestbed* self, const g
 			} else {
 				const gchar* _tmp23_ = NULL;
 				_tmp23_ = data;
-				g_debug ("umockdev.vala:1113: record_parse_line: >%s< does not match anything, f" \
+				g_debug ("umockdev.vala:1134: record_parse_line: >%s< does not match anything, f" \
 "ailing", _tmp23_);
 				_vala_type = '\0';
 				_g_free0 (_vala_key);
@@ -5409,7 +5503,7 @@ void umockdev_remove_dir (const gchar* path, gboolean remove_toplevel) {
 			_tmp9_ = path;
 			_tmp10_ = e;
 			_tmp11_ = _tmp10_->message;
-			g_warning ("umockdev.vala:1218: cannot open: %s: %s", _tmp9_, _tmp11_);
+			g_warning ("umockdev.vala:1239: cannot open: %s: %s", _tmp9_, _tmp11_);
 			_g_error_free0 (e);
 			_g_dir_close0 (d);
 			return;
@@ -5462,7 +5556,7 @@ void umockdev_remove_dir (const gchar* path, gboolean remove_toplevel) {
 			_tmp23_ = path;
 			_tmp24_ = errno;
 			_tmp25_ = g_strerror (_tmp24_);
-			g_warning ("umockdev.vala:1229: cannot remove %s: %s", _tmp23_, _tmp25_);
+			g_warning ("umockdev.vala:1250: cannot remove %s: %s", _tmp23_, _tmp25_);
 		}
 	}
 }
@@ -5791,7 +5885,7 @@ gchar* umockdev_find_devnode (const gchar* devpath) {
 		_inner_error_ = NULL;
 		_tmp24_ = e;
 		_tmp25_ = _tmp24_->message;
-		g_warning ("umockdev.vala:1297: Cannot read uevent file: %s\n", _tmp25_);
+		g_warning ("umockdev.vala:1318: Cannot read uevent file: %s\n", _tmp25_);
 		_g_error_free0 (e);
 	}
 	__finally11:
@@ -5897,7 +5991,7 @@ void umockdev_script_runner_stop (UMockdevScriptRunner* self) {
 		return;
 	}
 	_tmp1_ = self->priv->_device;
-	g_debug ("umockdev.vala:1328: Stopping script runner for %s: joining thread", _tmp1_);
+	g_debug ("umockdev.vala:1349: Stopping script runner for %s: joining thread", _tmp1_);
 	self->priv->running = FALSE;
 	_tmp2_ = self->priv->thread;
 	_tmp3_ = _g_thread_ref0 (_tmp2_);
@@ -5916,7 +6010,7 @@ static void* umockdev_script_runner_run (UMockdevScriptRunner* self) {
 	const gchar* _tmp38_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->_device;
-	g_debug ("umockdev.vala:1339: ScriptRunner[%s]: start", _tmp0_);
+	g_debug ("umockdev.vala:1360: ScriptRunner[%s]: start", _tmp0_);
 	while (TRUE) {
 		gboolean _tmp1_ = FALSE;
 		gchar _tmp2_ = '\0';
@@ -5968,7 +6062,7 @@ static void* umockdev_script_runner_run (UMockdevScriptRunner* self) {
 				_tmp11__length1 = data_length1;
 				_tmp12_ = umockdev_script_runner_encode (_tmp11_, _tmp11__length1);
 				_tmp13_ = _tmp12_;
-				g_debug ("umockdev.vala:1349: ScriptRunner[%s]: read op after sleep; writing dat" \
+				g_debug ("umockdev.vala:1370: ScriptRunner[%s]: read op after sleep; writing dat" \
 "a '%s'", _tmp10_, _tmp13_);
 				_g_free0 (_tmp13_);
 				_tmp14_ = self->priv->fd;
@@ -5986,7 +6080,7 @@ static void* umockdev_script_runner_run (UMockdevScriptRunner* self) {
 					_tmp19_ = self->priv->_device;
 					_tmp20_ = errno;
 					_tmp21_ = g_strerror (_tmp20_);
-					g_error ("umockdev.vala:1352: ScriptRunner[%s]: write failed: %s", _tmp19_, _tmp21_);
+					g_error ("umockdev.vala:1373: ScriptRunner[%s]: write failed: %s", _tmp19_, _tmp21_);
 				}
 				_tmp22_ = l;
 				_tmp23_ = data;
@@ -6009,7 +6103,7 @@ static void* umockdev_script_runner_run (UMockdevScriptRunner* self) {
 				_tmp25__length1 = data_length1;
 				_tmp26_ = umockdev_script_runner_encode (_tmp25_, _tmp25__length1);
 				_tmp27_ = _tmp26_;
-				g_debug ("umockdev.vala:1357: ScriptRunner[%s]: write op, data '%s'", _tmp24_, _tmp27_);
+				g_debug ("umockdev.vala:1378: ScriptRunner[%s]: write op, data '%s'", _tmp24_, _tmp27_);
 				_g_free0 (_tmp27_);
 				_tmp28_ = data;
 				_tmp28__length1 = data_length1;
@@ -6034,14 +6128,14 @@ static void* umockdev_script_runner_run (UMockdevScriptRunner* self) {
 					guint32 _tmp32_ = 0U;
 					_tmp31_ = self->priv->_device;
 					_tmp32_ = delta;
-					g_error ("umockdev.vala:1367: ScriptRunner[%s]: fuzz value %u is invalid (must b" \
+					g_error ("umockdev.vala:1388: ScriptRunner[%s]: fuzz value %u is invalid (must b" \
 "e between 0 and 100)", _tmp31_, (guint) _tmp32_);
 				}
 				_tmp33_ = delta;
 				self->priv->fuzz = (guint) _tmp33_;
 				_tmp34_ = self->priv->_device;
 				_tmp35_ = self->priv->fuzz;
-				g_debug ("umockdev.vala:1370: ScriptRunner[%s]: setting fuzz level to %u%%", _tmp34_, _tmp35_);
+				g_debug ("umockdev.vala:1391: ScriptRunner[%s]: setting fuzz level to %u%%", _tmp34_, _tmp35_);
 				break;
 			}
 			case 'd':
@@ -6054,13 +6148,13 @@ static void* umockdev_script_runner_run (UMockdevScriptRunner* self) {
 				gchar _tmp37_ = '\0';
 				_tmp36_ = self->priv->_device;
 				_tmp37_ = op;
-				g_debug ("umockdev.vala:1378: ScriptRunner[%s]: got unknown line op %c, ignoring", _tmp36_, (gint) _tmp37_);
+				g_debug ("umockdev.vala:1399: ScriptRunner[%s]: got unknown line op %c, ignoring", _tmp36_, (gint) _tmp37_);
 				break;
 			}
 		}
 	}
 	_tmp38_ = self->priv->_device;
-	g_debug ("umockdev.vala:1383: ScriptRunner[%s]: not running any more, ending thr" \
+	g_debug ("umockdev.vala:1404: ScriptRunner[%s]: not running any more, ending thr" \
 "ead", _tmp38_);
 	result = NULL;
 	data = (g_free (data), NULL);
@@ -6169,7 +6263,7 @@ static guint8* umockdev_script_runner_next_line (UMockdevScriptRunner* self, gch
 				gint _tmp7__length1 = 0;
 				_tmp4_ = self->priv->_device;
 				_tmp5_ = self->priv->script_file;
-				g_debug ("umockdev.vala:1394: ScriptRunner[%s]: end of script %s, closing", _tmp4_, _tmp5_);
+				g_debug ("umockdev.vala:1415: ScriptRunner[%s]: end of script %s, closing", _tmp4_, _tmp5_);
 				_vala_op = 'Q';
 				_vala_delta = (guint32) 0;
 				_tmp6_ = g_new0 (guint8, 0);
@@ -6221,7 +6315,7 @@ static guint8* umockdev_script_runner_next_line (UMockdevScriptRunner* self, gch
 		glong _tmp19_ = 0L;
 		_tmp18_ = self->priv->script_file;
 		_tmp19_ = cur_pos;
-		g_error ("umockdev.vala:1408: Missing space after operation code in %s at positi" \
+		g_error ("umockdev.vala:1429: Missing space after operation code in %s at positi" \
 "on %li", _tmp18_, _tmp19_);
 	}
 	_tmp20_ = self->priv->script;
@@ -6234,7 +6328,7 @@ static guint8* umockdev_script_runner_next_line (UMockdevScriptRunner* self, gch
 		glong _tmp25_ = 0L;
 		_tmp24_ = self->priv->script_file;
 		_tmp25_ = cur_pos;
-		g_error ("umockdev.vala:1413: Cannot parse time in %s at position %li", _tmp24_, _tmp25_);
+		g_error ("umockdev.vala:1434: Cannot parse time in %s at position %li", _tmp24_, _tmp25_);
 	}
 	_tmp26_ = self->priv->script;
 	_tmp27_ = g_file_stream_read_line (_tmp26_);
@@ -6346,7 +6440,7 @@ static void umockdev_script_runner_op_write (UMockdevScriptRunner* self, guint8*
 			_tmp14_ = self->priv->_device;
 			_tmp15_ = errno;
 			_tmp16_ = g_strerror (_tmp15_);
-			g_error ("umockdev.vala:1438: ScriptRunner op_write[%s]: select() failed: %s", _tmp14_, _tmp16_);
+			g_error ("umockdev.vala:1459: ScriptRunner op_write[%s]: select() failed: %s", _tmp14_, _tmp16_);
 		}
 		_tmp17_ = res;
 		if (_tmp17_ == 0) {
@@ -6366,7 +6460,7 @@ static void umockdev_script_runner_op_write (UMockdevScriptRunner* self, guint8*
 			_tmp21__length1 = data_length1;
 			_tmp22_ = umockdev_script_runner_encode (_tmp19_ + ((gint) _tmp20_), _tmp21__length1 - ((gint) _tmp20_));
 			_tmp23_ = _tmp22_;
-			g_debug ("umockdev.vala:1443: ScriptRunner[%s]: timed out on read operation on e" \
+			g_debug ("umockdev.vala:1464: ScriptRunner[%s]: timed out on read operation on e" \
 "xpected block '%s', trying again", _tmp18_, _tmp23_);
 			_g_free0 (_tmp23_);
 			continue;
@@ -6398,7 +6492,7 @@ static void umockdev_script_runner_op_write (UMockdevScriptRunner* self, guint8*
 			_tmp33__length1 = data_length1;
 			_tmp34_ = umockdev_script_runner_encode (_tmp31_ + ((gint) _tmp32_), _tmp33__length1 - ((gint) _tmp32_));
 			_tmp35_ = _tmp34_;
-			g_debug ("umockdev.vala:1451: ScriptRunner[%s]: got failure or EOF on read opera" \
+			g_debug ("umockdev.vala:1472: ScriptRunner[%s]: got failure or EOF on read opera" \
 "tion on expected block '%s', resetting", _tmp30_, _tmp35_);
 			_g_free0 (_tmp35_);
 			_tmp36_ = self->priv->script;
@@ -7177,7 +7271,7 @@ void umockdev_socket_server_stop (UMockdevSocketServer* self) {
 		return;
 	}
 	self->priv->running = FALSE;
-	g_debug ("umockdev.vala:1571: Stopping SocketServer: signalling thread");
+	g_debug ("umockdev.vala:1592: Stopping SocketServer: signalling thread");
 	b = '1';
 	_tmp1_ = self->priv->ctrl_w;
 	_tmp2_ = write (_tmp1_, &b, (gsize) 1);
@@ -7201,7 +7295,7 @@ void umockdev_socket_server_stop (UMockdevSocketServer* self) {
 	}
 	_tmp6_ = self->priv->script_runners;
 	g_hash_table_remove_all (_tmp6_);
-	g_debug ("umockdev.vala:1580: Stopping SocketServer: joining thread");
+	g_debug ("umockdev.vala:1601: Stopping SocketServer: joining thread");
 	_tmp7_ = self->priv->thread;
 	_tmp8_ = _g_thread_ref0 (_tmp7_);
 	g_thread_join (_tmp8_);
@@ -7301,7 +7395,7 @@ void umockdev_socket_server_add (UMockdevSocketServer* self, const gchar* sock_p
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		_tmp16_ = e->message;
-		g_error ("umockdev.vala:1593: load_socket_script(): cannot create Socket: %s", _tmp16_);
+		g_error ("umockdev.vala:1614: load_socket_script(): cannot create Socket: %s", _tmp16_);
 		_g_error_free0 (e);
 	}
 	__finally12:
@@ -7312,7 +7406,7 @@ void umockdev_socket_server_add (UMockdevSocketServer* self, const gchar* sock_p
 	}
 	_tmp17_ = sock_path;
 	_tmp18_ = fd;
-	g_debug ("umockdev.vala:1596: SocketServer.add: Created socket path %s, fd %i", _tmp17_, _tmp18_);
+	g_debug ("umockdev.vala:1617: SocketServer.add: Created socket path %s, fd %i", _tmp17_, _tmp18_);
 	_tmp19_ = self->priv->socket_scriptfile;
 	_tmp20_ = sock_path;
 	_tmp21_ = g_strdup (_tmp20_);
@@ -7330,7 +7424,7 @@ static void* umockdev_socket_server_run (UMockdevSocketServer* self) {
 	void* result = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
-	g_debug ("umockdev.vala:1607: starting SocketServer thread");
+	g_debug ("umockdev.vala:1628: starting SocketServer thread");
 	while (TRUE) {
 		gboolean _tmp0_ = FALSE;
 		fd_set fds = {0};
@@ -7417,7 +7511,7 @@ static void* umockdev_socket_server_run (UMockdevSocketServer* self) {
 			}
 			_tmp20_ = errno;
 			_tmp21_ = g_strerror (_tmp20_);
-			g_error ("umockdev.vala:1626: socket server thread: select() failed: %s", _tmp21_);
+			g_error ("umockdev.vala:1647: socket server thread: select() failed: %s", _tmp21_);
 		}
 		_tmp22_ = res;
 		if (_tmp22_ == 0) {
@@ -7430,13 +7524,13 @@ static void* umockdev_socket_server_run (UMockdevSocketServer* self) {
 			gchar buf = '\0';
 			gint _tmp26_ = 0;
 			gssize _tmp27_ = 0L;
-			g_debug ("umockdev.vala:1633: socket server thread: woken up by control fd");
+			g_debug ("umockdev.vala:1654: socket server thread: woken up by control fd");
 			_tmp26_ = self->priv->ctrl_r;
 			_tmp27_ = read (_tmp26_, &buf, (gsize) 1);
 			_vala_assert (_tmp27_ == ((gssize) 1), "Posix.read (this.ctrl_r, &buf, 1) == 1");
 			continue;
 		}
-		g_debug ("umockdev.vala:1639: socket server thread: select() got requests");
+		g_debug ("umockdev.vala:1660: socket server thread: select() got requests");
 		_tmp28_ = self->priv->listen_sockets;
 		_tmp28__length1 = self->priv->listen_sockets_length1;
 		{
@@ -7479,7 +7573,7 @@ static void* umockdev_socket_server_run (UMockdevSocketServer* self) {
 							const gchar* _tmp40_ = NULL;
 							_tmp39_ = errno;
 							_tmp40_ = g_strerror (_tmp39_);
-							g_error ("umockdev.vala:1646: socket server thread: accept() failed: %s", _tmp40_);
+							g_error ("umockdev.vala:1667: socket server thread: accept() failed: %s", _tmp40_);
 						}
 						sock_path = NULL;
 						{
@@ -7539,7 +7633,7 @@ static void* umockdev_socket_server_run (UMockdevSocketServer* self) {
 							_tmp55_ = _tmp54_;
 							_tmp56_ = sock_path;
 							_tmp57_ = script;
-							g_debug ("umockdev.vala:1651: socket server thread: accepted request on server s" \
+							g_debug ("umockdev.vala:1672: socket server thread: accepted request on server s" \
 "ocket fd %i, path %s, script %s", _tmp55_, _tmp56_, _tmp57_);
 							_tmp58_ = sock_path;
 							_tmp59_ = fd;
@@ -7575,7 +7669,7 @@ static void* umockdev_socket_server_run (UMockdevSocketServer* self) {
 							e = _inner_error_;
 							_inner_error_ = NULL;
 							_tmp70_ = e->message;
-							g_error ("umockdev.vala:1656: socket server thread: cannot launch ScriptRunner: " \
+							g_error ("umockdev.vala:1677: socket server thread: cannot launch ScriptRunner: " \
 "%s", _tmp70_);
 							_g_error_free0 (e);
 						}
@@ -7592,7 +7686,7 @@ static void* umockdev_socket_server_run (UMockdevSocketServer* self) {
 			}
 		}
 	}
-	g_debug ("umockdev.vala:1662: socket server thread: end");
+	g_debug ("umockdev.vala:1683: socket server thread: end");
 	result = NULL;
 	return result;
 }
