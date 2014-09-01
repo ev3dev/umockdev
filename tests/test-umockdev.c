@@ -339,6 +339,35 @@ t_testbed_child_device(UMockdevTestbedFixture * fixture, gconstpointer data)
     g_free(input);
 }
 
+/* UMockdevTestbed add_device() with adding a block device */
+static void
+t_testbed_add_block_device(UMockdevTestbedFixture * fixture, gconstpointer data)
+{
+    gchar *syspath;
+
+    syspath = umockdev_testbed_add_device(fixture->testbed, "block", "scribble", NULL,
+					  /* attributes */
+					  "size", "10000", NULL,
+					  /* properties */
+					  "ID_TYPE", "disk", NULL);
+    g_assert(syspath);
+    g_assert_cmpstr(syspath, ==, "/sys/devices/scribble");
+
+    /* check attributes */
+    g_assert(g_file_test("/sys/devices/scribble/size", G_FILE_TEST_IS_REGULAR));
+    g_assert(g_file_test("/sys/devices/scribble/uevent", G_FILE_TEST_IS_REGULAR));
+    g_assert(g_file_test("/sys/devices/scribble/subsystem", G_FILE_TEST_IS_SYMLINK));
+
+    /* check class symlinks */
+    g_assert(g_file_test("/sys/class/block/scribble", G_FILE_TEST_IS_SYMLINK));
+    g_assert(g_file_test("/sys/class/block/scribble/size", G_FILE_TEST_IS_REGULAR));
+
+    g_assert(g_file_test("/sys/block/scribble", G_FILE_TEST_IS_SYMLINK));
+    g_assert(g_file_test("/sys/block/scribble/size", G_FILE_TEST_IS_REGULAR));
+
+    g_free(syspath);
+}
+
 struct TestbedErrorCatcherData {
     unsigned counter;
     GLogLevelFlags last_level;
@@ -426,6 +455,8 @@ t_testbed_set_attribute(UMockdevTestbedFixture * fixture, gconstpointer data)
     /* int attributes */
     umockdev_testbed_set_attribute_int(fixture->testbed, syspath, "count", 1000);
     umockdev_testbed_set_attribute_hex(fixture->testbed, syspath, "addr", 0x1a01);
+    /* subdir attribute */
+    umockdev_testbed_set_attribute(fixture->testbed, syspath, "knobs/red", "off");
 
     device = g_udev_client_query_by_sysfs_path(client, syspath);
     g_assert(device);
@@ -434,6 +465,7 @@ t_testbed_set_attribute(UMockdevTestbedFixture * fixture, gconstpointer data)
     g_assert_cmpstr(g_udev_device_get_sysfs_attr(device, "color"), ==, "yellow");
     g_assert_cmpstr(g_udev_device_get_sysfs_attr(device, "count"), ==, "1000");
     g_assert_cmpstr(g_udev_device_get_sysfs_attr(device, "addr"), ==, "1a01");
+    g_assert_cmpstr(g_udev_device_get_sysfs_attr(device, "knobs/red"), ==, "off");
     g_assert_cmpstr(g_udev_device_get_driver(device), ==, "hub");
     g_object_unref(device);
 
@@ -744,6 +776,7 @@ t_testbed_add_from_string(UMockdevTestbedFixture * fixture, gconstpointer data)
 					       "H: binary_attr=41A9FF0005FF00\n"
 					       "A: multiline_attr=a\\\\b\\nc\\\\d\\nlast\n"
 					       "A: simple_attr=1\n"
+					       "A: knobs/red=off\n"
 					       "L: driver=../../foo", &error);
     g_assert_no_error(error);
     g_assert(success);
@@ -760,6 +793,7 @@ t_testbed_add_from_string(UMockdevTestbedFixture * fixture, gconstpointer data)
     g_assert(g_udev_device_get_parent(device) == NULL);
     g_assert_cmpstr(g_udev_device_get_sysfs_attr(device, "simple_attr"), ==, "1");
     g_assert_cmpstr(g_udev_device_get_sysfs_attr(device, "multiline_attr"), ==, "a\\b\nc\\d\nlast");
+    g_assert_cmpstr(g_udev_device_get_sysfs_attr(device, "knobs/red"), ==, "off");
     g_assert_cmpstr(g_udev_device_get_property(device, "SIMPLE_PROP"), ==, "1");
     g_assert_cmpstr(g_udev_device_get_driver(device), ==, "foo");
     g_object_unref(device);
@@ -1853,6 +1887,8 @@ main(int argc, char **argv)
 	       t_testbed_add_devicev, t_testbed_fixture_teardown);
     g_test_add("/umockdev-testbed/add_device", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
 	       t_testbed_add_device, t_testbed_fixture_teardown);
+    g_test_add("/umockdev-testbed/add_block_device", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
+	       t_testbed_add_block_device, t_testbed_fixture_teardown);
     g_test_add("/umockdev-testbed/add_device_errors", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
 	       t_testbed_add_device_errors, t_testbed_fixture_teardown);
     g_test_add("/umockdev-testbed/child_device", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,

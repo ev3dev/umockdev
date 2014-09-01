@@ -143,7 +143,8 @@ public class Testbed: GLib.Object {
      * umockdev_testbed_set_attribute_binary:
      * @self: A #UMockdevTestbed.
      * @devpath: The full device path, as returned by #umockdev_testbed_add_device()
-     * @name: Attribute name
+     * @name: Attribute name (may contain leading directories like
+     *        "queue/rotational")
      * @value: Attribute binary value
      * @value_length1: Length of @value in bytes.
      *
@@ -151,8 +152,15 @@ public class Testbed: GLib.Object {
      */
     public void set_attribute_binary(string devpath, string name, uint8[] value)
     {
+        var attr_path = Path.build_filename(this.root_dir, devpath, name);
+        if ("/" in name) {
+            string d = Path.get_dirname(attr_path);
+            if (DirUtils.create_with_parents(d, 0755) != 0)
+                error("cannot create attribute subdir '%s': %s", d, strerror(errno));
+        }
+
         try {
-            FileUtils.set_data(Path.build_filename(this.root_dir, devpath, name), value);
+            FileUtils.set_data(attr_path, value);
         } catch (FileError e) {
             error("Cannot write attribute file: %s", e.message);
         }
@@ -162,7 +170,8 @@ public class Testbed: GLib.Object {
      * umockdev_testbed_set_attribute_int:
      * @self: A #UMockdevTestbed.
      * @devpath: The full device path, as returned by #umockdev_testbed_add_device()
-     * @name: Attribute name
+     * @name: Attribute name (may contain leading directories like
+     *        "queue/rotational")
      * @value: Attribute integer value
      *
      * Set an integer sysfs attribute for a device.
@@ -201,6 +210,9 @@ public class Testbed: GLib.Object {
     public void set_attribute_link(string devpath, string name, string value)
     {
         var path = Path.build_filename(this.root_dir, devpath, name);
+        var dir = Path.get_dirname(path);
+        if (DirUtils.create_with_parents(dir, 0755) != 0)
+            error("cannot create attribute dir '%s': %s", dir, strerror(errno));
         if (FileUtils.symlink(value, path) < 0) {
             error("Cannot create symlink %s: %s", path, strerror(errno));
         }
@@ -399,6 +411,15 @@ public class Testbed: GLib.Object {
          * not exist yet */
         assert(FileUtils.symlink(Path.build_filename("..", "..", dev_path_no_sys),
                                  Path.build_filename(class_dir, Path.get_basename(name))) == 0);
+
+        /* /sys/block symlink */
+        if (subsystem == "block") {
+            var block_dir = Path.build_filename(this.sys_dir, "block");
+            if (DirUtils.create_with_parents(block_dir, 0755) != 0)
+                error("cannot create block dir '%s': %s", block_dir, strerror(errno));
+            assert (FileUtils.symlink(Path.build_filename("..", dev_path_no_sys),
+                                     Path.build_filename(block_dir, Path.get_basename(name))) == 0);
+        }
 
         /* bus symlink */
         if (subsystem == "usb" || subsystem == "pci") {

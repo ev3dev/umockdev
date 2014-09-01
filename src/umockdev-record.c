@@ -73,8 +73,9 @@ gchar* parent (const gchar* dev);
 gchar* format_hex (guint8* bytes, int bytes_length1, gint len);
 void write_attr (const gchar* name, guint8* val, int val_length1);
 gchar* dev_contents (const gchar* dev);
-void record_device (const gchar* dev);
+void print_device_attributes (const gchar* devpath, const gchar* subdir);
 static void _g_list_free__g_free0_ (GList* self);
+void record_device (const gchar* dev);
 void dump_devices (gchar** devices, int devices_length1);
 void split_devfile_arg (const gchar* arg, gchar** dev, gchar** devnum, gchar** fname);
 void record_ioctl (const gchar* arg);
@@ -729,6 +730,307 @@ gchar* dev_contents (const gchar* dev) {
 }
 
 
+static void _g_list_free__g_free0_ (GList* self) {
+	g_list_foreach (self, (GFunc) _g_free0_, NULL);
+	g_list_free (self);
+}
+
+
+void print_device_attributes (const gchar* devpath, const gchar* subdir) {
+	GDir* d = NULL;
+	gchar* attr_dir = NULL;
+	const gchar* _tmp0_ = NULL;
+	const gchar* _tmp1_ = NULL;
+	gchar* _tmp2_ = NULL;
+	GList* attributes = NULL;
+	gchar* entry = NULL;
+	GCompareFunc _tmp26_ = NULL;
+	GList* _tmp27_ = NULL;
+	GError * _inner_error_ = NULL;
+	g_return_if_fail (devpath != NULL);
+	g_return_if_fail (subdir != NULL);
+	_tmp0_ = devpath;
+	_tmp1_ = subdir;
+	_tmp2_ = g_build_filename (_tmp0_, _tmp1_, NULL);
+	attr_dir = _tmp2_;
+	{
+		GDir* _tmp3_ = NULL;
+		const gchar* _tmp4_ = NULL;
+		GDir* _tmp5_ = NULL;
+		GDir* _tmp6_ = NULL;
+		_tmp4_ = attr_dir;
+		_tmp5_ = g_dir_open (_tmp4_, (guint) 0, &_inner_error_);
+		_tmp3_ = _tmp5_;
+		if (_inner_error_ != NULL) {
+			goto __catch1_g_error;
+		}
+		_tmp6_ = _tmp3_;
+		_tmp3_ = NULL;
+		_g_dir_close0 (d);
+		d = _tmp6_;
+		_g_dir_close0 (_tmp3_);
+	}
+	goto __finally1;
+	__catch1_g_error:
+	{
+		GError* e = NULL;
+		const gchar* _tmp7_ = NULL;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		_tmp7_ = subdir;
+		if (g_strcmp0 (_tmp7_, "") == 0) {
+			const gchar* _tmp8_ = NULL;
+			GError* _tmp9_ = NULL;
+			const gchar* _tmp10_ = NULL;
+			_tmp8_ = attr_dir;
+			_tmp9_ = e;
+			_tmp10_ = _tmp9_->message;
+			exit_error ("Cannot open directory %s: %s", _tmp8_, _tmp10_, NULL);
+		} else {
+			const gchar* _tmp11_ = NULL;
+			GError* _tmp12_ = NULL;
+			const gchar* _tmp13_ = NULL;
+			_tmp11_ = attr_dir;
+			_tmp12_ = e;
+			_tmp13_ = _tmp12_->message;
+			g_debug ("umockdev-record.vala:180: Cannot open directory %s: %s", _tmp11_, _tmp13_);
+		}
+		_g_error_free0 (e);
+		_g_free0 (attr_dir);
+		_g_dir_close0 (d);
+		return;
+	}
+	__finally1:
+	if (_inner_error_ != NULL) {
+		_g_free0 (attr_dir);
+		_g_dir_close0 (d);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+	attributes = NULL;
+	while (TRUE) {
+		GDir* _tmp14_ = NULL;
+		const gchar* _tmp15_ = NULL;
+		gchar* _tmp16_ = NULL;
+		const gchar* _tmp17_ = NULL;
+		gboolean _tmp18_ = FALSE;
+		gboolean _tmp19_ = FALSE;
+		const gchar* _tmp20_ = NULL;
+		_tmp14_ = d;
+		_tmp15_ = g_dir_read_name (_tmp14_);
+		_tmp16_ = g_strdup (_tmp15_);
+		_g_free0 (entry);
+		entry = _tmp16_;
+		_tmp17_ = entry;
+		if (!(_tmp17_ != NULL)) {
+			break;
+		}
+		_tmp20_ = entry;
+		if (g_strcmp0 (_tmp20_, "subsystem") != 0) {
+			const gchar* _tmp21_ = NULL;
+			_tmp21_ = entry;
+			_tmp19_ = g_strcmp0 (_tmp21_, "firmware_node") != 0;
+		} else {
+			_tmp19_ = FALSE;
+		}
+		if (_tmp19_) {
+			const gchar* _tmp22_ = NULL;
+			_tmp22_ = entry;
+			_tmp18_ = g_strcmp0 (_tmp22_, "uevent") != 0;
+		} else {
+			_tmp18_ = FALSE;
+		}
+		if (_tmp18_) {
+			const gchar* _tmp23_ = NULL;
+			gchar* _tmp24_ = NULL;
+			_tmp23_ = entry;
+			_tmp24_ = g_strdup (_tmp23_);
+			attributes = g_list_append (attributes, _tmp24_);
+		} else {
+			const gchar* _tmp25_ = NULL;
+			_tmp25_ = subdir;
+			if (g_strcmp0 (_tmp25_, "") != 0) {
+				_g_free0 (entry);
+				__g_list_free__g_free0_0 (attributes);
+				_g_free0 (attr_dir);
+				_g_dir_close0 (d);
+				return;
+			}
+		}
+	}
+	_tmp26_ = g_strcmp0;
+	attributes = g_list_sort (attributes, _tmp26_);
+	_tmp27_ = attributes;
+	{
+		GList* attr_collection = NULL;
+		GList* attr_it = NULL;
+		attr_collection = _tmp27_;
+		for (attr_it = attr_collection; attr_it != NULL; attr_it = attr_it->next) {
+			gchar* _tmp28_ = NULL;
+			gchar* attr = NULL;
+			_tmp28_ = g_strdup ((const gchar*) attr_it->data);
+			attr = _tmp28_;
+			{
+				gchar* attr_path = NULL;
+				const gchar* _tmp29_ = NULL;
+				const gchar* _tmp30_ = NULL;
+				gchar* _tmp31_ = NULL;
+				gchar* attr_name = NULL;
+				const gchar* _tmp32_ = NULL;
+				const gchar* _tmp33_ = NULL;
+				gchar* _tmp34_ = NULL;
+				const gchar* _tmp35_ = NULL;
+				gboolean _tmp36_ = FALSE;
+				_tmp29_ = attr_dir;
+				_tmp30_ = attr;
+				_tmp31_ = g_build_filename (_tmp29_, _tmp30_, NULL);
+				attr_path = _tmp31_;
+				_tmp32_ = subdir;
+				_tmp33_ = attr;
+				_tmp34_ = g_build_filename (_tmp32_, _tmp33_, NULL);
+				attr_name = _tmp34_;
+				_tmp35_ = attr_path;
+				_tmp36_ = g_file_test (_tmp35_, G_FILE_TEST_IS_SYMLINK);
+				if (_tmp36_) {
+					{
+						gchar* _tmp37_ = NULL;
+						const gchar* _tmp38_ = NULL;
+						gchar* _tmp39_ = NULL;
+						FILE* _tmp40_ = NULL;
+						const gchar* _tmp41_ = NULL;
+						_tmp38_ = attr_path;
+						_tmp39_ = g_file_read_link (_tmp38_, &_inner_error_);
+						_tmp37_ = _tmp39_;
+						if (_inner_error_ != NULL) {
+							goto __catch2_g_error;
+						}
+						_tmp40_ = stdout;
+						_tmp41_ = attr_name;
+						fprintf (_tmp40_, "L: %s=%s\n", _tmp41_, _tmp37_);
+						_g_free0 (_tmp37_);
+					}
+					goto __finally2;
+					__catch2_g_error:
+					{
+						GError* e = NULL;
+						const gchar* _tmp42_ = NULL;
+						GError* _tmp43_ = NULL;
+						const gchar* _tmp44_ = NULL;
+						e = _inner_error_;
+						_inner_error_ = NULL;
+						_tmp42_ = attr_path;
+						_tmp43_ = e;
+						_tmp44_ = _tmp43_->message;
+						exit_error ("Cannot read link %s: %s", _tmp42_, _tmp44_, NULL);
+						_g_error_free0 (e);
+					}
+					__finally2:
+					if (_inner_error_ != NULL) {
+						_g_free0 (attr_name);
+						_g_free0 (attr_path);
+						_g_free0 (attr);
+						_g_free0 (entry);
+						__g_list_free__g_free0_0 (attributes);
+						_g_free0 (attr_dir);
+						_g_dir_close0 (d);
+						g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+						g_clear_error (&_inner_error_);
+						return;
+					}
+				} else {
+					const gchar* _tmp45_ = NULL;
+					gboolean _tmp46_ = FALSE;
+					_tmp45_ = attr_path;
+					_tmp46_ = g_file_test (_tmp45_, G_FILE_TEST_IS_REGULAR);
+					if (_tmp46_) {
+						guint8* contents = NULL;
+						gint contents_length1 = 0;
+						gint _contents_size_ = 0;
+						{
+							const gchar* _tmp47_ = NULL;
+							guint8* _tmp48_ = NULL;
+							size_t _tmp49_;
+							const gchar* _tmp50_ = NULL;
+							guint8* _tmp51_ = NULL;
+							gint _tmp51__length1 = 0;
+							_tmp47_ = attr_path;
+							g_file_get_contents (_tmp47_, (gchar**) (&_tmp48_), &_tmp49_, &_inner_error_);
+							contents = (g_free (contents), NULL);
+							contents = _tmp48_;
+							contents_length1 = _tmp49_;
+							_contents_size_ = contents_length1;
+							if (_inner_error_ != NULL) {
+								if (_inner_error_->domain == G_FILE_ERROR) {
+									goto __catch3_g_file_error;
+								}
+								contents = (g_free (contents), NULL);
+								_g_free0 (attr_name);
+								_g_free0 (attr_path);
+								_g_free0 (attr);
+								_g_free0 (entry);
+								__g_list_free__g_free0_0 (attributes);
+								_g_free0 (attr_dir);
+								_g_dir_close0 (d);
+								g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+								g_clear_error (&_inner_error_);
+								return;
+							}
+							_tmp50_ = attr_name;
+							_tmp51_ = contents;
+							_tmp51__length1 = contents_length1;
+							write_attr (_tmp50_, _tmp51_, _tmp51__length1);
+						}
+						goto __finally3;
+						__catch3_g_file_error:
+						{
+							GError* e = NULL;
+							e = _inner_error_;
+							_inner_error_ = NULL;
+							_g_error_free0 (e);
+						}
+						__finally3:
+						if (_inner_error_ != NULL) {
+							contents = (g_free (contents), NULL);
+							_g_free0 (attr_name);
+							_g_free0 (attr_path);
+							_g_free0 (attr);
+							_g_free0 (entry);
+							__g_list_free__g_free0_0 (attributes);
+							_g_free0 (attr_dir);
+							_g_dir_close0 (d);
+							g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+							g_clear_error (&_inner_error_);
+							return;
+						}
+						contents = (g_free (contents), NULL);
+					} else {
+						const gchar* _tmp52_ = NULL;
+						gboolean _tmp53_ = FALSE;
+						_tmp52_ = attr_path;
+						_tmp53_ = g_file_test (_tmp52_, G_FILE_TEST_IS_DIR);
+						if (_tmp53_) {
+							const gchar* _tmp54_ = NULL;
+							const gchar* _tmp55_ = NULL;
+							_tmp54_ = devpath;
+							_tmp55_ = attr;
+							print_device_attributes (_tmp54_, _tmp55_);
+						}
+					}
+				}
+				_g_free0 (attr_name);
+				_g_free0 (attr_path);
+				_g_free0 (attr);
+			}
+		}
+	}
+	_g_free0 (entry);
+	__g_list_free__g_free0_0 (attributes);
+	_g_free0 (attr_dir);
+	_g_dir_close0 (d);
+}
+
+
 static glong string_strnlen (gchar* str, glong maxlen) {
 	glong result = 0L;
 	gchar* end = NULL;
@@ -844,12 +1146,6 @@ static gboolean string_contains (const gchar* self, const gchar* needle) {
 }
 
 
-static void _g_list_free__g_free0_ (GList* self) {
-	g_list_foreach (self, (GFunc) _g_free0_, NULL);
-	g_list_free (self);
-}
-
-
 void record_device (const gchar* dev) {
 	const gchar* _tmp0_ = NULL;
 	gchar* u_out = NULL;
@@ -859,16 +1155,12 @@ void record_device (const gchar* dev) {
 	gchar** _tmp21_ = NULL;
 	const gchar* _tmp54_ = NULL;
 	gboolean _tmp55_ = FALSE;
-	GDir* d = NULL;
-	GList* attributes = NULL;
-	gchar* entry = NULL;
-	GCompareFunc _tmp75_ = NULL;
-	GList* _tmp76_ = NULL;
-	FILE* _tmp98_ = NULL;
+	const gchar* _tmp57_ = NULL;
+	FILE* _tmp58_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (dev != NULL);
 	_tmp0_ = dev;
-	g_debug ("umockdev-record.vala:170: recording device %s", _tmp0_);
+	g_debug ("umockdev-record.vala:222: recording device %s", _tmp0_);
 	{
 		gchar* _tmp1_ = NULL;
 		gchar* _tmp2_ = NULL;
@@ -902,7 +1194,7 @@ void record_device (const gchar* dev) {
 		exitcode = _tmp10_;
 		_tmp8_ = (_vala_array_free (_tmp8_, _tmp8__length1, (GDestroyNotify) g_free), NULL);
 		if (_inner_error_ != NULL) {
-			goto __catch1_g_error;
+			goto __catch4_g_error;
 		}
 		_tmp11_ = exitcode;
 		if (_tmp11_ != 0) {
@@ -918,11 +1210,11 @@ void record_device (const gchar* dev) {
 			_tmp16_ = _tmp15_;
 			_g_free0 (_tmp14_);
 			_inner_error_ = _tmp16_;
-			goto __catch1_g_error;
+			goto __catch4_g_error;
 		}
 	}
-	goto __finally1;
-	__catch1_g_error:
+	goto __finally4;
+	__catch4_g_error:
 	{
 		GError* e = NULL;
 		GError* _tmp17_ = NULL;
@@ -934,7 +1226,7 @@ void record_device (const gchar* dev) {
 		exit_error ("Cannot call udevadm: %s", _tmp18_, NULL);
 		_g_error_free0 (e);
 	}
-	__finally1:
+	__finally4:
 	if (_inner_error_ != NULL) {
 		_g_free0 (u_out);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1062,236 +1354,10 @@ void record_device (const gchar* dev) {
 		_g_free0 (u_out);
 		return;
 	}
-	{
-		GDir* _tmp57_ = NULL;
-		const gchar* _tmp58_ = NULL;
-		GDir* _tmp59_ = NULL;
-		GDir* _tmp60_ = NULL;
-		_tmp58_ = dev;
-		_tmp59_ = g_dir_open (_tmp58_, (guint) 0, &_inner_error_);
-		_tmp57_ = _tmp59_;
-		if (_inner_error_ != NULL) {
-			goto __catch2_g_error;
-		}
-		_tmp60_ = _tmp57_;
-		_tmp57_ = NULL;
-		_g_dir_close0 (d);
-		d = _tmp60_;
-		_g_dir_close0 (_tmp57_);
-	}
-	goto __finally2;
-	__catch2_g_error:
-	{
-		GError* e = NULL;
-		const gchar* _tmp61_ = NULL;
-		GError* _tmp62_ = NULL;
-		const gchar* _tmp63_ = NULL;
-		e = _inner_error_;
-		_inner_error_ = NULL;
-		_tmp61_ = dev;
-		_tmp62_ = e;
-		_tmp63_ = _tmp62_->message;
-		exit_error ("Cannot open directory %s: %s", _tmp61_, _tmp63_, NULL);
-		_g_error_free0 (e);
-		_g_dir_close0 (d);
-		_g_free0 (u_out);
-		return;
-	}
-	__finally2:
-	if (_inner_error_ != NULL) {
-		_g_dir_close0 (d);
-		_g_free0 (u_out);
-		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-		g_clear_error (&_inner_error_);
-		return;
-	}
-	attributes = NULL;
-	while (TRUE) {
-		GDir* _tmp64_ = NULL;
-		const gchar* _tmp65_ = NULL;
-		gchar* _tmp66_ = NULL;
-		const gchar* _tmp67_ = NULL;
-		gboolean _tmp68_ = FALSE;
-		gboolean _tmp69_ = FALSE;
-		const gchar* _tmp70_ = NULL;
-		_tmp64_ = d;
-		_tmp65_ = g_dir_read_name (_tmp64_);
-		_tmp66_ = g_strdup (_tmp65_);
-		_g_free0 (entry);
-		entry = _tmp66_;
-		_tmp67_ = entry;
-		if (!(_tmp67_ != NULL)) {
-			break;
-		}
-		_tmp70_ = entry;
-		if (g_strcmp0 (_tmp70_, "subsystem") != 0) {
-			const gchar* _tmp71_ = NULL;
-			_tmp71_ = entry;
-			_tmp69_ = g_strcmp0 (_tmp71_, "firmware_node") != 0;
-		} else {
-			_tmp69_ = FALSE;
-		}
-		if (_tmp69_) {
-			const gchar* _tmp72_ = NULL;
-			_tmp72_ = entry;
-			_tmp68_ = g_strcmp0 (_tmp72_, "uevent") != 0;
-		} else {
-			_tmp68_ = FALSE;
-		}
-		if (_tmp68_) {
-			const gchar* _tmp73_ = NULL;
-			gchar* _tmp74_ = NULL;
-			_tmp73_ = entry;
-			_tmp74_ = g_strdup (_tmp73_);
-			attributes = g_list_append (attributes, _tmp74_);
-		}
-	}
-	_tmp75_ = g_strcmp0;
-	attributes = g_list_sort (attributes, _tmp75_);
-	_tmp76_ = attributes;
-	{
-		GList* attr_collection = NULL;
-		GList* attr_it = NULL;
-		attr_collection = _tmp76_;
-		for (attr_it = attr_collection; attr_it != NULL; attr_it = attr_it->next) {
-			gchar* _tmp77_ = NULL;
-			gchar* attr = NULL;
-			_tmp77_ = g_strdup ((const gchar*) attr_it->data);
-			attr = _tmp77_;
-			{
-				gchar* attr_path = NULL;
-				const gchar* _tmp78_ = NULL;
-				const gchar* _tmp79_ = NULL;
-				gchar* _tmp80_ = NULL;
-				const gchar* _tmp81_ = NULL;
-				gboolean _tmp82_ = FALSE;
-				_tmp78_ = dev;
-				_tmp79_ = attr;
-				_tmp80_ = g_build_filename (_tmp78_, _tmp79_, NULL);
-				attr_path = _tmp80_;
-				_tmp81_ = attr_path;
-				_tmp82_ = g_file_test (_tmp81_, G_FILE_TEST_IS_SYMLINK);
-				if (_tmp82_) {
-					{
-						gchar* _tmp83_ = NULL;
-						const gchar* _tmp84_ = NULL;
-						gchar* _tmp85_ = NULL;
-						FILE* _tmp86_ = NULL;
-						const gchar* _tmp87_ = NULL;
-						_tmp84_ = attr_path;
-						_tmp85_ = g_file_read_link (_tmp84_, &_inner_error_);
-						_tmp83_ = _tmp85_;
-						if (_inner_error_ != NULL) {
-							goto __catch3_g_error;
-						}
-						_tmp86_ = stdout;
-						_tmp87_ = attr;
-						fprintf (_tmp86_, "L: %s=%s\n", _tmp87_, _tmp83_);
-						_g_free0 (_tmp83_);
-					}
-					goto __finally3;
-					__catch3_g_error:
-					{
-						GError* e = NULL;
-						const gchar* _tmp88_ = NULL;
-						GError* _tmp89_ = NULL;
-						const gchar* _tmp90_ = NULL;
-						e = _inner_error_;
-						_inner_error_ = NULL;
-						_tmp88_ = attr;
-						_tmp89_ = e;
-						_tmp90_ = _tmp89_->message;
-						exit_error ("Cannot read link %s: %s", _tmp88_, _tmp90_, NULL);
-						_g_error_free0 (e);
-					}
-					__finally3:
-					if (_inner_error_ != NULL) {
-						_g_free0 (attr_path);
-						_g_free0 (attr);
-						_g_free0 (entry);
-						__g_list_free__g_free0_0 (attributes);
-						_g_dir_close0 (d);
-						_g_free0 (u_out);
-						g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-						g_clear_error (&_inner_error_);
-						return;
-					}
-				} else {
-					const gchar* _tmp91_ = NULL;
-					gboolean _tmp92_ = FALSE;
-					_tmp91_ = attr_path;
-					_tmp92_ = g_file_test (_tmp91_, G_FILE_TEST_IS_REGULAR);
-					if (_tmp92_) {
-						guint8* contents = NULL;
-						gint contents_length1 = 0;
-						gint _contents_size_ = 0;
-						{
-							const gchar* _tmp93_ = NULL;
-							guint8* _tmp94_ = NULL;
-							size_t _tmp95_;
-							const gchar* _tmp96_ = NULL;
-							guint8* _tmp97_ = NULL;
-							gint _tmp97__length1 = 0;
-							_tmp93_ = attr_path;
-							g_file_get_contents (_tmp93_, (gchar**) (&_tmp94_), &_tmp95_, &_inner_error_);
-							contents = (g_free (contents), NULL);
-							contents = _tmp94_;
-							contents_length1 = _tmp95_;
-							_contents_size_ = contents_length1;
-							if (_inner_error_ != NULL) {
-								if (_inner_error_->domain == G_FILE_ERROR) {
-									goto __catch4_g_file_error;
-								}
-								contents = (g_free (contents), NULL);
-								_g_free0 (attr_path);
-								_g_free0 (attr);
-								_g_free0 (entry);
-								__g_list_free__g_free0_0 (attributes);
-								_g_dir_close0 (d);
-								_g_free0 (u_out);
-								g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-								g_clear_error (&_inner_error_);
-								return;
-							}
-							_tmp96_ = attr;
-							_tmp97_ = contents;
-							_tmp97__length1 = contents_length1;
-							write_attr (_tmp96_, _tmp97_, _tmp97__length1);
-						}
-						goto __finally4;
-						__catch4_g_file_error:
-						{
-							GError* e = NULL;
-							e = _inner_error_;
-							_inner_error_ = NULL;
-							_g_error_free0 (e);
-						}
-						__finally4:
-						if (_inner_error_ != NULL) {
-							contents = (g_free (contents), NULL);
-							_g_free0 (attr_path);
-							_g_free0 (attr);
-							_g_free0 (entry);
-							__g_list_free__g_free0_0 (attributes);
-							_g_dir_close0 (d);
-							_g_free0 (u_out);
-							g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-							g_clear_error (&_inner_error_);
-							return;
-						}
-						contents = (g_free (contents), NULL);
-					}
-				}
-				_g_free0 (attr_path);
-				_g_free0 (attr);
-			}
-		}
-	}
-	_tmp98_ = stdout;
-	fputc ('\n', _tmp98_);
-	_g_free0 (entry);
-	__g_list_free__g_free0_0 (attributes);
-	_g_dir_close0 (d);
+	_tmp57_ = dev;
+	print_device_attributes (_tmp57_, "");
+	_tmp58_ = stdout;
+	fputc ('\n', _tmp58_);
 	_g_free0 (u_out);
 }
 
