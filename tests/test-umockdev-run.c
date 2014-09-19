@@ -1873,6 +1873,9 @@ void t_input_evtest_evemu (void) {
 	gint _tmp55__length1 = 0;
 	gchar* _tmp56_ = NULL;
 	const gchar* _tmp57_ = NULL;
+	const gchar* _tmp58_ = NULL;
+	const gchar* _tmp59_ = NULL;
+	const gchar* _tmp60_ = NULL;
 	GError * _inner_error_ = NULL;
 	if (G_BYTE_ORDER == G_BIG_ENDIAN) {
 		FILE* _tmp0_ = NULL;
@@ -2094,12 +2097,15 @@ void t_input_evtest_evemu (void) {
 	_tmp56_ = g_strdup ((const gchar*) _tmp55_);
 	output = _tmp56_;
 	_tmp57_ = output;
-	assert_in ("Event: time 0.000000, -------------- SYN_REPORT ------------\n" \
-"Event: time 0.200000, type 4 (EV_MSC), code 4 (MSC_SCAN), value 70004\n" \
-"Event: time 0.200000, type 1 (EV_KEY), code 30 (KEY_A), value 1\n" \
-"Event: time 0.200000, -------------- SYN_REPORT ------------\n" \
-"Event: time 0.500000, type 4 (EV_MSC), code 4 (MSC_SCAN), value 70004\n" \
-"Event: time 0.500000, type 1 (EV_KEY), code 30 (KEY_A), value 0\n", _tmp57_);
+	assert_in ("Event: time 0.000000, -------------- ", _tmp57_);
+	_tmp58_ = output;
+	assert_in ("Event: time 0.200000, type 4 (EV_MSC), code 4 (MSC_SCAN), value 70004\n" \
+"Event: time 0.200000, type 1 (EV_KEY), code 30 (KEY_A), value 1\n", _tmp58_);
+	_tmp59_ = output;
+	assert_in ("Event: time 0.200000, -------------- ", _tmp59_);
+	_tmp60_ = output;
+	assert_in ("Event: time 0.500000, type 4 (EV_MSC), code 4 (MSC_SCAN), value 70004\n" \
+"Event: time 0.500000, type 1 (EV_KEY), code 30 (KEY_A), value 0\n", _tmp60_);
 	_g_free0 (output);
 	serr = (g_free (serr), NULL);
 	sout = (g_free (sout), NULL);
