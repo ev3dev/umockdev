@@ -23,7 +23,7 @@ Build-Depends: debhelper (>= 9),
 Homepage: https://github.com/martinpitt/umockdev/
 Vcs-Git: git://git.debian.org/git/collab-maint/umockdev.git
 Vcs-Browser: http://git.debian.org/?p=collab-maint/umockdev.git
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 
 Package: umockdev
 Architecture: any
