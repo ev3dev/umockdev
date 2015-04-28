@@ -1,3 +1,9 @@
+umockdev (0.8.8-3) UNRELEASED; urgency=medium
+
+  * Update Vcs-* fields for anonscm.debian.org.
+
+ -- Martin Pitt <mpitt@debian.org>  Tue, 28 Apr 2015 17:55:52 +0200
+
 umockdev (0.8.8-2) unstable; urgency=medium
 
   * Add 00git_ignore_udev_debug.patch: Ignore stderr from udevadm info, to
