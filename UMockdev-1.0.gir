@@ -4,9 +4,7 @@
 <package name="UMockdev-1.0"/>
 <c:include name="umockdev.h"/>
 <namespace name="UMockdev" version="1.0" c:prefix="UMockdev">
-	<errordomain name="Error" get-quark="umockdev_error_quark" codes="Error">
-</errordomain>
-	<enumeration name="Error" c:type="UMockdevError">
+	<enumeration name="Error" c:type="UMockdevError" glib:error-domain="umockdev_error-quark">
 		<member name="parse" c:identifier="UMOCKDEV_ERROR_PARSE" value="0"/>
 		<member name="value" c:identifier="UMOCKDEV_ERROR_VALUE" value="1"/>
 	</enumeration>

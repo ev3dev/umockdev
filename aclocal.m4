@@ -20,38 +20,54 @@ You have another version of autoconf.  It may work, but is not guaranteed to.
 If you have problems, you may need to regenerate the build system entirely.
 To do so, use the procedure documented by the package, typically 'autoreconf'.])])
 
-dnl GNOME_CODE_COVERAGE
-dnl
-dnl Defines CODE_COVERAGE_CFLAGS and CODE_COVERAGE_LDFLAGS which should be
-dnl included in the CFLAGS and LIBS/LDFLAGS variables of every build target
-dnl (program or library) which should be built with code coverage support.
-dnl Also defines GNOME_CODE_COVERAGE_RULES which should be substituted in your
-dnl Makefile; and $enable_code_coverage which can be used in subsequent
-dnl configure output.
-dnl
-dnl Note that all optimisation flags in CFLAGS must be disabled when code
-dnl coverage is enabled.
-dnl
-dnl Derived from Makefile.decl in GLib, originally licenced under LGPLv2.1+.
-dnl This file is licenced under LGPLv2.1+.
-dnl
-dnl Usage example:
-dnl configure.ac:
-dnl    GNOME_CODE_COVERAGE
-dnl
-dnl Makefile.am:
-dnl    @GNOME_CODE_COVERAGE_RULES@
-dnl    my_program_LIBS = … $(CODE_COVERAGE_LDFLAGS) …
-dnl    my_program_CFLAGS = … $(CODE_COVERAGE_CFLAGS) …
-dnl
-dnl This results in a “check-code-coverage” rule being added to any Makefile.am
-dnl which includes “@GNOME_CODE_COVERAGE_RULES@” (assuming the module has been
-dnl configured with --enable-code-coverage). Running `make check-code-coverage`
-dnl in that directory will run the module’s test suite (`make check`) and build
-dnl a code coverage report detailing the code which was touched, then print the
-dnl URI for the report.
+# SYNOPSIS
+#
+#   AX_CODE_COVERAGE()
+#
+# DESCRIPTION
+#
+#   Defines CODE_COVERAGE_CFLAGS and CODE_COVERAGE_LDFLAGS which should be
+#   included in the CFLAGS and LIBS/LDFLAGS variables of every build target
+#   (program or library) which should be built with code coverage support.
+#   Also defines CODE_COVERAGE_RULES which should be substituted in your
+#   Makefile; and $enable_code_coverage which can be used in subsequent
+#   configure output. CODE_COVERAGE_ENABLED is defined and substituted, and
+#   corresponds to the value of the --enable-code-coverage option, which
+#   defaults to being disabled.
+#
+#   Note that all optimisation flags in CFLAGS must be disabled when code
+#   coverage is enabled.
+#
+#   Usage example:
+#   configure.ac:
+#      AX_CODE_COVERAGE
+#
+#   Makefile.am:
+#      @CODE_COVERAGE_RULES@
+#      my_program_LIBS = … $(CODE_COVERAGE_LDFLAGS) …
+#      my_program_CFLAGS = … $(CODE_COVERAGE_CFLAGS) …
+#
+#   This results in a “check-code-coverage” rule being added to any Makefile.am
+#   which includes “@CODE_COVERAGE_RULES@” (assuming the module has been
+#   configured with --enable-code-coverage). Running `make check-code-coverage`
+#   in that directory will run the module’s test suite (`make check`) and build
+#   a code coverage report detailing the code which was touched, then print the
+#   URI for the report.
+#
+# LICENSE
+#
+#   Copyright © 2012, 2014 Philip Withnall
+#   Copyright © 2012 Xan Lopez
+#   Copyright © 2012 Christian Persch
+#   Copyright © 2012 Paolo Borelli
+#   Copyright © 2012 Dan Winship
+#
+#   Derived from Makefile.decl in GLib, originally licenced under LGPLv2.1+.
+#   This file is licenced under LGPLv2.1+.
 
-AC_DEFUN([GNOME_CODE_COVERAGE],[
+#serial 1
+
+AC_DEFUN([AX_CODE_COVERAGE],[
 	dnl Check for --enable-code-coverage
 	AC_MSG_CHECKING([whether to build with code coverage support])
 	AC_ARG_ENABLE([code-coverage], AS_HELP_STRING([--enable-code-coverage], [Whether to enable code coverage support]),, enable_code_coverage=no)
@@ -72,12 +88,12 @@ AC_DEFUN([GNOME_CODE_COVERAGE],[
 		AC_CHECK_PROG([GENHTML], [genhtml], [genhtml])
 
 		AS_IF([ test "$LCOV" ], [
-			AC_CACHE_CHECK([for lcov version], gnome_cv_lcov_version, [
-				gnome_cv_lcov_version=invalid
+			AC_CACHE_CHECK([for lcov version], ax_cv_lcov_version, [
+				ax_cv_lcov_version=invalid
 				lcov_version=`$LCOV -v 2>/dev/null | $SED -e 's/^.* //'`
 				for lcov_check_version in $lcov_version_list; do
 					if test "$lcov_version" = "$lcov_check_version"; then
-						gnome_cv_lcov_version="$lcov_check_version (ok)"
+						ax_cv_lcov_version="$lcov_check_version (ok)"
 					fi
 				done
 			])
@@ -86,7 +102,7 @@ AC_DEFUN([GNOME_CODE_COVERAGE],[
 			AC_MSG_ERROR([$lcov_msg])
 		])
 
-		case $gnome_cv_lcov_version in
+		case $ax_cv_lcov_version in
 			""|invalid[)]
 				lcov_msg="You must have one of the following versions of lcov: $lcov_version_list (found: $lcov_version)."
 				AC_MSG_ERROR([$lcov_msg])
@@ -106,7 +122,7 @@ AC_DEFUN([GNOME_CODE_COVERAGE],[
 		AC_SUBST([CODE_COVERAGE_LDFLAGS])
 	])
 
-GNOME_CODE_COVERAGE_RULES='
+CODE_COVERAGE_RULES='
 # Code coverage
 #
 # Optional:
@@ -181,9 +197,51 @@ DISTCHECK_CONFIGURE_FLAGS += --disable-code-coverage
 .PHONY: check-code-coverage code-coverage-capture code-coverage-capture-hook code-coverage-clean
 '
 
+	AC_SUBST([CODE_COVERAGE_RULES])
+	m4_ifdef([_AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE([CODE_COVERAGE_RULES])])
+])
+
+dnl GNOME_CODE_COVERAGE
+dnl
+dnl Defines CODE_COVERAGE_CFLAGS and CODE_COVERAGE_LDFLAGS which should be
+dnl included in the CFLAGS and LIBS/LDFLAGS variables of every build target
+dnl (program or library) which should be built with code coverage support.
+dnl Also defines GNOME_CODE_COVERAGE_RULES which should be substituted in your
+dnl Makefile; and $enable_code_coverage which can be used in subsequent
+dnl configure output.
+dnl
+dnl Note that all optimisation flags in CFLAGS must be disabled when code
+dnl coverage is enabled.
+dnl
+dnl Derived from Makefile.decl in GLib, originally licenced under LGPLv2.1+.
+dnl This file is licenced under LGPLv2.1+.
+dnl
+dnl Usage example:
+dnl configure.ac:
+dnl    GNOME_CODE_COVERAGE
+dnl
+dnl Makefile.am:
+dnl    @GNOME_CODE_COVERAGE_RULES@
+dnl    my_program_LIBS = … $(CODE_COVERAGE_LDFLAGS) …
+dnl    my_program_CFLAGS = … $(CODE_COVERAGE_CFLAGS) …
+dnl
+dnl This results in a “check-code-coverage” rule being added to any Makefile.am
+dnl which includes “@GNOME_CODE_COVERAGE_RULES@” (assuming the module has been
+dnl configured with --enable-code-coverage). Running `make check-code-coverage`
+dnl in that directory will run the module’s test suite (`make check`) and build
+dnl a code coverage report detailing the code which was touched, then print the
+dnl URI for the report.
+
+AU_DEFUN([GNOME_CODE_COVERAGE],[
+	AX_CODE_COVERAGE
+	GNOME_CODE_COVERAGE_RULES=$CODE_COVERAGE_RULES
+
 	AC_SUBST([GNOME_CODE_COVERAGE_RULES])
 	m4_ifdef([_AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE([GNOME_CODE_COVERAGE_RULES])])
-])
+],
+[[$0: This macro is deprecated. You should use AX_CODE_COVERAGE instead and
+replace uses of GNOME_CODE_COVERAGE_RULES with CODE_COVERAGE_RULES.
+See: http://www.gnu.org/software/autoconf-archive/ax_code_coverage.html#ax_code_coverage]])
 
 dnl -*- mode: autoconf -*-
 dnl Copyright 2009 Johan Dahlin
