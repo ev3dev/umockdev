@@ -1,4 +1,14 @@
-0.8.8 (UNRELEASED)
+0.8.9 (2015-05-22)
+------------------
+- umockdev-record: Ignore stderr from udevadm info, to avoid udev debug
+  message spew on stderr if udev debugging is enabled. (Debian #767909)
+- Fix recording of USB devices on recent kernels: Pass device as major:minor
+  instead of assuming that they are only 8 bit (which is not true any more).
+- Skip /umockdev-run/integration/input-touchpad test instead of failing when
+  X.org does not start up. Calling Xorg is not allowed in build environments in
+  e. g. Fedora. (issue #47)
+
+0.8.8 (2014-09-22)
 ------------------
 - Skip O_TMPFILE test on Linux versions which don't support that.
 
