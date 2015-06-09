@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<!DOCTYPE book PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "">
 <book xmlns="http://www.devhelp.net/book" title="umockdev Reference Manual" link="index.html" author="" name="umockdev" version="2" language="c">
   <chapters>
     <sub name="API reference" link="ch01.html">
@@ -42,5 +41,7 @@
     <keyword type="struct" name="struct UMockdevTestbed" link="umockdev-UMockdev.html#UMockdevTestbed-struct"/>
     <keyword type="function" name="umockdev_in_mock_environment ()" link="umockdev-global-functions.html#umockdev-in-mock-environment"/>
     <keyword type="enum" name="enum UMockdevError" link="umockdev-umockdev-errors.html#UMockdevError"/>
+    <keyword type="constant" name="UMOCKDEV_ERROR_PARSE" link="umockdev-umockdev-errors.html#UMOCKDEV-ERROR-PARSE:CAPS"/>
+    <keyword type="constant" name="UMOCKDEV_ERROR_VALUE" link="umockdev-umockdev-errors.html#UMOCKDEV-ERROR-VALUE:CAPS"/>
   </functions>
 </book>
