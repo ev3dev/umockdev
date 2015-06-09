@@ -1,3 +1,13 @@
+0.8.10 (2015-06-09)
+-------------------
+- Fix build failure of tests/test-ioctl-tree.c on powerpc with recent glibcs.
+- preload: Wrap readlinkat() and canonicalize_file_name(), to work with
+  udev >= 220.
+- Create /sys/bus/ hierarchy instead of /sys/class for "usb" and "pci"
+  subsystems, to match what the real kernel does.
+- Include DEVTYPE and SEQNUM properties into synthesized uevents so that
+  libudev >= 220 monitoring works.
+
 0.8.9 (2015-05-22)
 ------------------
 - umockdev-record: Ignore stderr from udevadm info, to avoid udev debug
