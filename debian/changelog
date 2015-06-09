@@ -1,3 +1,9 @@
+umockdev (0.8.10-1) UNRELEASED; urgency=medium
+
+  * New upstream bug fix release. This works with libudev 220.
+
+ -- Martin Pitt <mpitt@debian.org>  Tue, 09 Jun 2015 11:49:35 +0200
+
 umockdev (0.8.9-1) unstable; urgency=medium
 
   * New upstream bug fix release.
