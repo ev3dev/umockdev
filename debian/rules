@@ -18,6 +18,9 @@ override_dh_auto_test:
 	if ! dh_auto_test; then \
 	    head -n1 debian/changelog | grep -q '~' || exit 1; \
 	fi
+	# this will skip /umockdev-record/system-all which causes eternal hangs
+	# on some buildds
+	env INSTALLED_TEST=1 dh_auto_test
 
 override_dh_install:
 	dh_install -X.a -X.la --fail-missing

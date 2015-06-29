@@ -1,3 +1,10 @@
+umockdev (0.8.11-2) UNRELEASED; urgency=medium
+
+  * Re-add disable_record_system_all.patch, the upstream fix only skips that
+    test for "check-installed".
+
+ -- Martin Pitt <mpitt@debian.org>  Mon, 29 Jun 2015 15:03:09 +0200
+
 umockdev (0.8.11-1) unstable; urgency=medium
 
   * New upstream bug fix release.
