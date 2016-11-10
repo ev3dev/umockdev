@@ -1,3 +1,9 @@
+umockdev (0.8.12-1) UNRELEASED; urgency=medium
+
+  * New upstream bug fix release.
+
+ -- Martin Pitt <mpitt@debian.org>  Thu, 10 Nov 2016 11:23:37 +0100
+
 umockdev (0.8.11-2) unstable; urgency=medium
 
   * Re-add disable_record_system_all.patch, the upstream fix only skips that
