@@ -1,6 +1,7 @@
 umockdev (0.8.12-1) UNRELEASED; urgency=medium
 
   * New upstream bug fix release.
+  * Bump Standards-Version to 3.9.8 (no changes necessary).
 
  -- Martin Pitt <mpitt@debian.org>  Thu, 10 Nov 2016 11:23:37 +0100
 
