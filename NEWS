@@ -1,3 +1,7 @@
+0.8.13 (2017-01-26)
+-------------------
+- Fix crash when client sends uevents to closed listeners. (issue #53)
+
 0.8.12 (2016-11-10)
 -------------------
 - Include missing sys/sysmacros.h to fix build with recent glibc.
