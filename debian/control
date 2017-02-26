@@ -13,13 +13,13 @@ Build-Depends: debhelper (>= 9),
  libgirepository1.0-dev,
  gir1.2-glib-2.0,
  gir1.2-gudev-1.0,
- udev,
- xserver-xorg-video-dummy [!s390x],
- xserver-xorg-input-evdev [!s390x],
- xserver-xorg-input-synaptics [!s390x],
- xinput,
- usbutils,
- gtk-doc-tools
+ gtk-doc-tools,
+ udev <!nocheck>,
+ xserver-xorg-video-dummy [!s390x] <!nocheck>,
+ xserver-xorg-input-evdev [!s390x] <!nocheck>,
+ xserver-xorg-input-synaptics [!s390x] <!nocheck>,
+ xinput <!nocheck>,
+ usbutils <!nocheck>,
 Homepage: https://github.com/martinpitt/umockdev/
 Vcs-Git: git://anonscm.debian.org/collab-maint/umockdev.git
 Vcs-Browser: http://anonscm.debian.org/cgit/collab-maint/umockdev.git
