@@ -484,7 +484,10 @@ subdirectories of <em class="parameter"><code>syspath</code></em>
 <a name="umockdev-testbed-get-root-dir"></a><h3>umockdev_testbed_get_root_dir ()</h3>
 <pre class="programlisting"><span class="returnvalue">gchar</span> *
 umockdev_testbed_get_root_dir (<em class="parameter"><code><a class="link" href="umockdev-UMockdev.html#UMockdevTestbed"><span class="type">UMockdevTestbed</span></a> *self</code></em>);</pre>
-<p>Get the root directory for the testbed.</p>
+<p>Get the root directory for the testbed. This is mostly useful for
+setting up the "dev/" or "proc/" testbed directories in this root
+directory. For getting the mocked "sys/" dir, use
+<a class="link" href="umockdev-UMockdev.html#umockdev-testbed-get-sys-dir" title="umockdev_testbed_get_sys_dir ()"><span class="type">umockdev_testbed_get_sys_dir</span></a>.</p>
 <div class="refsect3">
 <a name="umockdev-testbed-get-root-dir.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
