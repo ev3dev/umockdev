@@ -1,3 +1,12 @@
+umockdev (0.9.1-1) unstable; urgency=medium
+
+  * New upstream release 0.9.1:
+    - Fix overly strict /umockdev-testbed/proc test. (Closes #860247)
+  * debian/watch: Add pgpsigurlmangle
+  * Add upstream signing key for uscan
+
+ -- Martin Pitt <mpitt@debian.org>  Mon, 01 May 2017 11:19:19 +0200
+
 umockdev (0.9-1) unstable; urgency=medium
 
   * New upstream release.
