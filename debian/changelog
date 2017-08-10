@@ -1,3 +1,12 @@
+umockdev (0.9.2-1) unstable; urgency=medium
+
+  * New upstream version:
+    - Relax sysfs path check in /umockdev-testbed/dev_query_gudev test to
+      also work with udev 234. (Closes: #871060)
+  * Update upstream signing key
+
+ -- Martin Pitt <mpitt@debian.org>  Thu, 10 Aug 2017 14:33:06 +0200
+
 umockdev (0.9.1-1) unstable; urgency=medium
 
   * New upstream release 0.9.1:
