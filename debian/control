@@ -78,7 +78,7 @@ Depends: ${shlibs:Depends},
  ${misc:Depends},
  libumockdev0 (= ${binary:Version}),
  libglib2.0-dev,
- gir1.2-umockdev-1.0
+ gir1.2-umockdev-1.0 (= ${binary:Version})
 Description: development files and documentation for libumockdev
  umockdev mocks hardware devices for creating unit tests for libraries and
  programs that handle Linux hardware devices.
