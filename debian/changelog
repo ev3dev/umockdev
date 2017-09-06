@@ -1,3 +1,17 @@
+umockdev (0.9.3-1) unstable; urgency=medium
+
+  * New upstream version:
+    - In the /umockdev-record/system-single test, stop assuming that
+      /dev/loop0 always exists, as that is not the case in containers and
+      some other build machines. Use /dev/zero as second device instead.
+      (Closes: #792189)
+  * Bump debhelper compat to 10. This provides autoreconf as mandated by
+    policy 4.0.
+  * Bump Standards-Version to 4.0.1.
+  * Strictly version libumockdev-dev's gir dependency.
+
+ -- Martin Pitt <mpitt@debian.org>  Wed, 06 Sep 2017 07:25:13 +0200
+
 umockdev (0.9.2-1) unstable; urgency=medium
 
   * New upstream version:
