@@ -3,12 +3,12 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>umockdev: umockdev Reference Manual</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
 <link rel="home" href="index.html" title="umockdev Reference Manual">
 <link rel="up" href="ch01.html" title="API reference">
 <link rel="prev" href="ch01.html" title="API reference">
 <link rel="next" href="umockdev-global-functions.html" title="global functions">
-<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.26 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -316,9 +316,9 @@ possible to change them later on with <a class="link" href="umockdev-UMockdev.ht
         <td class="listing_lines" align="right"><pre>1
 2
 3</pre></td>
-        <td class="listing_code"><pre class="programlisting"><span class="function"><a href="umockdev-UMockdev.html#umockdev-testbed-add-device">umockdev_testbed_add_device</a></span> <span class="gtkdoc opt">(</span>testbed<span class="gtkdoc opt">,</span> <span class="string">&quot;usb&quot;</span><span class="gtkdoc opt">,</span> <span class="string">&quot;dev1&quot;</span><span class="gtkdoc opt">,</span> NULL<span class="gtkdoc opt">,</span>
-                           <span class="string">&quot;idVendor&quot;</span><span class="gtkdoc opt">,</span> <span class="string">&quot;0815&quot;</span><span class="gtkdoc opt">,</span> <span class="string">&quot;idProduct&quot;</span><span class="gtkdoc opt">,</span> <span class="string">&quot;AFFE&quot;</span><span class="gtkdoc opt">,</span> NULL<span class="gtkdoc opt">,</span>
-                           <span class="string">&quot;ID_MODEL&quot;</span><span class="gtkdoc opt">,</span> <span class="string">&quot;KoolGadget&quot;</span><span class="gtkdoc opt">,</span> NULL<span class="gtkdoc opt">);</span></pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function"><a href="umockdev-UMockdev.html#umockdev-testbed-add-device">umockdev_testbed_add_device</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">testbed</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"usb"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"dev1"</span><span class="symbol">,</span><span class="normal"> NULL</span><span class="symbol">,</span>
+<span class="normal">                           </span><span class="string">"idVendor"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"0815"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"idProduct"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"AFFE"</span><span class="symbol">,</span><span class="normal"> NULL</span><span class="symbol">,</span>
+<span class="normal">                           </span><span class="string">"ID_MODEL"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"KoolGadget"</span><span class="symbol">,</span><span class="normal"> NULL</span><span class="symbol">);</span></pre></td>
       </tr>
     </tbody>
   </table>
@@ -352,7 +352,7 @@ possible to change them later on with <a class="link" href="umockdev-UMockdev.ht
 </tr>
 <tr>
 <td class="parameter_name"><p>parent</p></td>
-<td class="parameter_description"><p> device path of the parent device. Use <code class="literal">NULL</code> for a
+<td class="parameter_description"><p>device path of the parent device. Use <code class="literal">NULL</code> for a
 top-level device. </p></td>
 <td class="parameter_annotations"><span class="annotation">[<acronym title="NULL is OK, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span></td>
 </tr>
@@ -419,20 +419,20 @@ possible to change them later on with <a class="link" href="umockdev-UMockdev.ht
 </tr>
 <tr>
 <td class="parameter_name"><p>parent</p></td>
-<td class="parameter_description"><p> device path of the parent device. Use <code class="literal">NULL</code> for a
+<td class="parameter_description"><p>device path of the parent device. Use <code class="literal">NULL</code> for a
 top-level device. </p></td>
 <td class="parameter_annotations"><span class="annotation">[<acronym title="NULL is OK, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span></td>
 </tr>
 <tr>
 <td class="parameter_name"><p>attributes</p></td>
-<td class="parameter_description"><p>             A list of device sysfs attributes, alternating names and
+<td class="parameter_description"><p>A list of device sysfs attributes, alternating names and
 values, terminated with <code class="literal">NULL</code>:
 { "key1", "value1", "key2", "value2", ..., NULL }. </p></td>
 <td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
 </tr>
 <tr>
 <td class="parameter_name"><p>properties</p></td>
-<td class="parameter_description"><p>             A list of device udev properties; same format as <em class="parameter"><code>attributes</code></em>
+<td class="parameter_description"><p>A list of device udev properties; same format as <em class="parameter"><code>attributes</code></em>
 . </p></td>
 <td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
 </tr>
@@ -1446,6 +1446,6 @@ instead of the system's real sysfs.</p>
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.25</div>
+<hr>Generated by GTK-Doc V1.26</div>
 </body>
 </html>
