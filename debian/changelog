@@ -1,8 +1,9 @@
-umockdev (0.9.4-1) UNRELEASED; urgency=medium
+umockdev (0.9.4-1) unstable; urgency=medium
 
   * New upstream release.
+  * Bump Standards-Version to 4.1.1. No changes necessary.
 
- -- Martin Pitt <mpitt@debian.org>  Sat, 14 Oct 2017 15:53:58 +0200
+ -- Martin Pitt <mpitt@debian.org>  Sat, 14 Oct 2017 16:02:09 +0200
 
 umockdev (0.9.3-1) unstable; urgency=medium
 
