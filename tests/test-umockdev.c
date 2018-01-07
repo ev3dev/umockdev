@@ -2,7 +2,7 @@
  * test-umockdev
  *
  * Copyright (C) 2012 Canonical Ltd.
- * Copyright (C) 2017 Martin Pitt
+ * Copyright (C) 2017, 2018 Martin Pitt
  * Author: Martin Pitt <martin.pitt@ubuntu.com>
  *
  * umockdev is free software; you can redistribute it and/or
@@ -610,6 +610,8 @@ t_testbed_uevent_libudev(UMockdevTestbedFixture * fixture, gconstpointer data)
 
     /* don't trip over netlink sockets that the client side already closed */
     umockdev_testbed_uevent(fixture->testbed, syspath, "remove");
+
+    g_free(syspath);
 }
 
 static void
@@ -666,6 +668,7 @@ t_testbed_uevent_libudev_filter(UMockdevTestbedFixture * fixture, gconstpointer 
 
     udev_monitor_unref(mon);
     udev_unref(udev);
+    g_free(syspath);
 }
 
 static void
@@ -731,6 +734,8 @@ t_testbed_uevent_no_listener(UMockdevTestbedFixture * fixture, gconstpointer dat
 
     /* generate event */
     umockdev_testbed_uevent(fixture->testbed, syspath, "add");
+
+    g_free(syspath);
 }
 
 static void
@@ -764,6 +769,46 @@ t_testbed_uevent_error(UMockdevTestbedFixture * fixture, gconstpointer data)
 
     udev_monitor_unref(mon);
     udev_unref(udev);
+}
+
+static void
+t_testbed_uevent_null_action(UMockdevTestbedFixture * fixture, gconstpointer data)
+{
+    gchar *syspath;
+
+    syspath = umockdev_testbed_add_device(fixture->testbed, "pci", "mydev", NULL, NULL, NULL);
+    g_assert(syspath);
+
+    if (g_test_subprocess()) {
+        umockdev_testbed_uevent(fixture->testbed, syspath, NULL);
+    }
+    g_test_trap_subprocess(NULL, 0, 0);
+    g_test_trap_assert_failed();
+    g_test_trap_assert_stderr ("*action != NULL*");
+
+    g_free(syspath);
+}
+
+static void
+t_testbed_uevent_action_overflow(UMockdevTestbedFixture * fixture, gconstpointer data)
+{
+    gchar *syspath;
+
+    syspath = umockdev_testbed_add_device(fixture->testbed, "pci", "mydev", NULL, NULL, NULL);
+    g_assert(syspath);
+
+    /* overly long action */
+    if (g_test_subprocess()) {
+        char long_action[4096];
+        memset(long_action, 'a', sizeof(long_action));
+        long_action[sizeof(long_action)-1] = '\0';
+        umockdev_testbed_uevent(fixture->testbed, syspath, long_action);
+    }
+    g_test_trap_subprocess(NULL, 0, 0);
+    g_test_trap_assert_failed();
+    g_test_trap_assert_stderr ("*uevent_sender_send*Property buffer overflow*");
+
+    g_free(syspath);
 }
 
 static void
@@ -2051,6 +2096,10 @@ main(int argc, char **argv)
 	       t_testbed_uevent_no_listener, t_testbed_fixture_teardown);
     g_test_add("/umockdev-testbed/uevent/error", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
 	       t_testbed_uevent_error, t_testbed_fixture_teardown);
+    g_test_add("/umockdev-testbed/uevent/null_action", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
+	       t_testbed_uevent_null_action, t_testbed_fixture_teardown);
+    g_test_add("/umockdev-testbed/uevent/action_overflow", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
+	       t_testbed_uevent_action_overflow, t_testbed_fixture_teardown);
 
     /* tests for mocking USB devices */
     g_test_add("/umockdev-testbed-usb/lsusb", UMockdevTestbedFixture, NULL, t_testbed_fixture_setup,
