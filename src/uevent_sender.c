@@ -194,6 +194,22 @@ string_hash32(const char *str)
     return h;
 }
 
+static ssize_t
+append_property(char *array, size_t size, ssize_t offset, const char *name, const char *value)
+{
+    int r;
+    assert(offset < size);
+    r = snprintf(array + offset, size - offset, "%s%s", name, value);
+    // include the NUL terminator in the string length, as we need to keep it as a separator between keys
+    ++r;
+    if (r + offset >= size) {
+        fprintf(stderr, "ERROR: uevent_sender_send: Property buffer overflow\n");
+        abort();
+     }
+
+    return r;
+}
+
 /* this mirrors the code from systemd/src/libudev/libudev-monitor.c,
  * udev_monitor_send_device() */
 void
@@ -204,7 +220,9 @@ uevent_sender_send(uevent_sender * sender, const char *devpath, const char *acti
     struct msghdr smsg;
     struct iovec iov[2];
     const char *subsystem;
+    const char *devname;
     const char *devtype;
+    char seqnumstr[20];
     struct udev_device *device;
     struct udev_monitor_netlink_header nlh;
     static unsigned long long seqnum = 1;
@@ -218,29 +236,20 @@ uevent_sender_send(uevent_sender * sender, const char *devpath, const char *acti
     subsystem = udev_device_get_subsystem(device);
     assert(subsystem != NULL);
 
+    devname = udev_device_get_devnode(device);
+    devtype = udev_device_get_devtype(device);
+
     /* build NUL-terminated property array */
     count = 0;
-    strcpy(props, "ACTION=");
-    strcat(props, action);
-    count += strlen(props) + 1;
-    strcpy(props + count, "DEVPATH=");
-    strcat(props + count, udev_device_get_devpath(device));
-    count += strlen(props + count) + 1;
-    strcpy(props + count, "SUBSYSTEM=");
-    strcat(props + count, subsystem);
-    count += strlen(props + count) + 1;
-    snprintf(props + count, sizeof(props) - count, "SEQNUM=%llu", seqnum++);
-    count += strlen(props + count) + 1;
-    if (udev_device_get_devnode(device)) {
-        strcpy(props + count, "DEVNAME=");
-        strcat(props + count, udev_device_get_devnode(device));
-        count += strlen(props + count) + 1;
-    }
-    if (udev_device_get_devtype(device)) {
-        strcpy(props + count, "DEVTYPE=");
-        strcat(props + count, udev_device_get_devtype(device));
-        count += strlen(props + count) + 1;
-    }
+    count += append_property(props, sizeof (props), count, "ACTION=", action);
+    count += append_property(props, sizeof (props), count, "DEVPATH=", udev_device_get_devpath(device));
+    count += append_property(props, sizeof (props), count, "SUBSYSTEM=", subsystem);
+    snprintf(seqnumstr, sizeof(seqnumstr), "%llu", seqnum++);
+    count += append_property(props, sizeof (props), count, "SEQNUM=", seqnumstr);
+    if (devname)
+        count += append_property(props, sizeof (props), count, "DEVNAME=", devname);
+    if (devtype)
+        count += append_property(props, sizeof (props), count, "DEVTYPE=", devtype);
 
     /* add versioned header */
     memset(&nlh, 0x00, sizeof(struct udev_monitor_netlink_header));
@@ -249,7 +258,6 @@ uevent_sender_send(uevent_sender * sender, const char *devpath, const char *acti
     nlh.header_size = sizeof(struct udev_monitor_netlink_header);
 
     nlh.filter_subsystem_hash = htonl(string_hash32(subsystem));
-    devtype = udev_device_get_devtype(device);
     if (devtype != NULL)
 	nlh.filter_devtype_hash = htonl(string_hash32(devtype));
     iov[0].iov_base = &nlh;
