@@ -1,6 +1,6 @@
-# generated automatically by aclocal 1.15 -*- Autoconf -*-
+# generated automatically by aclocal 1.15.1 -*- Autoconf -*-
 
-# Copyright (C) 1996-2014 Free Software Foundation, Inc.
+# Copyright (C) 1996-2017 Free Software Foundation, Inc.
 
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -19,278 +19,6 @@ m4_if(m4_defn([AC_AUTOCONF_VERSION]), [2.69],,
 You have another version of autoconf.  It may work, but is not guaranteed to.
 If you have problems, you may need to regenerate the build system entirely.
 To do so, use the procedure documented by the package, typically 'autoreconf'.])])
-
-# ===========================================================================
-#     http://www.gnu.org/software/autoconf-archive/ax_code_coverage.html
-# ===========================================================================
-#
-# SYNOPSIS
-#
-#   AX_CODE_COVERAGE()
-#
-# DESCRIPTION
-#
-#   Defines CODE_COVERAGE_CFLAGS and CODE_COVERAGE_LDFLAGS which should be
-#   included in the CFLAGS and LIBS/LDFLAGS variables of every build target
-#   (program or library) which should be built with code coverage support.
-#   Also defines CODE_COVERAGE_RULES which should be substituted in your
-#   Makefile; and $enable_code_coverage which can be used in subsequent
-#   configure output. CODE_COVERAGE_ENABLED is defined and substituted, and
-#   corresponds to the value of the --enable-code-coverage option, which
-#   defaults to being disabled.
-#
-#   Test also for gcov program and create GCOV variable that could be
-#   substituted.
-#
-#   Note that all optimisation flags in CFLAGS must be disabled when code
-#   coverage is enabled.
-#
-#   Usage example:
-#
-#   configure.ac:
-#
-#     AX_CODE_COVERAGE
-#
-#   Makefile.am:
-#
-#     @CODE_COVERAGE_RULES@
-#     my_program_LIBS = ... $(CODE_COVERAGE_LDFLAGS) ...
-#     my_program_CFLAGS = ... $(CODE_COVERAGE_CFLAGS) ...
-#
-#   This results in a "check-code-coverage" rule being added to any
-#   Makefile.am which includes "@CODE_COVERAGE_RULES@" (assuming the module
-#   has been configured with --enable-code-coverage). Running `make
-#   check-code-coverage` in that directory will run the module's test suite
-#   (`make check`) and build a code coverage report detailing the code which
-#   was touched, then print the URI for the report.
-#
-#   This code was derived from Makefile.decl in GLib, originally licenced
-#   under LGPLv2.1+.
-#
-# LICENSE
-#
-#   Copyright (c) 2012 Philip Withnall
-#   Copyright (c) 2012 Xan Lopez
-#   Copyright (c) 2012 Christian Persch
-#   Copyright (c) 2012 Paolo Borelli
-#   Copyright (c) 2012 Dan Winship
-#   Copyright (c) 2015 Bastien ROUCARIES
-#
-#   This library is free software; you can redistribute it and/or modify it
-#   under the terms of the GNU Lesser General Public License as published by
-#   the Free Software Foundation; either version 2.1 of the License, or (at
-#   your option) any later version.
-#
-#   This library is distributed in the hope that it will be useful, but
-#   WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
-#   General Public License for more details.
-#
-#   You should have received a copy of the GNU Lesser General Public License
-#   along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-#serial 5
-
-AC_DEFUN([AX_CODE_COVERAGE],[
-	dnl Check for --enable-code-coverage
-	AC_REQUIRE([AC_PROG_SED])
-
-	# allow to override gcov location
-	AC_ARG_WITH([gcov],
-	  [AS_HELP_STRING([--with-gcov[=GCOV]], [use given GCOV for coverage (GCOV=gcov).])],
-	  [_AX_CODE_COVERAGE_GCOV_PROG_WITH=$with_gcov],
-	  [_AX_CODE_COVERAGE_GCOV_PROG_WITH=gcov])
-
-	AC_MSG_CHECKING([whether to build with code coverage support])
-	AC_ARG_ENABLE([code-coverage],
-	  AS_HELP_STRING([--enable-code-coverage],
-	  [Whether to enable code coverage support]),,
-	  enable_code_coverage=no)
-
-	AM_CONDITIONAL([CODE_COVERAGE_ENABLED], [test x$enable_code_coverage = xyes])
-	AC_SUBST([CODE_COVERAGE_ENABLED], [$enable_code_coverage])
-	AC_MSG_RESULT($enable_code_coverage)
-
-	AS_IF([ test "$enable_code_coverage" = "yes" ], [
-		# check for gcov
-		AC_CHECK_TOOL([GCOV],
-		  [$_AX_CODE_COVERAGE_GCOV_PROG_WITH],
-		  [:])
-		AS_IF([test "X$GCOV" = "X:"],
-		  [AC_MSG_ERROR([gcov is needed to do coverage])])
-		AC_SUBST([GCOV])
-
-		dnl Check if gcc is being used
-		AS_IF([ test "$GCC" = "no" ], [
-			AC_MSG_ERROR([not compiling with gcc, which is required for gcov code coverage])
-		])
-
-		# List of supported lcov versions.
-		lcov_version_list="1.6 1.7 1.8 1.9 1.10 1.11"
-
-		AC_CHECK_PROG([LCOV], [lcov], [lcov])
-		AC_CHECK_PROG([GENHTML], [genhtml], [genhtml])
-
-		AS_IF([ test "$LCOV" ], [
-			AC_CACHE_CHECK([for lcov version], ax_cv_lcov_version, [
-				ax_cv_lcov_version=invalid
-				lcov_version=`$LCOV -v 2>/dev/null | $SED -e 's/^.* //'`
-				for lcov_check_version in $lcov_version_list; do
-					if test "$lcov_version" = "$lcov_check_version"; then
-						ax_cv_lcov_version="$lcov_check_version (ok)"
-					fi
-				done
-			])
-		], [
-			lcov_msg="To enable code coverage reporting you must have one of the following lcov versions installed: $lcov_version_list"
-			AC_MSG_ERROR([$lcov_msg])
-		])
-
-		case $ax_cv_lcov_version in
-			""|invalid[)]
-				lcov_msg="You must have one of the following versions of lcov: $lcov_version_list (found: $lcov_version)."
-				AC_MSG_ERROR([$lcov_msg])
-				LCOV="exit 0;"
-			;;
-		esac
-
-		AS_IF([ test -z "$GENHTML" ], [
-			AC_MSG_ERROR([Could not find genhtml from the lcov package])
-		])
-
-		dnl Build the code coverage flags
-		CODE_COVERAGE_CFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
-		CODE_COVERAGE_LDFLAGS="-lgcov"
-
-		AC_SUBST([CODE_COVERAGE_CFLAGS])
-		AC_SUBST([CODE_COVERAGE_LDFLAGS])
-	])
-
-CODE_COVERAGE_RULES='
-# Code coverage
-#
-# Optional:
-#  - CODE_COVERAGE_DIRECTORY: Top-level directory for code coverage reporting.
-#    (Default: $(top_builddir))
-#  - CODE_COVERAGE_OUTPUT_FILE: Filename and path for the .info file generated
-#    by lcov for code coverage. (Default:
-#    $(PACKAGE_NAME)-$(PACKAGE_VERSION)-coverage.info)
-#  - CODE_COVERAGE_OUTPUT_DIRECTORY: Directory for generated code coverage
-#    reports to be created. (Default:
-#    $(PACKAGE_NAME)-$(PACKAGE_VERSION)-coverage)
-#  - CODE_COVERAGE_LCOV_OPTIONS_GCOVPATH: --gcov-tool pathtogcov
-#  - CODE_COVERAGE_LCOV_OPTIONS_DEFAULT: Extra options to pass to the lcov instance.
-#    (Default: $CODE_COVERAGE_LCOV_OPTIONS_GCOVPATH)
-#  - CODE_COVERAGE_LCOV_OPTIONS: Extra options to pass to the lcov instance.
-#    (Default: $CODE_COVERAGE_LCOV_OPTIONS_DEFAULT)
-#  - CODE_COVERAGE_GENHTML_OPTIONS: Extra options to pass to the genhtml
-#    instance. (Default: empty)
-#  - CODE_COVERAGE_IGNORE_PATTERN: Extra glob pattern of files to ignore
-#
-# The generated report will be titled using the $(PACKAGE_NAME) and
-# $(PACKAGE_VERSION). In order to add the current git hash to the title,
-# use the git-version-gen script, available online.
-
-# Optional variables
-CODE_COVERAGE_DIRECTORY ?= $(top_builddir)
-CODE_COVERAGE_OUTPUT_FILE ?= $(PACKAGE_NAME)-$(PACKAGE_VERSION)-coverage.info
-CODE_COVERAGE_OUTPUT_DIRECTORY ?= $(PACKAGE_NAME)-$(PACKAGE_VERSION)-coverage
-CODE_COVERAGE_LCOV_OPTIONS_GCOVPATH ?= --gcov-tool "$(GCOV)"
-CODE_COVERAGE_LCOV_OPTIONS_DEFAULT ?= $(CODE_COVERAGE_LCOV_OPTIONS_GCOVPATH)
-CODE_COVERAGE_LCOV_OPTIONS ?= $(CODE_COVERAGE_LCOV_OPTIONS_DEFAULT)
-CODE_COVERAGE_GENHTML_OPTIONS ?=
-CODE_COVERAGE_IGNORE_PATTERN ?=
-
-code_coverage_quiet = $(code_coverage_quiet_$(V))
-code_coverage_quiet_ = $(code_coverage_quiet_$(AM_DEFAULT_VERBOSITY))
-code_coverage_quiet_0 = --quiet
-
-# Use recursive makes in order to ignore errors during check
-check-code-coverage:
-ifeq ($(CODE_COVERAGE_ENABLED),yes)
-	-$(MAKE) $(AM_MAKEFLAGS) -k check
-	$(MAKE) $(AM_MAKEFLAGS) code-coverage-capture
-else
-	@echo "Need to reconfigure with --enable-code-coverage"
-endif
-
-# Capture code coverage data
-code-coverage-capture: code-coverage-capture-hook
-ifeq ($(CODE_COVERAGE_ENABLED),yes)
-	$(LCOV) $(code_coverage_quiet) --directory $(CODE_COVERAGE_DIRECTORY) --capture --output-file "$(CODE_COVERAGE_OUTPUT_FILE).tmp" --test-name "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" --no-checksum --compat-libtool $(CODE_COVERAGE_LCOV_OPTIONS)
-	$(LCOV) $(code_coverage_quiet) --directory $(CODE_COVERAGE_DIRECTORY) --remove "$(CODE_COVERAGE_OUTPUT_FILE).tmp" "/tmp/*" $(CODE_COVERAGE_IGNORE_PATTERN) --output-file "$(CODE_COVERAGE_OUTPUT_FILE)"
-	-@rm -f $(CODE_COVERAGE_OUTPUT_FILE).tmp
-	LANG=C $(GENHTML) $(code_coverage_quiet) --prefix $(CODE_COVERAGE_DIRECTORY) --output-directory "$(CODE_COVERAGE_OUTPUT_DIRECTORY)" --title "$(PACKAGE_NAME)-$(PACKAGE_VERSION) Code Coverage" --legend --show-details "$(CODE_COVERAGE_OUTPUT_FILE)" $(CODE_COVERAGE_GENHTML_OPTIONS)
-	@echo "file://$(abs_builddir)/$(CODE_COVERAGE_OUTPUT_DIRECTORY)/index.html"
-else
-	@echo "Need to reconfigure with --enable-code-coverage"
-endif
-
-# Hook rule executed before code-coverage-capture, overridable by the user
-code-coverage-capture-hook:
-
-ifeq ($(CODE_COVERAGE_ENABLED),yes)
-clean: code-coverage-clean
-code-coverage-clean:
-	-$(LCOV) --directory $(top_builddir) -z
-	-rm -rf $(CODE_COVERAGE_OUTPUT_FILE) $(CODE_COVERAGE_OUTPUT_FILE).tmp $(CODE_COVERAGE_OUTPUT_DIRECTORY)
-	-find . -name "*.gcda" -o -name "*.gcov" -delete
-endif
-
-GITIGNOREFILES ?=
-GITIGNOREFILES += $(CODE_COVERAGE_OUTPUT_FILE) $(CODE_COVERAGE_OUTPUT_DIRECTORY)
-
-DISTCHECK_CONFIGURE_FLAGS ?=
-DISTCHECK_CONFIGURE_FLAGS += --disable-code-coverage
-
-.PHONY: check-code-coverage code-coverage-capture code-coverage-capture-hook code-coverage-clean
-'
-
-	AC_SUBST([CODE_COVERAGE_RULES])
-	m4_ifdef([_AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE([CODE_COVERAGE_RULES])])
-])
-
-dnl GNOME_CODE_COVERAGE
-dnl
-dnl Defines CODE_COVERAGE_CFLAGS and CODE_COVERAGE_LDFLAGS which should be
-dnl included in the CFLAGS and LIBS/LDFLAGS variables of every build target
-dnl (program or library) which should be built with code coverage support.
-dnl Also defines GNOME_CODE_COVERAGE_RULES which should be substituted in your
-dnl Makefile; and $enable_code_coverage which can be used in subsequent
-dnl configure output.
-dnl
-dnl Note that all optimisation flags in CFLAGS must be disabled when code
-dnl coverage is enabled.
-dnl
-dnl Derived from Makefile.decl in GLib, originally licenced under LGPLv2.1+.
-dnl This file is licenced under LGPLv2.1+.
-dnl
-dnl Usage example:
-dnl configure.ac:
-dnl    GNOME_CODE_COVERAGE
-dnl
-dnl Makefile.am:
-dnl    @GNOME_CODE_COVERAGE_RULES@
-dnl    my_program_LIBS = … $(CODE_COVERAGE_LDFLAGS) …
-dnl    my_program_CFLAGS = … $(CODE_COVERAGE_CFLAGS) …
-dnl
-dnl This results in a “check-code-coverage” rule being added to any Makefile.am
-dnl which includes “@GNOME_CODE_COVERAGE_RULES@” (assuming the module has been
-dnl configured with --enable-code-coverage). Running `make check-code-coverage`
-dnl in that directory will run the module’s test suite (`make check`) and build
-dnl a code coverage report detailing the code which was touched, then print the
-dnl URI for the report.
-
-AU_DEFUN([GNOME_CODE_COVERAGE],[
-	AX_CODE_COVERAGE
-	GNOME_CODE_COVERAGE_RULES=$CODE_COVERAGE_RULES
-
-	AC_SUBST([GNOME_CODE_COVERAGE_RULES])
-	m4_ifdef([_AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE([GNOME_CODE_COVERAGE_RULES])])
-],
-[[$0: This macro is deprecated. You should use AX_CODE_COVERAGE instead and
-replace uses of GNOME_CODE_COVERAGE_RULES with CODE_COVERAGE_RULES.
-See: http://www.gnu.org/software/autoconf-archive/ax_code_coverage.html#ax_code_coverage]])
 
 dnl -*- mode: autoconf -*-
 dnl Copyright 2009 Johan Dahlin
@@ -390,7 +118,7 @@ AC_DEFUN([GOBJECT_INTROSPECTION_REQUIRE],
 ])
 
 dnl pkg.m4 - Macros to locate and utilise pkg-config.   -*- Autoconf -*-
-dnl serial 11 (pkg-config-0.29.1)
+dnl serial 11 (pkg-config-0.29)
 dnl
 dnl Copyright © 2004 Scott James Remnant <scott@netsplit.com>.
 dnl Copyright © 2012-2015 Dan Nicholson <dbn.lists@gmail.com>
@@ -432,7 +160,7 @@ dnl
 dnl See the "Since" comment for each macro you use to see what version
 dnl of the macros you require.
 m4_defun([PKG_PREREQ],
-[m4_define([PKG_MACROS_VERSION], [0.29.1])
+[m4_define([PKG_MACROS_VERSION], [0.29])
 m4_if(m4_version_compare(PKG_MACROS_VERSION, [$1]), -1,
     [m4_fatal([pkg.m4 version $1 or higher is required but ]PKG_MACROS_VERSION[ found])])
 ])dnl PKG_PREREQ
@@ -665,7 +393,7 @@ AS_VAR_COPY([$1], [pkg_cv_][$1])
 AS_VAR_IF([$1], [""], [$5], [$4])dnl
 ])dnl PKG_CHECK_VAR
 
-# Copyright (C) 2002-2014 Free Software Foundation, Inc.
+# Copyright (C) 2002-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -680,7 +408,7 @@ AC_DEFUN([AM_AUTOMAKE_VERSION],
 [am__api_version='1.15'
 dnl Some users find AM_AUTOMAKE_VERSION and mistake it for a way to
 dnl require some minimum version.  Point them to the right macro.
-m4_if([$1], [1.15], [],
+m4_if([$1], [1.15.1], [],
       [AC_FATAL([Do not call $0, use AM_INIT_AUTOMAKE([$1]).])])dnl
 ])
 
@@ -696,12 +424,12 @@ m4_define([_AM_AUTOCONF_VERSION], [])
 # Call AM_AUTOMAKE_VERSION and AM_AUTOMAKE_VERSION so they can be traced.
 # This function is AC_REQUIREd by AM_INIT_AUTOMAKE.
 AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
-[AM_AUTOMAKE_VERSION([1.15])dnl
+[AM_AUTOMAKE_VERSION([1.15.1])dnl
 m4_ifndef([AC_AUTOCONF_VERSION],
   [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
 _AM_AUTOCONF_VERSION(m4_defn([AC_AUTOCONF_VERSION]))])
 
-# Copyright (C) 2011-2014 Free Software Foundation, Inc.
+# Copyright (C) 2011-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -763,7 +491,7 @@ AC_SUBST([AR])dnl
 
 # AM_AUX_DIR_EXPAND                                         -*- Autoconf -*-
 
-# Copyright (C) 2001-2014 Free Software Foundation, Inc.
+# Copyright (C) 2001-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -815,7 +543,7 @@ am_aux_dir=`cd "$ac_aux_dir" && pwd`
 
 # AM_CONDITIONAL                                            -*- Autoconf -*-
 
-# Copyright (C) 1997-2014 Free Software Foundation, Inc.
+# Copyright (C) 1997-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -846,7 +574,7 @@ AC_CONFIG_COMMANDS_PRE(
 Usually this means the macro was only invoked conditionally.]])
 fi])])
 
-# Copyright (C) 1999-2014 Free Software Foundation, Inc.
+# Copyright (C) 1999-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1037,7 +765,7 @@ _AM_SUBST_NOTMAKE([am__nodep])dnl
 
 # Generate code to set up dependency tracking.              -*- Autoconf -*-
 
-# Copyright (C) 1999-2014 Free Software Foundation, Inc.
+# Copyright (C) 1999-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1113,7 +841,7 @@ AC_DEFUN([AM_OUTPUT_DEPENDENCY_COMMANDS],
 
 # Do all the work for Automake.                             -*- Autoconf -*-
 
-# Copyright (C) 1996-2014 Free Software Foundation, Inc.
+# Copyright (C) 1996-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1310,7 +1038,7 @@ for _am_header in $config_headers :; do
 done
 echo "timestamp for $_am_arg" >`AS_DIRNAME(["$_am_arg"])`/stamp-h[]$_am_stamp_count])
 
-# Copyright (C) 2001-2014 Free Software Foundation, Inc.
+# Copyright (C) 2001-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1331,7 +1059,7 @@ if test x"${install_sh+set}" != xset; then
 fi
 AC_SUBST([install_sh])])
 
-# Copyright (C) 2003-2014 Free Software Foundation, Inc.
+# Copyright (C) 2003-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1352,7 +1080,7 @@ AC_SUBST([am__leading_dot])])
 
 # Check to see how 'make' treats includes.	            -*- Autoconf -*-
 
-# Copyright (C) 2001-2014 Free Software Foundation, Inc.
+# Copyright (C) 2001-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1402,7 +1130,7 @@ rm -f confinc confmf
 
 # Fake the existence of programs that GNU maintainers use.  -*- Autoconf -*-
 
-# Copyright (C) 1997-2014 Free Software Foundation, Inc.
+# Copyright (C) 1997-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1441,7 +1169,7 @@ fi
 
 # Helper functions for option handling.                     -*- Autoconf -*-
 
-# Copyright (C) 2001-2014 Free Software Foundation, Inc.
+# Copyright (C) 2001-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1470,7 +1198,7 @@ AC_DEFUN([_AM_SET_OPTIONS],
 AC_DEFUN([_AM_IF_OPTION],
 [m4_ifset(_AM_MANGLE_OPTION([$1]), [$2], [$3])])
 
-# Copyright (C) 1999-2014 Free Software Foundation, Inc.
+# Copyright (C) 1999-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1517,7 +1245,7 @@ AC_LANG_POP([C])])
 # For backward compatibility.
 AC_DEFUN_ONCE([AM_PROG_CC_C_O], [AC_REQUIRE([AC_PROG_CC])])
 
-# Copyright (C) 2001-2014 Free Software Foundation, Inc.
+# Copyright (C) 2001-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1536,7 +1264,7 @@ AC_DEFUN([AM_RUN_LOG],
 
 # Check to make sure that the build environment is sane.    -*- Autoconf -*-
 
-# Copyright (C) 1996-2014 Free Software Foundation, Inc.
+# Copyright (C) 1996-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1617,7 +1345,7 @@ AC_CONFIG_COMMANDS_PRE(
 rm -f conftest.file
 ])
 
-# Copyright (C) 2009-2014 Free Software Foundation, Inc.
+# Copyright (C) 2009-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1677,7 +1405,7 @@ AC_SUBST([AM_BACKSLASH])dnl
 _AM_SUBST_NOTMAKE([AM_BACKSLASH])dnl
 ])
 
-# Copyright (C) 2001-2014 Free Software Foundation, Inc.
+# Copyright (C) 2001-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1705,7 +1433,7 @@ fi
 INSTALL_STRIP_PROGRAM="\$(install_sh) -c -s"
 AC_SUBST([INSTALL_STRIP_PROGRAM])])
 
-# Copyright (C) 2006-2014 Free Software Foundation, Inc.
+# Copyright (C) 2006-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1724,7 +1452,7 @@ AC_DEFUN([AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE($@)])
 
 # Check how to create a tarball.                            -*- Autoconf -*-
 
-# Copyright (C) 2004-2014 Free Software Foundation, Inc.
+# Copyright (C) 2004-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1857,7 +1585,7 @@ AC_SUBST([am__untar])
 
 # Autoconf support for the Vala compiler
 
-# Copyright (C) 2008-2014 Free Software Foundation, Inc.
+# Copyright (C) 2008-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
