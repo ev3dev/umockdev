@@ -3,7 +3,7 @@
 DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 
 %:
-	dh $@ --parallel --with gir
+	dh $@ --with gir
 
 override_dh_auto_configure:
 	# building from trunk checkout?
