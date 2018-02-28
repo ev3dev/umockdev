@@ -1,2 +1,2 @@
 version=3
-opts="pgpsigurlmangle=s/$/.asc/" http://launchpad.net/umockdev/+download .*/umockdev-([0-9.]+)\.tar\.xz
+https://github.com/martinpitt/umockdev/releases/ .*/umockdev-([\d\.]+)\.tar\.xz
