@@ -75,19 +75,19 @@ resolve (string dev)
     if (Posix.stat(dev, out st) != 0)
         exit_error("Cannot access device %s: %s", dev, strerror(errno));
 
-    uint major = Posix.major(st.st_rdev);
-    uint minor = Posix.minor(st.st_rdev);
+    uint maj = Posix.hack_major(st.st_rdev);
+    uint min = Posix.minor(st.st_rdev);
 
     string link;
     // character device?
     if (Posix.S_ISCHR(st.st_mode))
-        link = "/sys/dev/char/%u:%u".printf(major, minor);
+        link = "/sys/dev/char/%u:%u".printf(maj, min);
     else if (Posix.S_ISBLK(st.st_mode))
-        link = "/sys/dev/block/%u:%u".printf(major, minor);
+        link = "/sys/dev/block/%u:%u".printf(maj, min);
     else
         link = dev;
 
-    string real = Posix.fixed_realpath(link);
+    string real = Posix.realpath(link);
     // FIXME: does not work under testbed for test suite
     //assert(real != null);
     if (real == null)
@@ -268,7 +268,7 @@ static void
 dump_devices(string[] devices)
 {
     // process arguments parentwards first
-    var seen = new HashTable<string,unowned string>(str_hash, str_equal);
+    var seen = new GenericSet<string>(str_hash, str_equal);
     foreach (string device in devices) {
         while (device != null) {
             if (!seen.contains(device)) {
