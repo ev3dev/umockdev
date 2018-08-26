@@ -191,7 +191,7 @@ src_umockdev_run_SOURCES = 		\
 	$(NULL)
 
 src_umockdev_run_CFLAGS = $(GLIB_CFLAGS) -I $(srcdir)/src -I src -w
-src_umockdev_run_LDADD = $(GLIB_LIBS) $(GUDEV_LIBS) libumockdev.la
+src_umockdev_run_LDADD = $(GLIB_LIBS) libumockdev.la
 src_umockdev_run_VALAFLAGS =		\
 	--vapidir $(top_builddir)/src	\
 	--pkg umockdev-1.0		\
@@ -225,7 +225,7 @@ DISTCLEANFILES += \
 # -------------------------------------------------------------
 # tests
 
-noinst_PROGRAMS += tests/chatter tests/chatter-socket-stream
+noinst_PROGRAMS += tests/chatter tests/chatter-socket-stream tests/readbyte
 
 tests_chatter_SOURCES = tests/chatter.c
 
@@ -237,6 +237,12 @@ tests_chatter_socket_stream_SOURCES = tests/chatter-socket-stream.c
 
 tests_chatter_socket_stream_CFLAGS =	\
 	$(AM_CFLAGS)			\
+	$(NULL)
+
+tests_readbyte_SOURCES = tests/readbyte.c
+
+tests_readbyte_CFLAGS =		\
+	$(AM_CFLAGS)		\
 	$(NULL)
 
 noinst_PROGRAMS += tests/test-umockdev tests/test-ioctl-tree
@@ -261,6 +267,8 @@ tests_test_umockdev_LDADD =	\
 tests_test_ioctl_tree_SOURCES =	\
 	src/ioctl_tree.c	\
 	tests/test-ioctl-tree.c	\
+	src/debug.h		\
+	src/debug.c		\
 	$(NULL)
 
 tests_test_ioctl_tree_CFLAGS =	\

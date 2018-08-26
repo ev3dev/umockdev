@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012-2013 Canonical Ltd.
+ * Copyright (C) 2018 Martin Pitt
  * Author: Martin Pitt <martin.pitt@ubuntu.com>
  *
  * The initial code for intercepting function calls was inspired and partially
@@ -42,14 +43,15 @@
 #include <sys/sysmacros.h>
 #include <sys/inotify.h>
 #include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <sys/xattr.h>
+#include <linux/ioctl.h>
 #include <linux/un.h>
 #include <linux/netlink.h>
 #include <linux/input.h>
 #include <unistd.h>
 #include <pthread.h>
 
+#include "config.h"
 #include "debug.h"
 #include "ioctl_tree.h"
 
@@ -412,6 +414,7 @@ static void ioctl_record_sigint_handler(int signum);
 static void
 ioctl_record_open(int fd)
 {
+    libc_func(fopen, FILE*, const char *, const char*);
     static dev_t record_rdev = (dev_t) - 1;
 
     if (fd < 0)
@@ -466,7 +469,7 @@ ioctl_record_open(int fd)
 	    fprintf(stderr, "umockdev: $UMOCKDEV_DIR cannot be used while recording\n");
 	    exit(1);
 	}
-	ioctl_record_log = fopen(path, "a+");
+	ioctl_record_log = _fopen(path, "a+");
 	if (ioctl_record_log == NULL) {
 	    perror("umockdev: failed to open ioctl record file");
 	    exit(1);
@@ -550,7 +553,7 @@ static void ioctl_record_sigint_handler(int signum)
 }
 
 static void
-record_ioctl(unsigned long request, void *arg, int result)
+record_ioctl(IOCTL_REQUEST_TYPE request, void *arg, int result)
 {
     ioctl_tree *node;
 
@@ -581,6 +584,7 @@ struct ioctl_fd_info {
 static void
 ioctl_emulate_open(int fd, const char *dev_path)
 {
+    libc_func(fopen, FILE*, const char *, const char*);
     libc_func(fclose, int, FILE *);
     FILE *f;
     static char ioctl_path[PATH_MAX];
@@ -597,7 +601,7 @@ ioctl_emulate_open(int fd, const char *dev_path)
     /* check if we have an ioctl tree for this */
     snprintf(ioctl_path, sizeof(ioctl_path), "%s/ioctl/%s", getenv("UMOCKDEV_DIR"), dev_path);
 
-    f = fopen(ioctl_path, "r");
+    f = _fopen(ioctl_path, "r");
     if (f == NULL)
 	return;
 
@@ -625,7 +629,7 @@ ioctl_emulate_close(int fd)
 }
 
 static int
-ioctl_emulate(int fd, unsigned long request, void *arg)
+ioctl_emulate(int fd, IOCTL_REQUEST_TYPE request, void *arg)
 {
     ioctl_tree *ret;
     int ioctl_result = -1;
@@ -759,6 +763,7 @@ static void
 script_start_record(int fd, const char *logname, const char *recording_path, enum script_record_format fmt)
 {
     FILE *log;
+    libc_func(fopen, FILE*, const char *, const char*);
     struct script_record_info *srinfo;
 
     if (fd_map_get(&script_recorded_fds, fd, NULL)) {
@@ -766,7 +771,7 @@ script_start_record(int fd, const char *logname, const char *recording_path, enu
 	abort();
     }
 
-    log = fopen(logname, "a+");
+    log = _fopen(logname, "a+");
     if (log == NULL) {
 	perror("umockdev: failed to open script record file");
 	exit(1);
@@ -1028,6 +1033,27 @@ rettype name(const char *path)		    \
     return r;				    \
 }
 
+/* wrapper template for a function with one "const char* path" argument and path return */
+#define WRAP_1ARG_PATHRET(rettype, failret, name)   \
+rettype name(const char *path)		    \
+{ \
+    const char *p;			    \
+    libc_func(name, rettype, const char*);  \
+    rettype r;				    \
+    TRAP_PATH_LOCK;			    \
+    p = trap_path(path);		    \
+    if (p == NULL)			    \
+	r = failret;			    \
+    else {				    \
+	r = (*_ ## name)(p);		    \
+	if (p != path && r != NULL)	    \
+	    memmove(r, r + trap_path_prefix_len, strlen(r) - trap_path_prefix_len + 1); \
+    };					    \
+    TRAP_PATH_UNLOCK;			    \
+    return r;				    \
+}
+
+
 /* wrapper template for a function with "const char* path" and another argument */
 #define WRAP_2ARGS(rettype, failret, name, arg2t) \
 rettype name(const char *path, arg2t arg2) \
@@ -1044,6 +1070,27 @@ rettype name(const char *path, arg2t arg2) \
     TRAP_PATH_UNLOCK;					\
     return r;						\
 }
+
+/* wrapper template for a function with "const char* path", another argument, and path return */
+#define WRAP_2ARGS_PATHRET(rettype, failret, name, arg2t) \
+rettype name(const char *path, arg2t arg2) \
+{ \
+    const char *p;					\
+    libc_func(name, rettype, const char*, arg2t);	\
+    rettype r;						\
+    TRAP_PATH_LOCK;					\
+    p = trap_path(path);				\
+    if (p == NULL)					\
+	r = failret;					\
+    else {						\
+	r = (*_ ## name)(p, arg2);			\
+	if (p != path && r != NULL)			\
+	    memmove(r, r + trap_path_prefix_len, strlen(r) - trap_path_prefix_len + 1); \
+    };					    \
+    TRAP_PATH_UNLOCK;					\
+    return r;						\
+}
+
 
 /* wrapper template for a function with "const char* path" and two other arguments */
 #define WRAP_3ARGS(rettype, failret, name, arg2t, arg3t) \
@@ -1062,6 +1109,27 @@ rettype name(const char *path, arg2t arg2, arg3t arg3) \
     return r;							\
 }
 
+/* wrapper template for a function with "const char* path", two other arguments, and path return */
+#define WRAP_3ARGS_PATHRET(rettype, failret, name, arg2t, arg3t) \
+rettype name(const char *path, arg2t arg2, arg3t arg3) \
+{ \
+    const char *p;					\
+    libc_func(name, rettype, const char*, arg2t, arg3t); \
+    rettype r;						\
+    TRAP_PATH_LOCK;					\
+    p = trap_path(path);				\
+    if (p == NULL)					\
+	r = failret;					\
+    else {						\
+	r = (*_ ## name)(p, arg2, arg3);		\
+	if (p != path && r != NULL)			\
+	    memmove(r, r + trap_path_prefix_len, strlen(r) - trap_path_prefix_len + 1); \
+    };					    \
+    TRAP_PATH_UNLOCK;					\
+    return r;						\
+}
+
+
 /* wrapper template for a function with "const char* path" and three other arguments */
 #define WRAP_4ARGS(rettype, failret, name, arg2t, arg3t, arg4t) \
 rettype name(const char *path, arg2t arg2, arg3t arg3, arg4t arg4) \
@@ -1077,6 +1145,39 @@ rettype name(const char *path, arg2t arg2, arg3t arg3, arg4t arg4) \
 	r = (*_ ## name)(p, arg2, arg3, arg4);			\
     TRAP_PATH_UNLOCK;						\
     return r;							\
+}
+
+/* wrapper template for stat family; note that we abuse the sticky bit in
+ * the emulated /dev to indicate a block device (the sticky bit has no
+ * real functionality for device nodes) */
+#define WRAP_STAT(prefix, suffix) \
+int prefix ## stat ## suffix (const char *path, struct stat ## suffix *st) \
+{ \
+    const char *p;								\
+    libc_func(prefix ## stat ## suffix, int, const char*, struct stat ## suffix *); \
+    int ret;									\
+    TRAP_PATH_LOCK;								\
+    p = trap_path(path);							\
+    if (p == NULL) {								\
+	TRAP_PATH_UNLOCK;							\
+	return -1;								\
+    }										\
+    DBG(DBG_PATH, "testbed wrapped " #prefix "stat" #suffix "(%s) -> %s\n", path, p);	\
+    ret = _ ## prefix ## stat ## suffix(p, st);					\
+    TRAP_PATH_UNLOCK;								\
+    if (ret == 0 && p != path && strncmp(path, "/dev/", 5) == 0			\
+	&& is_emulated_device(p, st->st_mode)) {				\
+	st->st_mode &= ~S_IFREG;						\
+	if (st->st_mode &  S_ISVTX) {						\
+	    st->st_mode &= ~S_ISVTX; st->st_mode |= S_IFBLK;			\
+	    DBG(DBG_PATH, "  %s is an emulated block device\n", path);		\
+	} else {								\
+	    st->st_mode |= S_IFCHR;						\
+	    DBG(DBG_PATH, "  %s is an emulated char device\n", path);		\
+	}									\
+	st->st_rdev = get_rdev(path + 5);					\
+    }										\
+    return ret;									\
 }
 
 /* wrapper template for __xstat family; note that we abuse the sticky bit in
@@ -1169,35 +1270,66 @@ int prefix ## open ## suffix (const char *path, int flags)	    \
     return ret;						    	    \
 }
 
+/* wrapper template for fopen family */
+#define WRAP_FOPEN(prefix, suffix) \
+FILE* prefix ## fopen ## suffix (const char *path, const char *mode)  \
+{ \
+    const char *p;						    \
+    libc_func(prefix ## fopen ## suffix, FILE*, const char*, const char*);\
+    FILE *ret;							    \
+    TRAP_PATH_LOCK;						    \
+    p = trap_path(path);					    \
+    if (p == NULL) {						    \
+	TRAP_PATH_UNLOCK;					    \
+	return NULL;						    \
+    }								    \
+    DBG(DBG_PATH, "testbed wrapped " #prefix "fopen" #suffix "(%s) -> %s\n", path, p); \
+    ret =  _ ## prefix ## fopen ## suffix(p, mode);		    \
+    TRAP_PATH_UNLOCK;						    \
+    if (ret != NULL) {						    \
+	int fd = fileno(ret);					    \
+	if (path != p)						    \
+	    ioctl_emulate_open(fd, path);			    \
+	else {							    \
+	    ioctl_record_open(fd);				    \
+	    script_record_open(fd);				    \
+	}							    \
+    }								    \
+    return ret;							    \
+}
+
 WRAP_1ARG(DIR *, NULL, opendir);
 
-WRAP_2ARGS(FILE *, NULL, fopen, const char *);
-WRAP_2ARGS(FILE *, NULL, fopen64, const char *);
+WRAP_FOPEN(,);
 WRAP_2ARGS(int, -1, mkdir, mode_t);
 WRAP_2ARGS(int, -1, chmod, mode_t);
 WRAP_2ARGS(int, -1, access, int);
-WRAP_2ARGS(int, -1, stat, struct stat *);
-WRAP_2ARGS(int, -1, stat64, struct stat64 *);
-WRAP_2ARGS(int, -1, lstat, struct stat *);
-WRAP_2ARGS(int, -1, lstat64, struct stat64 *);
+WRAP_STAT(,);
+WRAP_STAT(l,);
+
+#ifdef __GLIBC__
+WRAP_STAT(,64);
+WRAP_STAT(l,64);
+WRAP_FOPEN(,64);
+#endif
 
 WRAP_3ARGS(ssize_t, -1, readlink, char *, size_t);
 
 WRAP_4ARGS(ssize_t, -1, getxattr, const char*, void*, size_t);
 WRAP_4ARGS(ssize_t, -1, lgetxattr, const char*, void*, size_t);
 
+#ifdef __GLIBC__
 WRAP_VERSTAT(__x,);
 WRAP_VERSTAT(__x, 64);
 WRAP_VERSTAT(__lx,);
 WRAP_VERSTAT(__lx, 64);
+#endif
 
 int __open_2(const char *path, int flags);
 int __open64_2(const char *path, int flags);
 
 WRAP_OPEN(,);
-WRAP_OPEN(, 64);
 WRAP_OPEN2(__,_2);
-WRAP_OPEN2(__,64_2);
 
 /* wrapper template for openat family; intercept opening /sys from the root dir */
 #define WRAP_OPENAT(prefix, suffix) \
@@ -1222,7 +1354,7 @@ int prefix ## openat ## suffix (int dirfd, const char *pathname, int flags, ...)
   \
     if (!trapped)										\
         p = trap_path(pathname);								\
-    DBG(DBG_PATH, "testbed wrapped " #suffix "openat" #suffix "(%s) -> %s\n", pathname, p);	\
+    DBG(DBG_PATH, "testbed wrapped " #prefix "openat" #suffix "(%s) -> %s\n", pathname, p);	\
     if (p == NULL) { TRAP_PATH_UNLOCK; return -1; }						\
     if (flags & (O_CREAT | O_TMPFILE)) {							\
 	mode_t mode;										\
@@ -1238,7 +1370,12 @@ int prefix ## openat ## suffix (int dirfd, const char *pathname, int flags, ...)
 }
 
 WRAP_OPENAT(,);
+
+#ifdef __GLIBC__
+WRAP_OPEN(, 64);
+WRAP_OPEN2(__,64_2);
 WRAP_OPENAT(, 64);
+#endif
 
 int
 inotify_add_watch(int fd, const char *path, uint32_t mask)
@@ -1274,31 +1411,14 @@ ssize_t readlinkat(int dirfd, const char *pathname, char *buf, size_t bufsiz)
     return r;
 }
 
-char *canonicalize_file_name(const char *path)
-{
-    const char *p;
-    libc_func(canonicalize_file_name, char*, const char*);
-    char *r, *oldr;
+WRAP_2ARGS_PATHRET(char *, NULL, realpath, char *);
 
-    TRAP_PATH_LOCK;
-    p = trap_path(path);
-    if (p == NULL)
-	r = NULL;
-    else {
-	r = _canonicalize_file_name(p);
-        if (p == path) {
-	    DBG(DBG_PATH, "testbed wrapped canonicalize_file_name(%s) -> %s (not wrapped)\n", path, r);
-	} else if (r != NULL) {
-	    /* cut off the prefix again */
-	    oldr = r;
-	    r = strdup(r + trap_path_prefix_len);
-	    free (oldr);
-	    DBG(DBG_PATH, "testbed wrapped canonicalize_file_name(%s -> %s) -> %s (wrapped)\n", path, p, r);
-	}
-    }
-    TRAP_PATH_UNLOCK;
-    return r;
-}
+char *__realpath_chk(const char *path, char *resolved, size_t size);
+WRAP_3ARGS_PATHRET(char *, NULL, __realpath_chk, char *, size_t);
+
+#ifdef __GLIBC__
+WRAP_1ARG_PATHRET(char *, NULL, canonicalize_file_name);
+#endif
 
 ssize_t
 read(int fd, void *buf, size_t count)
@@ -1476,9 +1596,9 @@ fclose(FILE * stream)
 }
 
 int
-ioctl(int d, unsigned long request, ...)
+ioctl(int d, IOCTL_REQUEST_TYPE request, ...)
 {
-    libc_func(ioctl, int, int, unsigned long, ...);
+    libc_func(ioctl, int, int, IOCTL_REQUEST_TYPE, ...);
     int result;
     va_list ap;
     void* arg;
@@ -1494,13 +1614,13 @@ ioctl(int d, unsigned long request, ...)
 
     result = ioctl_emulate(d, request, arg);
     if (result != UNHANDLED) {
-	DBG(DBG_IOCTL, "ioctl fd %i request %lX: emulated, result %i\n", d, request, result);
+	DBG(DBG_IOCTL, "ioctl fd %i request %X: emulated, result %i\n", d, (unsigned) request, result);
 	return result;
     }
 
     /* call original ioctl */
     result = _ioctl(d, request, arg);
-    DBG(DBG_IOCTL, "ioctl fd %i request %lX: original, result %i\n", d, request, result);
+    DBG(DBG_IOCTL, "ioctl fd %i request %X: original, result %i\n", d, (unsigned) request, result);
 
     if (result != -1 && ioctl_record_fd == d)
 	record_ioctl(request, arg, result);

@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
-#include <sys/ioctl.h>
+#include <linux/ioctl.h>
 #include <linux/usbdevice_fs.h>
 #include <linux/input.h>
 
@@ -38,14 +38,14 @@
  ***********************************/
 
 ioctl_tree *
-ioctl_tree_new_from_bin(unsigned long id, const void *data, int ret)
+ioctl_tree_new_from_bin(IOCTL_REQUEST_TYPE id, const void *data, int ret)
 {
     const ioctl_type *type;
     ioctl_tree *t;
 
     type = ioctl_type_get_by_id(id);
     if (type == NULL) {
-	DBG(DBG_IOCTL_TREE, "ioctl_tree_new_from_bin: unknown ioctl %lX\n", id);
+	DBG(DBG_IOCTL_TREE, "ioctl_tree_new_from_bin: unknown ioctl %X\n", (unsigned) id);
 	return NULL;
     }
     /* state independent ioctl? */
@@ -66,7 +66,7 @@ ioctl_tree_new_from_text(const char *line)
     static char lead_ws[1001];
     static char ioctl_name[101];
     int ret, offset;
-    unsigned long id;
+    IOCTL_REQUEST_TYPE id;
     const ioctl_type *type;
     ioctl_tree *t;
 
@@ -340,13 +340,13 @@ ioctl_node_list_append(ioctl_node_list * list, ioctl_tree * element)
 }
 
 ioctl_tree *
-ioctl_tree_execute(ioctl_tree * tree, ioctl_tree * last, unsigned long id, void *arg, int *ret)
+ioctl_tree_execute(ioctl_tree * tree, ioctl_tree * last, IOCTL_REQUEST_TYPE id, void *arg, int *ret)
 {
     const ioctl_type *t;
     ioctl_tree *i;
     int r, handled;
 
-    DBG(DBG_IOCTL_TREE, "ioctl_tree_execute ioctl %lX\n", id);
+    DBG(DBG_IOCTL_TREE, "ioctl_tree_execute ioctl %X\n", (unsigned) id);
 
     /* check if it's a hardware independent stateless ioctl */
     t = ioctl_type_get_by_id(id);
@@ -367,7 +367,7 @@ ioctl_tree_execute(ioctl_tree * tree, ioctl_tree * last, unsigned long id, void 
      * ioctls as much as possible (i. e. maintain it while the requests come in
      * at the same order as originally recorded) */
     for (;;) {
-	DBG(DBG_IOCTL_TREE, "   ioctl_tree_execute: checking node %s(%lX, base id %lX) ", i->type->name, i->id, i->type->id);
+	DBG(DBG_IOCTL_TREE, "   ioctl_tree_execute: checking node %s(%X, base id %X) ", i->type->name, (unsigned) i->id, (unsigned) i->type->id);
 	if (debug_categories & DBG_IOCTL_TREE)
 	    i->type->write(i, stderr);
 	DBG(DBG_IOCTL_TREE, "\n");
@@ -463,7 +463,7 @@ write_hex(FILE * file, const char *buf, size_t len)
 #define NSIZE(node) ((node->type && node->type->real_size >= 0) ? node->type->real_size : _IOC_SIZE(node->id))
 
 static inline int
-id_matches_type(unsigned long id, const ioctl_type *type)
+id_matches_type(IOCTL_REQUEST_TYPE id, const ioctl_type *type)
 {
     return _IOC_TYPE(id) == _IOC_TYPE(type->id) &&
            _IOC_DIR(id) == _IOC_DIR(type->id) &&
@@ -474,7 +474,7 @@ id_matches_type(unsigned long id, const ioctl_type *type)
 static void
 ioctl_simplestruct_init_from_bin(ioctl_tree * node, const void *data)
 {
-    DBG(DBG_IOCTL_TREE, "ioctl_simplestruct_init_from_bin: %s(%lX): size is %lu bytes\n", node->type->name, node->id, NSIZE(node));
+    DBG(DBG_IOCTL_TREE, "ioctl_simplestruct_init_from_bin: %s(%X): size is %lu bytes\n", node->type->name, (unsigned) node->id, NSIZE(node));
     node->data = malloc(NSIZE(node));
     memcpy(node->data, data, NSIZE(node));
 }
@@ -489,8 +489,8 @@ ioctl_simplestruct_init_from_text(ioctl_tree * node, const char *data)
     node->data = malloc(data_len);
 
     if (NSIZE(node) != data_len) {
-	DBG(DBG_IOCTL_TREE, "ioctl_simplestruct_init_from_text: adjusting ioctl ID %lX (size %lu) to actual data length %zu\n",
-	    node->id, NSIZE(node), data_len);
+	DBG(DBG_IOCTL_TREE, "ioctl_simplestruct_init_from_text: adjusting ioctl ID %X (size %lu) to actual data length %zu\n",
+	    (unsigned) node->id, NSIZE(node), data_len);
 	node->id = _IOC(_IOC_DIR(node->id), _IOC_TYPE(node->id), _IOC_NR(node->id), data_len);
     }
 
@@ -523,7 +523,7 @@ ioctl_simplestruct_equal(const ioctl_tree * n1, const ioctl_tree * n2)
 }
 
 static int
-ioctl_simplestruct_in_execute(const ioctl_tree * node, unsigned long id, void *arg, int *ret)
+ioctl_simplestruct_in_execute(const ioctl_tree * node, IOCTL_REQUEST_TYPE id, void *arg, int *ret)
 {
     if (id == node->id) {
 	memcpy(arg, node->data, NSIZE(node));
@@ -548,7 +548,7 @@ static void
 ioctl_varlenstruct_init_from_bin(ioctl_tree * node, const void *data)
 {
     size_t size = node->type->get_data_size(node->id, data);
-    DBG(DBG_IOCTL_TREE, "ioctl_varlenstruct_init_from_bin: %s(%lX): size is %zu bytes\n", node->type->name, node->id, size);
+    DBG(DBG_IOCTL_TREE, "ioctl_varlenstruct_init_from_bin: %s(%X): size is %zu bytes\n", node->type->name, (unsigned) node->id, size);
     node->data = malloc(size);
     memcpy(node->data, data, size);
 }
@@ -570,8 +570,8 @@ ioctl_varlenstruct_init_from_text(ioctl_tree * node, const char *data)
     size_t size = node->type->get_data_size(node->id, node->data);
 
     if (size != data_len) {
-	fprintf(stderr, "ioctl_varlenstruct_init_from_text: ioctl %lX: expected data length %zu, but got %zu bytes from text data\n",
-		node->id, size, data_len);
+	fprintf(stderr, "ioctl_varlenstruct_init_from_text: ioctl %X: expected data length %zu, but got %zu bytes from text data\n",
+		(unsigned) node->id, size, data_len);
 	free(node->data);
 	return FALSE;
     }
@@ -595,7 +595,7 @@ ioctl_varlenstruct_equal(const ioctl_tree * n1, const ioctl_tree * n2)
 }
 
 static int
-ioctl_varlenstruct_in_execute(const ioctl_tree * node, unsigned long id, void *arg, int *ret)
+ioctl_varlenstruct_in_execute(const ioctl_tree * node, IOCTL_REQUEST_TYPE id, void *arg, int *ret)
 {
     if (id == node->id) {
 	size_t size = node->type->get_data_size(id, node->data);
@@ -702,13 +702,14 @@ usbdevfs_reapurb_equal(const ioctl_tree * n1, const ioctl_tree * n2)
 }
 
 static int
-usbdevfs_reapurb_execute(const ioctl_tree * node, unsigned long id, void *arg, int *ret)
+usbdevfs_reapurb_execute(const ioctl_tree * node, IOCTL_REQUEST_TYPE id, void *arg, int *ret)
 {
     /* set in SUBMIT, cleared in REAP */
     static const ioctl_tree *submit_node = NULL;
     static struct usbdevfs_urb *submit_urb = NULL;
 
-    if (id == USBDEVFS_SUBMITURB) {
+    /* have to cast here, as with musl USBDEVFS* have the wrong type "unsigned long" */
+    if (id == (IOCTL_REQUEST_TYPE) USBDEVFS_SUBMITURB) {
 	const struct usbdevfs_urb *n_urb = node->data;
 	struct usbdevfs_urb *a_urb = arg;
 	assert(submit_node == NULL);
@@ -797,7 +798,7 @@ usbdevfs_reapurb_insertion_parent(ioctl_tree * tree, ioctl_tree * node)
  ***********************************/
 
 static int
-ioctl_execute_success(const ioctl_tree * node, unsigned long id, void *arg, int *ret)
+ioctl_execute_success(const ioctl_tree * node, IOCTL_REQUEST_TYPE id, void *arg, int *ret)
 {
     errno = 0;
     *ret = 0;
@@ -805,7 +806,7 @@ ioctl_execute_success(const ioctl_tree * node, unsigned long id, void *arg, int 
 }
 
 static int
-ioctl_execute_enodata(const ioctl_tree * node, unsigned long id, void *arg, int *ret)
+ioctl_execute_enodata(const ioctl_tree * node, IOCTL_REQUEST_TYPE id, void *arg, int *ret)
 {
     errno = ENODATA;
     *ret = -1;
@@ -813,7 +814,7 @@ ioctl_execute_enodata(const ioctl_tree * node, unsigned long id, void *arg, int 
 }
 
 static int
-ioctl_execute_enotty(const ioctl_tree * node, unsigned long id, void *arg, int *ret)
+ioctl_execute_enotty(const ioctl_tree * node, IOCTL_REQUEST_TYPE id, void *arg, int *ret)
 {
     errno = ENOTTY;
     *ret = -1;
@@ -923,7 +924,7 @@ ioctl_type ioctl_db[] = {
 };
 
 const ioctl_type *
-ioctl_type_get_by_id(unsigned long id)
+ioctl_type_get_by_id(IOCTL_REQUEST_TYPE id)
 {
     ioctl_type *cur;
     for (cur = ioctl_db; cur->name[0] != '\0'; ++cur)
@@ -933,7 +934,7 @@ ioctl_type_get_by_id(unsigned long id)
 }
 
 const ioctl_type *
-ioctl_type_get_by_name(const char *name, unsigned long *out_id)
+ioctl_type_get_by_name(const char *name, IOCTL_REQUEST_TYPE *out_id)
 {
     ioctl_type *cur;
     char *parens;
