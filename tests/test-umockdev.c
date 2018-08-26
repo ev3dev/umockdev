@@ -743,8 +743,6 @@ t_testbed_uevent_error(UMockdevTestbedFixture * fixture, gconstpointer data)
 {
     struct udev *udev;
     struct udev_monitor *mon;
-    FILE *orig_stderr;
-    char buf[1000];
 
     /* set up monitor */
     udev = udev_new();
@@ -753,7 +751,11 @@ t_testbed_uevent_error(UMockdevTestbedFixture * fixture, gconstpointer data)
     g_assert(mon != NULL);
 
     /* unknown device, shouldn't crash but print an error message */
-    orig_stderr = stderr;
+    /* some libcs (musl) have readonly stderr, so only test with glibc */
+#ifdef __GLIBC__
+    FILE *orig_stderr = stderr;
+    char buf[1000];
+
     stderr = tmpfile();
     g_assert(stderr != NULL);
     umockdev_testbed_uevent(fixture->testbed, "/devices/unknown", "add");
@@ -763,6 +765,7 @@ t_testbed_uevent_error(UMockdevTestbedFixture * fixture, gconstpointer data)
     g_assert_cmpstr(buf, ==, "ERROR: uevent_sender_send: No such device /devices/unknown\n");
     fclose(stderr);
     stderr = orig_stderr;
+#endif
 
     /* should not trigger an actual event */
     g_assert(udev_monitor_receive_device(mon) == NULL);
@@ -1007,6 +1010,7 @@ t_testbed_libc(UMockdevTestbedFixture * fixture, gconstpointer data)
     gboolean success;
     GError *error = NULL;
     char *path;
+    char pathbuf[PATH_MAX];
     int dirfd, fd;
 
     /* start with adding one device */
@@ -1017,6 +1021,21 @@ t_testbed_libc(UMockdevTestbedFixture * fixture, gconstpointer data)
     g_assert_no_error(error);
     g_assert(success);
 
+    /* realpath */
+
+    /* dir */
+    path = realpath("/sys/devices/dev1", pathbuf);
+    g_assert_cmpstr(path, ==, "/sys/devices/dev1");
+
+    /* link */
+    path = realpath("/sys/bus/../bus/pci/devices/./dev1", pathbuf);
+    g_assert_cmpstr(path, ==, "/sys/devices/dev1");
+
+    /* nonexisting */
+    g_assert(realpath("/sys/devices/xxnoexist", pathbuf) == NULL);
+    g_assert_cmpint(errno, ==, ENOENT);
+
+#ifdef __GLIBC__
     /* canonicalize_file_name */
 
     /* dir */
@@ -1032,6 +1051,7 @@ t_testbed_libc(UMockdevTestbedFixture * fixture, gconstpointer data)
     /* nonexisting */
     g_assert(canonicalize_file_name("/sys/devices/xxnoexist") == NULL);
     g_assert_cmpint(errno, ==, ENOENT);
+#endif
 
     /* openat */
 
@@ -1104,8 +1124,12 @@ t_testbed_usb_lsusb(UMockdevTestbedFixture * fixture, gconstpointer data)
     g_assert_cmpint(exit_status, ==, 0);
 
     /* g_printf("------ out: -------\n%s\n------ err: ------\n%s\n-----\n", out, err); */
-    g_assert(g_str_has_prefix(out, "\nBus 001 Device 001: ID 04a9:31c0 Canon, Inc. PowerShot SX200 IS\n"));
-    g_assert(strstr(out, "idVendor           0x04a9 Canon, Inc."));
+    g_assert(g_str_has_prefix(out, "\nBus 001 Device 001: ID 04a9:31c0"));
+    g_assert(strstr(out, "idVendor           0x04a9"));
+
+    /* Alpine's lsusb doesn't read usb.ids, and our test container does not ship it */
+    if (g_file_test("/var/lib/usbutils/usb.ids", G_FILE_TEST_EXISTS))
+        g_assert(strstr(out, "Canon, Inc. PowerShot SX200 IS"));
 }
 
 static void
@@ -1114,6 +1138,7 @@ t_testbed_dev_access(UMockdevTestbedFixture * fixture, gconstpointer data)
     GStatBuf st;
     gchar *devdir, *devpath;
     int fd;
+    FILE* f;
     char buf[100];
 
     /* no mocked devices */
@@ -1148,6 +1173,20 @@ t_testbed_dev_access(UMockdevTestbedFixture * fixture, gconstpointer data)
     g_assert(!isatty(fd));
     g_assert_cmpint(read(fd, buf, 20), ==, 12);
     close(fd);
+    g_assert_cmpint(buf[0], ==, 'z');
+    g_assert_cmpint(buf[1], ==, 'e');
+    g_assert_cmpint(buf[11], ==, 'o');
+    g_assert_cmpint(buf[12], ==, 0);
+    memset(buf, 0, sizeof(buf));
+
+    /* /dev/zero with fopen() */
+    g_assert(fopen("/dev/wishyouwerehere", "r") == NULL);
+    g_assert_cmpint(errno, ==, ENOENT);
+    f = fopen("/dev/zero", "rb");
+    g_assert(f != NULL);
+    g_assert(!isatty(fileno(f)));
+    g_assert_cmpint(fread(buf, 1, 100, f), ==, 12);
+    fclose(f);
     g_assert_cmpint(buf[0], ==, 'z');
     g_assert_cmpint(buf[1], ==, 'e');
     g_assert_cmpint(buf[11], ==, 'o');

@@ -202,6 +202,25 @@
 				</parameter>
 			</parameters>
 		</method>
+		<method name="add_device" c:identifier="umockdev_testbed_add_device" introspectable="0">
+			<return-value transfer-ownership="full" allow-none="1">
+				<type name="utf8" c:type="gchar*"/>
+			</return-value>
+			<parameters>
+				<parameter name="subsystem" transfer-ownership="none">
+					<type name="utf8" c:type="const gchar*"/>
+				</parameter>
+				<parameter name="name" transfer-ownership="none">
+					<type name="utf8" c:type="const gchar*"/>
+				</parameter>
+				<parameter name="parent" transfer-ownership="none" allow-none="1">
+					<type name="utf8" c:type="const gchar*"/>
+				</parameter>
+				<parameter name="..." transfer-ownership="none">
+					<varargs/>
+				</parameter>
+			</parameters>
+		</method>
 		<method name="remove_device" c:identifier="umockdev_testbed_remove_device">
 			<return-value transfer-ownership="full">
 				<type name="none"/>
