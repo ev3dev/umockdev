@@ -1,3 +1,10 @@
+umockdev (0.12-1) unstable; urgency=medium
+
+  * New upstream version 0.12
+  * Bump Standards-Version to 4.2.1. No changes necessary.
+
+ -- Martin Pitt <mpitt@debian.org>  Sun, 26 Aug 2018 11:06:02 +0000
+
 umockdev (0.11.3-1) unstable; urgency=medium
 
   * New upstream version 0.11.3:
