@@ -1,3 +1,10 @@
+umockdev (0.12.1-1) unstable; urgency=medium
+
+  * New upstream version 0.12.1
+    - Fix realpath() with NULL second argument (Closes: #907341)
+
+ -- Martin Pitt <mpitt@debian.org>  Sun, 18 Nov 2018 20:29:42 +0000
+
 umockdev (0.12-1) unstable; urgency=medium
 
   * New upstream version 0.12
