@@ -58,7 +58,7 @@
 					<type name="utf8" c:type="const gchar*"/>
 				</parameter>
 				<parameter name="value" transfer-ownership="none">
-					<array length="3">
+					<array length="3" c:type="guint8*">
 						<type name="guint8" c:type="guint8"/>
 					</array>
 				</parameter>
@@ -191,12 +191,12 @@
 					<type name="utf8" c:type="const gchar*"/>
 				</parameter>
 				<parameter name="attributes" transfer-ownership="none">
-					<array>
+					<array c:type="gchar**">
 						<type name="utf8" c:type="gchar*"/>
 					</array>
 				</parameter>
 				<parameter name="properties" transfer-ownership="none">
-					<array>
+					<array c:type="gchar**">
 						<type name="utf8" c:type="gchar*"/>
 					</array>
 				</parameter>

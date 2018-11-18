@@ -55,6 +55,10 @@
 #include "debug.h"
 #include "ioctl_tree.h"
 
+/* fix missing O_TMPFILE on some systems */
+#ifndef O_TMPFILE
+#define O_TMPFILE (__O_TMPFILE | O_DIRECTORY)
+#endif
 
 /********************************
  *
@@ -70,13 +74,8 @@ get_libc_func(const char *f)
     void *fp;
     static void *nextlib;
 
-    if (nextlib == NULL) {
-#ifdef RTLD_NEXT
-	nextlib = RTLD_NEXT;
-#else
+    if (nextlib == NULL)
 	nextlib = dlopen("libc.so.6", RTLD_LAZY);
-#endif
-    }
 
     fp = dlsym(nextlib, f);
     assert(fp);
