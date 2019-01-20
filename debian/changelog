@@ -1,3 +1,15 @@
+umockdev (0.12.1-2) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * d/copyright: Use https protocol in Format field
+
+  [ Martin Pitt ]
+  * Bump Standards-Version to 4.3.0.  No changes necessary.
+  * debian/rules: Drop long-obsolete daily PPA rules
+  * Add help2man manpages for umockdev-{run,record}
+
+ -- Martin Pitt <mpitt@debian.org>  Sun, 20 Jan 2019 10:18:27 +0000
+
 umockdev (0.12.1-1) unstable; urgency=medium
 
   * New upstream version 0.12.1
