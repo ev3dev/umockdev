@@ -8,3 +8,9 @@ override_dh_auto_configure:
 		--disable-silent-rules \
 		--enable-gtk-doc \
 		--enable-introspection
+
+override_dh_auto_install:
+	dh_auto_install
+	mkdir -p debian/tmp/usr/share/man/man1
+	help2man --no-info --name 'Record devices and ioctls' src/umockdev-record > debian/tmp/usr/share/man/man1/umockdev-record.1
+	LD_LIBRARY_PATH=.libs help2man --no-info --name 'Run a program under an umockdev testbed' src/umockdev-run > debian/tmp/usr/share/man/man1/umockdev-run.1
