@@ -1,3 +1,10 @@
+umockdev (0.8.12-1ev3dev1) stable; urgency=medium
+
+  * ev3dev takeover
+  * add some fbdev ioctls
+
+ -- David Lechner <david@lechnology.com>  Tue, 25 Jun 2019 00:14:10 -0500
+
 umockdev (0.8.12-1) unstable; urgency=medium
 
   * New upstream bug fix release.
