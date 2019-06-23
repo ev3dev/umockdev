@@ -1,3 +1,10 @@
+umockdev (0.11.1-1ev3dev1~bionic1) bionic; urgency=medium
+
+  * ev3dev takeover
+  * add some fbdev ioctls
+
+ -- David Lechner <david@lechnology.com>  Mon, 24 Jun 2019 23:41:54 -0500
+
 umockdev (0.11.1-1) unstable; urgency=medium
 
   * Switch to new upstream release location on GitHub.
