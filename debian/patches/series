@@ -5,3 +5,4 @@ lp1831467/0004-tests-test-umockdev.c-add-slow_testbed_factor-variab.patch
 lp1831467/0005-tests-test-umockdev-run.vala-add-slow_testbed_factor.patch
 lp1831467/0006-remove_SocketServer_ctrl-r_assert.patch
 fbdev
+symlinks
