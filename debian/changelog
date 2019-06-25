@@ -1,3 +1,10 @@
+umockdev (0.8.11-2ev3dev1) xenial; urgency=medium
+
+  * ev3dev takeover
+  * add some fbdev ioctls
+
+ -- David Lechner <david@lechnology.com>  Tue, 25 Jun 2019 00:03:07 -0500
+
 umockdev (0.8.11-2) unstable; urgency=medium
 
   * Re-add disable_record_system_all.patch, the upstream fix only skips that
