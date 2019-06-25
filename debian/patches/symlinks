@@ -1,0 +1,43 @@
+add support for devnode sysmlinks
+
+--- a/src/umockdev.vala
++++ b/src/umockdev.vala
+@@ -956,6 +956,7 @@
+         string cur_data = data;
+         string? devnode_path = null;
+         uint8[] devnode_contents = {};
++        SList<string> symlinks = new SList<string>();
+ 
+         cur_data = this.record_parse_line(cur_data, out type, out key, out devpath);
+         if (cur_data == null || type != 'P')
+@@ -1018,7 +1019,11 @@
+                     break;
+ 
+                 case 'S':
+-                    /* TODO: ignored for now */
++                    /* collect symlink paths */
++                    if (val != null) {
++                        var symlink_path = Path.build_filename(this.root_dir, "dev", val);
++                        symlinks.prepend(symlink_path);
++                    }
+                     break;
+ 
+                 default:
+@@ -1043,9 +1048,16 @@
+             this.set_attribute_link (syspath, linkattrs[i], linkattrs[i+1]);
+ 
+         /* create fake device node */
+-        if (devnode_path != null)
++        if (devnode_path != null) {
+             this.create_node_for_device(subsystem, devnode_path, devnode_contents, majmin);
+ 
++            /* and symlinks to that device node */
++            symlinks.foreach((s) => {
++                assert(DirUtils.create_with_parents(Path.get_dirname(s), 0755) == 0);
++                assert(FileUtils.symlink(devnode_path, s) == 0);
++            });
++        }
++
+         /* skip over multiple blank lines */
+         while (cur_data[0] != '\0' && cur_data[0] == '\n')
+             cur_data = cur_data.next_char();
