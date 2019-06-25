@@ -1,3 +1,9 @@
+umockdev (0.8.12-1ev3dev2) stable; urgency=medium
+
+  * add support for devnode sysmlinks
+
+ -- David Lechner <david@lechnology.com>  Tue, 25 Jun 2019 17:46:04 -0500
+
 umockdev (0.8.12-1ev3dev1) stable; urgency=medium
 
   * ev3dev takeover
