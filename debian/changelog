@@ -1,3 +1,9 @@
+umockdev (0.8.11-2ev3dev2) xenial; urgency=medium
+
+  * add support for devnode sysmlinks
+
+ -- David Lechner <david@lechnology.com>  Tue, 25 Jun 2019 17:45:07 -0500
+
 umockdev (0.8.11-2ev3dev1) xenial; urgency=medium
 
   * ev3dev takeover
