@@ -1,3 +1,9 @@
+umockdev (0.11.1-1ev3dev2~stretch1) stable; urgency=medium
+
+  * backport to ev3dev-stretch
+
+ -- David Lechner <david@lechnology.com>  Tue, 25 Jun 2019 23:55:38 -0500
+
 umockdev (0.11.1-1ev3dev2~bionic1) bionic; urgency=medium
 
   * add support for devnode sysmlinks
