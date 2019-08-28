@@ -1,3 +1,9 @@
+umockdev (0.11.1-1ev3dev2~xenial2) xenial; urgency=medium
+
+  * Add all bus names from Linux kernel 5.3
+
+ -- David Lechner <david@lechnology.com>  Tue, 27 Aug 2019 21:58:07 -0500
+
 umockdev (0.11.1-1ev3dev2~xenial1) xenial; urgency=medium
 
   * backport to ev3dev-xenial
