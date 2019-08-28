@@ -1,3 +1,9 @@
+umockdev (0.11.1-1ev3dev2~bionic2) bionic; urgency=medium
+
+  * Add all bus names from Linux kernel 5.3
+
+ -- David Lechner <david@lechnology.com>  Tue, 27 Aug 2019 21:51:05 -0500
+
 umockdev (0.11.1-1ev3dev2~bionic1) bionic; urgency=medium
 
   * add support for devnode sysmlinks
