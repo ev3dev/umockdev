@@ -13,14 +13,16 @@ override_dh_auto_configure:
 		--enable-gtk-doc \
 		--enable-introspection
 
-# tests fail in PPA builders, so don't make them fatal for daily builds
+# INSTALLED_TEST=1 will skip /umockdev-record/system-all which causes
+# eternal hangs on some buildds
+# SLOW_TESTBED_FACTOR=5 will allow slower build systems to avoid
+# timing-related test failures
 override_dh_auto_test:
-	if ! dh_auto_test; then \
-	    head -n1 debian/changelog | grep -q '~' || exit 1; \
+	if head -n1 debian/changelog | grep -q '~' ; then \
+		env INSTALLED_TEST=1 SLOW_TESTBED_FACTOR=5 dh_auto_test; \
+	else \
+		env SLOW_TESTBED_FACTOR=5 dh_auto_test; \
 	fi
-	# this will skip /umockdev-record/system-all which causes eternal hangs
-	# on some buildds
-	env INSTALLED_TEST=1 dh_auto_test
 
 override_dh_install:
 	dh_install -X.a -X.la --fail-missing

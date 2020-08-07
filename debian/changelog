@@ -1,21 +1,17 @@
-umockdev (0.11.1-1ev3dev2~bionic2) bionic; urgency=medium
+umockdev (0.11.1-1ubuntu0.1) bionic; urgency=medium
 
-  * Add all bus names from Linux kernel 5.3
+  * d/p/lp1831467/0001-src-umockdev.vala-fix-ScriptRunner.op_write.patch,
+    d/p/lp1831467/0002-tests-read-expected-number-of-bytes-maybe-over-multi.patch,
+    d/p/lp1831467/0003-tests-test-umockdev-record.vala-add-slow_testbed_fac.patch,
+    d/p/lp1831467/0004-tests-test-umockdev.c-add-slow_testbed_factor-variab.patch,
+    d/p/lp1831467/0005-tests-test-umockdev-run.vala-add-slow_testbed_factor.patch,
+    d/p/lp1831467/0006-remove_SocketServer_ctrl-r_assert.patch,
+    d/rules, d/t/upstream:
+    - Fix various timing-related tests
+      Fix ScriptRunner fuzz checking function
+      (LP: #1831467)
 
- -- David Lechner <david@lechnology.com>  Tue, 27 Aug 2019 21:51:05 -0500
-
-umockdev (0.11.1-1ev3dev2~bionic1) bionic; urgency=medium
-
-  * add support for devnode sysmlinks
-
- -- David Lechner <david@lechnology.com>  Tue, 25 Jun 2019 17:07:46 -0500
-
-umockdev (0.11.1-1ev3dev1~bionic1) bionic; urgency=medium
-
-  * ev3dev takeover
-  * add some fbdev ioctls
-
- -- David Lechner <david@lechnology.com>  Mon, 24 Jun 2019 23:41:54 -0500
+ -- Dan Streetman <ddstreet@canonical.com>  Thu, 06 Aug 2020 20:43:44 -0400
 
 umockdev (0.11.1-1) unstable; urgency=medium
 

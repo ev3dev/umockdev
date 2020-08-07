@@ -1,3 +1,6 @@
-fbdev
-symlinks
-bus_names
+lp1831467/0001-src-umockdev.vala-fix-ScriptRunner.op_write.patch
+lp1831467/0002-tests-read-expected-number-of-bytes-maybe-over-multi.patch
+lp1831467/0003-tests-test-umockdev-record.vala-add-slow_testbed_fac.patch
+lp1831467/0004-tests-test-umockdev.c-add-slow_testbed_factor-variab.patch
+lp1831467/0005-tests-test-umockdev-run.vala-add-slow_testbed_factor.patch
+lp1831467/0006-remove_SocketServer_ctrl-r_assert.patch

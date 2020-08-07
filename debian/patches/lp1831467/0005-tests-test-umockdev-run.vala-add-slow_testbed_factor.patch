@@ -1,0 +1,58 @@
+From 5a3729c52001f5d7c48ebbecdb98823bd8449f40 Mon Sep 17 00:00:00 2001
+From: Dan Streetman <ddstreet@canonical.com>
+Date: Tue, 28 Jul 2020 08:42:57 -0400
+Subject: [PATCH 5/5] tests/test-umockdev-run.vala: add slow_testbed_factor
+ variable
+Bug-Ubuntu: https://bugs.launchpad.net/ubuntu/+source/umockdev/+bug/1831467
+Origin: upstream, https://github.com/martinpitt/umockdev/pull/103
+
+The t_input_evtest and t_input_evtest_evemu tests only allow for
+under a second of 'extra' time before expecting the umockdev-run
+process to be complete. On slow testbeds, this is a cause of flaky
+false negatives, so similarly to the previous patches this adds
+a slow testbed multiplier factor to allow longer delays waiting
+for the umockdev-run process to finish.
+---
+ tests/test-umockdev-run.vala | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+--- a/tests/test-umockdev-run.vala
++++ b/tests/test-umockdev-run.vala
+@@ -24,6 +24,8 @@ const string umockdev_run_command = "env
+ 
+ string rootdir;
+ 
++int slow_testbed_factor = 1;
++
+ static void
+ assert_in (string needle, string haystack)
+ {
+@@ -555,7 +557,7 @@ t_input_evtest ()
+     }
+ 
+     // our script covers 1.4 seconds, give it some slack
+-    Posix.sleep (2);
++    Posix.sleep (2 * slow_testbed_factor);
+     Posix.kill (evtest_pid, Posix.SIGTERM);
+     var sout = new uint8[10000];
+     var serr = new uint8[10000];
+@@ -638,7 +640,7 @@ E: 0.500000 0001 001e 0000	# EV_KEY / KE
+     }
+ 
+     // our script covers 0.5 seconds, give it some slack
+-    Posix.sleep (1);
++    Posix.sleep (1 * slow_testbed_factor);
+     FileUtils.remove (evemu_file);
+     Posix.kill (evtest_pid, Posix.SIGTERM);
+     var sout = new uint8[10000];
+@@ -676,6 +678,10 @@ main (string[] args)
+ {
+   Test.init (ref args);
+ 
++  string? f = Environment.get_variable ("SLOW_TESTBED_FACTOR");
++  if (f != null && int.parse(f) > 0)
++    slow_testbed_factor = int.parse(f);
++
+   string? top_srcdir = Environment.get_variable ("TOP_SRCDIR");
+   if (top_srcdir != null)
+       rootdir = top_srcdir;

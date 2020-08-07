@@ -1,4 +1,9 @@
 #!/bin/sh
 set -e
 
+# don't be too picky about timing; upstream CI and local developer tests
+# are strict, but autopkgtest machines are often slow and shared,
+# especially on slower architectures (https://launchpad.net/bugs/1831467)
+export SLOW_TESTBED_FACTOR=10
+
 make check-installed

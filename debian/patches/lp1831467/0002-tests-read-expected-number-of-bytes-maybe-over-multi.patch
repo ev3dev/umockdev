@@ -1,0 +1,181 @@
+From 426bdc843f7511ec122880783e63eb460b314c5c Mon Sep 17 00:00:00 2001
+From: Dan Streetman <ddstreet@canonical.com>
+Date: Mon, 27 Jul 2020 10:23:23 -0400
+Subject: [PATCH 2/5] tests: read expected number of bytes, maybe over multiple
+ reads
+Bug-Ubuntu: https://bugs.launchpad.net/ubuntu/+source/umockdev/+bug/1831467
+Origin: upstream, https://github.com/martinpitt/umockdev/pull/103
+
+Some tests assume a max amount of time for a response is guaranteeable,
+as well as assuming that further responses will not yet be pending.
+Neither of theses are guaranteeable without realtime control of the testbed,
+and they cause false negative test failures on slow testbeds.
+---
+ tests/test-umockdev-record.vala | 26 +++++++++++++---
+ tests/test-umockdev.c           | 53 ++++++++++++++++++++++-----------
+ 2 files changed, 57 insertions(+), 22 deletions(-)
+
+--- a/tests/test-umockdev-record.vala
++++ b/tests/test-umockdev-record.vala
+@@ -488,6 +488,26 @@ read_line_timeout(FileStream stream)
+     return "<timeout>";
+ }
+ 
++static ssize_t
++read_buf_delay(ulong delay, Socket socket, uint8[] buffer, ssize_t length) throws Error
++{
++    ssize_t len = 0;
++    int64 start;
++
++    Thread.usleep (delay);
++    start = get_monotonic_time();
++
++    while (len < length && 5000000 > get_monotonic_time() - start) {
++        unowned uint8[] buf = buffer[len:length];
++
++        assert (socket.condition_timed_wait (IN, 5000000));
++        len += socket.receive (buf);
++    }
++
++    assert (len == length);
++    return len;
++}
++
+ /*
+  * umockdev-record --script recording to a file, with our chatter command
+  */
+@@ -634,15 +654,13 @@ t_system_script_log_chatter_socket_strea
+         conn.send ("John\n".data);
+ 
+         // give it some time for the response
+-        Thread.usleep (10000);
+-        len = conn.receive (buf);
++        len = read_buf_delay (10000, conn, buf, 11);
+         assert (len > 0);
+         buf[len] = 0;
+         assert_cmpstr ((string) buf, Op.EQ, "hello John\n");
+ 
+         // check the send message
+-        Thread.usleep (20000);
+-        len = conn.receive (buf);
++        len = read_buf_delay (20000, conn, buf, 6);
+         assert (len > 0);
+         buf[len] = 0;
+         assert_cmpstr ((string) buf, Op.EQ, "send()");
+--- a/tests/test-umockdev.c
++++ b/tests/test-umockdev.c
+@@ -66,6 +66,31 @@ t_testbed_fixture_teardown(UMockdevTestb
+     g_free(rootdir);
+ }
+ 
++static void
++t_testbed_read_buf_delay(ulong delay, int fd, char* buf, ssize_t length)
++{
++    ssize_t len = 0;
++    gint64 start;
++
++    usleep (delay);
++    start = g_get_monotonic_time();
++
++    while (len < length && 5000000 > g_get_monotonic_time() - start) {
++        ssize_t ret;
++
++        errno = 0;
++        ret = read (fd, &buf[len], length - len);
++        if (ret > 0)
++            len += ret;
++        else if (ret == 0)
++            break;
++        else
++            g_assert_true(errno == EAGAIN || errno == EWOULDBLOCK);
++    }
++
++    g_assert_cmpint(len, ==, length);
++}
++
+ /* Return number of devices that libudev can see */
+ static guint
+ num_udev_devices(void)
+@@ -1456,8 +1481,7 @@ r 0 ^@^^^`^@a\n";
+ 
+   /* should get initial greeting after 200 ms */
+   ASSERT_EOF;
+-  usleep(220000);
+-  g_assert_cmpint(read(fd, buf, 5), ==, 5);
++  t_testbed_read_buf_delay(220000, fd, buf, 5);
+   g_assert(strncmp(buf, "ready", 5) == 0);
+   g_assert_cmpint(errno, ==, 0);
+ 
+@@ -1470,12 +1494,10 @@ r 0 ^@^^^`^@a\n";
+ 
+   /* now we should get the response after 10 ms */
+   ASSERT_EOF;
+-  usleep(20000);
+-  g_assert_cmpint(read(fd, buf, 11), ==, 11);
++  t_testbed_read_buf_delay(20000, fd, buf, 11);
+   g_assert(strncmp(buf, "response\t1\n", 11) == 0);
+   g_assert_cmpint(errno, ==, 0);
+-  usleep(5000);
+-  g_assert_cmpint(read(fd, buf, 15), ==, 15);
++  t_testbed_read_buf_delay(5000, fd, buf, 15);
+   g_assert(strncmp(buf, "hello world ☺\n", 15) == 0);
+   g_assert_cmpint(errno, ==, 0);
+   ASSERT_EOF;
+@@ -1486,8 +1508,7 @@ r 0 ^@^^^`^@a\n";
+   g_assert_cmpint(write(fd, "ATI\r", 4), ==, 4);
+ 
+   /* response after 20 ms */
+-  usleep(30000);
+-  g_assert_cmpint(read(fd, buf, 13), ==, 12);
++  t_testbed_read_buf_delay(30000, fd, buf, 12);
+   g_assert(strncmp(buf, "Bogus Device", 12) == 0);
+   ASSERT_EOF;
+ 
+@@ -1499,14 +1520,12 @@ r 0 ^@^^^`^@a\n";
+ 
+   /* response after 10 ms */
+   ASSERT_EOF;
+-  usleep(20000);
+-  g_assert_cmpint(read(fd, buf, 20), ==, 3);
++  t_testbed_read_buf_delay(20000, fd, buf, 3);
+   g_assert(strncmp(buf, "ACK", 3) == 0);
+ 
+   /* corner cases in encoding */
+   g_assert_cmpint(write(fd, "\0\x1E^\0a", 5), ==, 5);
+-  usleep(10000);
+-  g_assert_cmpint(read(fd, buf, 10), ==, 5);
++  t_testbed_read_buf_delay(10000, fd, buf, 5);
+   g_assert_cmpint(buf[0], ==, 0);
+   g_assert_cmpint(buf[1], ==, '\x1E');
+   g_assert_cmpint(buf[2], ==, '^');
+@@ -1642,8 +1661,8 @@ r 10 ^@response\n";
+ 
+   /* should get initial greeting after 200 ms */
+   ASSERT_EOF;
+-  usleep(220000);
+-  g_assert_cmpint(read(fd, buf, 5), ==, 5);
++  /* some slow architectures (HPPA) often don't manage in 200 ms */
++  t_testbed_read_buf_delay(350000, fd, buf, 5);
+   g_assert(strncmp(buf, "ready", 5) == 0);
+   g_assert_cmpint(errno, ==, 0);
+ 
+@@ -1656,8 +1675,7 @@ r 10 ^@response\n";
+ 
+   /* now we should get the response after 10 ms */
+   ASSERT_EOF;
+-  usleep(15000);
+-  g_assert_cmpint(read(fd, buf, 50), ==, 9);
++  t_testbed_read_buf_delay(15000, fd, buf, 9);
+   g_assert_cmpint(buf[0], ==, 0);
+   g_assert(strncmp(buf + 1, "response", 8) == 0);
+   g_assert_cmpint(errno, ==, 0);
+@@ -1710,8 +1728,7 @@ r 0 OK\n";
+   g_assert_cmpint(write(fd, "bbbbb7b", 7), ==, 7);
+ 
+   /* wait for final OK to make sure it survived */
+-  usleep(10000);
+-  g_assert_cmpint(read(fd, buf, 11), ==, 2);
++  t_testbed_read_buf_delay(10000, fd, buf, 2);
+   g_assert(strncmp(buf, "OK", 2) == 0);
+   g_assert_cmpint(errno, ==, 0);
+ 
