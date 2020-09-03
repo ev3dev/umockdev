@@ -1,3 +1,12 @@
+umockdev (0.11.1-1ubuntu0.1ev3dev1) bionic; urgency=medium
+
+  * ev3dev takeover
+  * add some fbdev ioctls
+  * add support for devnode sysmlinks
+  * Add all bus names from Linux kernel 5.3
+
+ -- David Lechner <david@lechnology.com>  Wed, 02 Sep 2020 20:01:12 -0500
+
 umockdev (0.11.1-1ubuntu0.1) bionic; urgency=medium
 
   * d/p/lp1831467/0001-src-umockdev.vala-fix-ScriptRunner.op_write.patch,
